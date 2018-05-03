@@ -16,7 +16,7 @@ BLITZ processes multiple video streams of freely swimming larveas in real time. 
 Authors
 -------
 
-BLITZ is written by Wenbin Yang. It is originally a  product of the [Wen Lab][2] in the [Department of Life Science][http://en.biox.ustc.edu.cn/] and the [HEFEI NATIONAL LABORATORY FOR PHYSICAL SCIENCES AT THE MICROSCALE][4] at [University of Science and Technology of China][5]. 
+BLITZ is written by Wenbin Yang. It is originally a  product of the [Wen Lab][2] in the [Department of Life Science][3] and the [HEFEI NATIONAL LABORATORY FOR PHYSICAL SCIENCES AT THE MICROSCALE][4] at [University of Science and Technology of China][5]. 
 
   [2]: http://www.wenlab.org/
   [3]: http://en.biox.ustc.edu.cn/
