@@ -38,3 +38,4 @@ Step by step install With Visual Studio 2017 for Windows 7 64 Bit
 * Install OpenCV
 * Install OpenGL
 * Install Balser Pylon 5
+* To be continued...
