@@ -8,21 +8,22 @@ BLITZ (Behavioral Learning In The Zebrafish) is a software that allows researche
  in freely moving Caenorhabditis elegans," Nature Methods, Submitted
  (2010).) <br/>
  
-BLITZ processes multiple video streams of freely swimming larveas in real time. As feedback, it presents different visual patterns and give electric shocks to individual fish as user designed. With inputs and outputs in a close loop, researchers can training dozens of fish simultaneously with pre-designed behavioral paradigm in a fully automatic way. Detailed information about fish's position, the type of visual pattern, timing of given electric shocks and other system's state can be recorded in a user-defined way in YAML file, which is a human and computer readable file format. Also the raw video would be saved. The [ABLITZER][6] - "Analyzer of BLITZe Result" (MATLAB) produces quantitative analysis figures and formated quantification structure data based on the output from BLITZ.
+BLITZ processes multiple video streams of freely swimming larveas in real time. As feedback, it presents different visual patterns and give electric shocks to individual fish as user designed. With inputs and outputs in a close loop, researchers can training dozens of fish simultaneously with pre-designed behavioral paradigm in a fully automatic way. Detailed information about fish's position, the type of visual pattern, timing of given electric shocks and other system's state can be recorded in a user-defined way in YAML file, which is a human and computer readable file format. Also the raw video would be saved. The [ABLITZER][2] - "Analyzer of BLITZe Result" (MATLAB) produces quantitative analysis figures and formated quantification structure data based on the output from BLITZ.
 
-  [1]: http://github.com/samuellab/mindcontrol
+  [1]:http://github.com/samuellab/mindcontrol
+  [2]:https://github.com/Wenlab/ABLIZTER
   
   
 Authors
 -------
 
-BLITZ is written by Wenbin Yang. It is originally a  product of the [Wen Lab][2] in the [Department of Life Science][3] and the [HEFEI NATIONAL LABORATORY FOR PHYSICAL SCIENCES AT THE MICROSCALE][4] at [University of Science and Technology of China][5]. 
+BLITZ is written by Wenbin Yang. It is originally a  product of the [Wen Lab][3] in the [Department of Life Science][4] and the [HEFEI NATIONAL LABORATORY FOR PHYSICAL SCIENCES AT THE MICROSCALE][5] at [University of Science and Technology of China][6]. 
 
-  [2]: http://www.wenlab.org/
-  [3]: http://en.biox.ustc.edu.cn/
-  [4]: http://en.hfnl.ustc.edu.cn/
-  [5]: http://en.ustc.edu.cn/
-  [6]: https://github.com/Wenlab/ABLIZTER
+  [3]:http://www.wenlab.org/
+  [4]:http://en.biox.ustc.edu.cn/
+  [5]:http://en.hfnl.ustc.edu.cn/
+  [6]:http://en.ustc.edu.cn/
+   
   
   
 License
