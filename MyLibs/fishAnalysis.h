@@ -30,6 +30,7 @@
 // Include OpenCV libraries
 #include <opencv2/core/core.hpp>
 #include <opencv2/video/video.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 // Include standard libraries
 #include <vector>
@@ -94,8 +95,8 @@ public:
 	// methods
 	ArenaData(int BWthre = 30, int n = 4) // constructor
 	{
-		xCut = 390;
-		yCut = 383;
+		xCut = 385;
+		yCut = 784;
 		numFish = n;
 		binThre = BWthre;
 		allFish.resize(numFish); // allocate memory
@@ -139,11 +140,13 @@ public:
 
 
 /*Find the closest point on the contour to the reference point*/
-int find_closest_point_on_contour(std::vector<cv::Point>& contour, cv::Point point);
-/* Get the Euclidean distance between two Points */
-double getDistance(cv::Point A, cv::Point B);
+int findClosestPt(std::vector<cv::Point>& contour, cv::Point point);
 /* Rotate the image 90 degrees clockwise */
-void rot_90_CW(cv::Mat src, cv::Mat dst);
+void rot90CW(cv::Mat src, cv::Mat dst);
+/* Get the Euclidean distance from point P to line AB */
+double getPt2LineDistance(cv::Point2f P, cv::Point2f A, cv::Point2f B);
+/* Find 2 intersection points of a line (AB) and contour */
+std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv::Point2f A, cv::Point2f B);
 
 
 

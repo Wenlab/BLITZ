@@ -34,7 +34,7 @@ using namespace cv;
 
 bool WriteOutData::initialize(int numCameras, int width, int height, int frameRate = 10)
 {
-	const string pathName = "D:/ExpData/";
+	const string pathName = "F:/FishExpData/operantLearning/";
 	for (int i = 0; i < numCameras; i++)
 	{
 		string expName, videoName, yamlName;

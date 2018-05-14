@@ -15,11 +15,11 @@
 * Abstract: this file contains all function definitions
 *			used to present visual stimulus to fish
 *
-* Current Version: 2.0
+* Current Version: 2.1
 * Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
+* Modified on: May 12, 2018
 
-* Replaced Version: 1.1
+* Replaced Version: 2.0
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Created on: Jan. 1, 2018
 */
@@ -34,16 +34,10 @@
 using namespace std;
 
 
-bool PatchData::initialize(float* pos, float patchWidth = 0.1, float patchHeight = 0.1, int patchDelimY = 100)
+bool PatchData::initialize(float* pos)
 {
-	width = patchWidth;
-	height = patchHeight;
-	delimY = patchDelimY;
-	shader.use();
-	shader.setInt("delimY", 0);
 	initVertices(pos);
 	return true;
-	//loadTextureIntoBuffers(imgName);
 }
 
 void PatchData::initVertices(float* pos)
@@ -54,26 +48,13 @@ void PatchData::initVertices(float* pos)
 		0, 3, 2
 	};
 
-
-	float vertices[32] = { 0.0f };
-	// Assign values based on postional, color and texture coordinates' attributes
-	float scale = 10.0; // the scale to map texture coordinates to graphics'
-	float texCoord[] = { width / scale, height / scale }; // texture coordinates	
-	copy(begin(texCoord), end(texCoord), vertices + 6);
-	copy(begin(texCoord), end(texCoord), vertices + 14);
-	copy(begin(texCoord), end(texCoord), vertices + 22);
-	copy(begin(texCoord), end(texCoord), vertices + 30);
-	/* positional attributes of a vertex, only first 2 dimensions used */
-	float posV[4][2] = {pos[0], pos[1],  
-						pos[0], pos[1] - height,
-						pos[0] + width, pos[1] - height,
-						pos[0] + width, pos[1]};
-	copy(begin(posV[0]), end(posV[0]), vertices + 0);
-	copy(begin(posV[1]), end(posV[1]), vertices + 8);
-	copy(begin(posV[2]), end(posV[2]), vertices + 16);
-	copy(begin(posV[3]), end(posV[3]), vertices + 24);
-
-	
+	float vertices[32] =
+	{	// positions (0-2)      // colors (3-5)         // texture coordinates (6-7)
+		pos[0], pos[1], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // top left
+		pos[0], pos[1] + height, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, height, // bottom left
+		pos[0] - width, pos[1] + height, 0.0f, 0.0f, 0.0f, 0.0f, width, height, // bottom right
+		pos[0] - width, pos[1], 0.0f, 0.0f, 0.0f, 0.0f, width, 0.0f // top right
+	};
 
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
@@ -103,28 +84,54 @@ void PatchData::updatePattern()
 	shader.setInt("patternIdx", pIdx);
 }
 
-bool AreaData::initialize()
+void ScreenData::updatePattern()
+{
+	for (int i = 0; i < allAreas.size(); i++)
+	{
+		AreaData area = allAreas[i];
+		for (int j = 0; j < area.numPatches; j++)
+		{
+			area.allPatches[j].updatePattern();
+		}
+	}
+
+}
+
+/* update pattern for specific area */
+void ScreenData::updatePattern(int cIdx)
+{
+	
+		AreaData area = allAreas[cIdx];
+		for (int j = 0; j < area.numPatches; j++)
+		{
+			area.allPatches[j].updatePattern();
+		}
+	
+
+}
+
+bool AreaData::initialize(const int* yDivideArr)
 {
 	for (int i = 0; i < numPatches; i++)
 	{
-		PatchData patch;
+		PatchData patch(width/2,height/2,yDivideArr[i]);
 		switch (i){
 			case 0: 
 				break;// do nothing
 			case 1:
 			{
-				pos[0] += patch.width;
+				pos[0] -= patch.width;
 				break;
 			}
 			case 2:
 			{
-				pos[1] -= patch.height;
+				pos[1] += patch.height;
 				break;
 			}
 			case 3:
 			{
-				pos[0] += patch.width;
-				pos[1] -= patch.height;
+				pos[0] -= patch.width;
+				pos[1] += patch.height;
 				break;
 			}
 			default:;
@@ -136,21 +143,46 @@ bool AreaData::initialize()
 	return true;
 }
 
-bool ScreenData::initialize(float* allAreaPos, const char* imgName, int numAreas)
+bool ScreenData::initGLFWenvironment()
 {
-	/* Create GLFW environment */
+	/* Initialize GLFW environment */
 	if (!init_glfw_window())
 		return false;
 	if (!init_glad())
 		return false;
+	return true;
+}
 
-	//numAreas = sizeof(allAreaPos) / sizeof(float) / 2;
+// allAreaPos is a 2D array
+bool ScreenData::initialize(const char* imgName, int numAreas)
+{
+	float areaWidth = 0.24f; // In screen coordinates
+	float areaHeight = 0.88f;
+
+	const float allAreaPos[][4] =
+	{
+		{ 0.233f, 0.470f, 0.30f, areaHeight }, // midlle arena
+		{ 0.800f, -0.680f, 0.28f, areaHeight }, // left arena
+		{ -0.760f, -0.680f, areaWidth, areaHeight } // right arena
+	};
+	const int yDivideArr[][4] = // in pixels
+	{
+		{ 894, 894, 1000, 1000 }, // middle arena
+		{ 305, 305, 400, 400 }, // left arena
+		{ 305, 305, 400, 400 } // right arena
+	};
+
+	initGLFWenvironment();
+
+	
+
 	for (int i = 0; i < numAreas; i++)
 	{
-		float areaPos[2] = { 0 };
-		copy(allAreaPos + i * 2, allAreaPos + 2 + i * 2, areaPos);
-		AreaData area(areaPos);
-		area.initialize();
+		//const int arr[] = { 100,100,200,200 }; // array of delimY positions
+		//vector<int> delimYVec(arr, arr + sizeof(arr) / sizeof(arr[0]));
+		
+		AreaData area(allAreaPos[i],2); // make it a (x,y,width,height) list
+		area.initialize(yDivideArr[i]);
 		allAreas.push_back(area);
 	}
 
@@ -241,7 +273,7 @@ void ScreenData::renderTexture()
 	// render in shaders
 	for (int i = 0; i < allAreas.size(); i++)
 	{
-		for (int j = 0; j < PATCHES_PER_ARENA; j++)
+		for (int j = 0; j < allAreas[i].numPatches; j++)
 		{
 			allAreas[i].allPatches[j].shader.use();
 			glBindVertexArray(allAreas[i].allPatches[j].VAO);

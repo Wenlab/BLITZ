@@ -42,11 +42,70 @@ using namespace cv;
 
 int main()
 {
+	const char imgName[] = "Images/redCheckerboard.jpg";
+
 	ExperimentData exp;
-	float allAreaPos[] = {0.0f, 0.0f, 0.5f, 0.5f, -0.5f, -0.5f};
+
+	exp.initialize(imgName);
+
+	while (1)
+	{
+		int timeInSec = exp.expTimer.getElapsedTimeInSec();
+		cout << "Time (s) : " << timeInSec << endl;
+		if (timeInSec % 10 == 0)
+			exp.screen.allAreas[0].allPatches[0].pIdx = !exp.screen.allAreas[0].allPatches[0].pIdx;
+		exp.screen.allAreas[0].allPatches[0].updatePattern();
+		exp.screen.renderTexture();
+	}
+
+
+
+	/*Test screen function*/
+	/*		Area1			  Area2				  Area3 
+	  (0.233f, 0.300f)  (0.800f, -0.850f)  (-0.740f, -0.850f)
+	  width, height: all (0.28f, 1.40f)  
+	
+
+
+
+
+	const char imgName[] = "Images/redCheckerboard.jpg";
+	float allAreaPos[3][2] = { {0.233f, 0.300f}, {0.800f, -0.850f}, {-0.740f, -0.850f} };
+	
+	
+	Timer expTimer;
+	expTimer.start();
+	ScreenData screen;
+	screen.initGLFWenvironment();
+	screen.loadTextureIntoBuffers(imgName);
+	float* areaPos = allAreaPos[0];
+	AreaData area1(areaPos,2);
+	const int delimYarr[] = { 900,900,1000,1000 };
+	area1.initialize(delimYarr);
+	screen.allAreas.push_back(area1);
+
+
+
+	while (1)
+	{
+		int timeInSec = expTimer.getElapsedTimeInSec();
+		cout << "Time (s) : " << timeInSec << endl;
+		if (timeInSec % 10 == 0)
+			screen.allAreas[0].allPatches[0].pIdx = !screen.allAreas[0].allPatches[0].pIdx;
+		screen.allAreas[0].allPatches[0].updatePattern();
+		screen.renderTexture();
+	}
+	*/
+
+
+
+
+	/* Test OL Procedure 
+	ExperimentData exp;
+	
 	const char imgName[] = "Images/redCheckerBoard.jpg";
 	try {
-		exp.initialize(allAreaPos, imgName);
+		exp.initialize(imgName);
 		exp.prepareBgImg();
 		exp.runOLexp();
 	}
@@ -56,7 +115,7 @@ int main()
 		cerr << "An exception occurred." << endl
 			<< e.GetDescription() << endl;
 	}
-	
+	*/
 
 
 	/*
@@ -112,18 +171,7 @@ int main()
 	*/
 
 
-	/* Test screen function
-	ScreenData screen;
-	float allAreaPos[] = { 0,0, -0.5,-0.5, 0.5,0.5 };
-	const char filename[] = "Images/redCheckerboard.jpg";
-	screen.initialize(allAreaPos, filename);
-
-	while (1)
-	{
-		cout << "Time (s) : " << expTimer.getElapsedTimeInSec() << endl;
-		screen.renderTexture();
-	}
-	*/
+	
 
 
 

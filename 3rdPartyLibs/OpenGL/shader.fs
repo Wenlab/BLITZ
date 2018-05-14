@@ -8,7 +8,7 @@ in vec2 TexCoord;
 // texture sampler
 uniform sampler2D texture0;
 uniform int patternIdx;
-uniform int delimY;
+uniform int yDivide;
 
 void main()
 {
@@ -31,7 +31,7 @@ void main()
 		bottomColor = black;
 	}	
 
-	if (gl_FragCoord.y < delimY)
+	if (gl_FragCoord.y < yDivide)
 		FragColor = topColor;
 	else
 		FragColor = bottomColor;

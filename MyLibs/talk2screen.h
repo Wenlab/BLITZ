@@ -57,26 +57,30 @@ private:
 	; // nothing for now
 public:
 	// methods
-	PatchData(const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
-			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs"): shader(vertexPath, fragmentPath)
+	PatchData(float patchWidth, float patchHeight, int patchYdivide,
+			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
+			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
+			: shader(vertexPath, fragmentPath)
 	{
-		width = -1;// invalid value
-		height = -1;
+		width = patchWidth;
+		height = patchHeight;
+		yDivide = patchYdivide;
+		/* Frequent updating variable */
 		pIdx = 0;
-		delimY = 0;
+		
 		shader.use();
-		shader.setInt("delimY",delimY);
+		shader.setInt("yDivide",yDivide);
 		shader.setInt("patternIdx", pIdx);
 	}
-	// To improve use width and height to calculate the vertex
-	bool initialize(float* pos, float patchWidth, float patchHeight, int patchDelimY);
+	
+	bool initialize(float* pos);
 	/* Initialize vertices and their buffers with providing pos(x,y) */
 	void initVertices(float* pos);
 	/* Update pattern by giving the shader new pattern index */
 	void updatePattern();
 	// properties
 	float width, height; // in screen coordinates
-	int delimY;
+	int yDivide;
 	int pIdx; // pattern index
 	
 	Shader shader;
@@ -93,18 +97,20 @@ private:
 public:
 	// methods
 	/* Enquire the number of patches in an arena */
-	AreaData(float* areaPos, int n = PATCHES_PER_ARENA)
+	AreaData(const float* areaPos, int n = PATCHES_PER_ARENA)
 	{
 		numPatches = n;
 		pos[0] = areaPos[0];
 		pos[1] = areaPos[1];
+		width = areaPos[2]; // Make it argument
+		height = areaPos[3];
 	}
-	bool initialize();
+	bool initialize(const int* yDivideArr);
 	// properties
 	std::vector<PatchData> allPatches;
 	int numPatches;
 	float pos[2]; // upper-left corner
-	int width, height;
+	float width, height;
 };
 
 class ScreenData 
@@ -117,13 +123,20 @@ public:
 	{
 		
 	}
-	bool initialize(float* allAreaPos, const char* filename, int numAreas);
+	bool initialize(const char* filename, int numAreas);
+	/* Initialize GLFW environment*/
+	bool initGLFWenvironment();
 	bool init_glfw_window();
 	bool init_glad();
 	bool loadTextureIntoBuffers(const char* filename);
 	//Shader init_shader(const char* vsName, const char* fsName, int delimY);
 	//void init_texture_buffers(int idxArena, int idxPatch, const float* vertex);
 	//bool load_texture_into_buffers(const char* fileName);
+
+	/* Update pattern for specific area */
+	void updatePattern(int cIdx);
+	/* Update patternIdx for all shaders in the screen */
+	void updatePattern();
 	/* Render designed pattern on the screen */
 	void renderTexture();
 	/* Update pattern for a single shader */

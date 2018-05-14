@@ -34,11 +34,11 @@ using namespace Pylon;
 
 bool CameraData::initialize()
 {
-	const char* serialNums[MAX_CAMERAS] = { "22492334","22510229","22510230" };
+	const char* serialNums[MAX_CAMERAS] = { "21552672","22510229","22510230" };
 	//const int frameRate = 10;
 	//const int width = 784;
 	//const int height = 784;
-	const int offSetX[MAX_CAMERAS] = { 17, 1154, 830 };
+	const int offSetX[MAX_CAMERAS] = { 419, 1154, 830 };
 	const int offSetY[MAX_CAMERAS] = { 17, 165, 66 };
 	Pylon::EPixelType pixelFormat = Pylon::EPixelType::PixelType_Mono8;
 

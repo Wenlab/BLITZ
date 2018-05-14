@@ -56,87 +56,80 @@ TODO:
 1. Abolish fishFlag?
 2. Consize the recursive ifs
 */
-bool ArenaData::findAllFish() 
+bool ArenaData::findAllFish()
 {
 	bool fishFlag = false;
+	// outer contours are counter clockwise
 	vector<vector<Point>> contours;
-	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
-	
+	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE); 
+
+	//imshow("SubImg1", subImg);
+
+	// record largest contour of each quadratile and its index
+	// with initial values of -1 (not found)
+	vector<vector<int>> maxContours;
+	maxContours.resize(2, vector<int>(4, -1));
+
 	// the size of fish contour should above this threshold
 	const int conThre = 20;
 	for (int i = 0; i < contours.size(); i++)
 	{
 		vector<Point> tempContour = contours[i];
 		int contourSize = tempContour.size();
-		if ( contourSize < conThre)
+		if (contourSize < conThre)
 			continue;
-
-		// record largest contour of each quadratile and its index
-		// with initial values of -1 (not found)
-		vector<vector<int>> maxContours;
-		maxContours.resize(2, vector<int>(4, -1));
 
 		Moments M = moments(tempContour); // to find the center
 		int x = int(M.m10 / M.m00);
 		int y = int(M.m01 / M.m00);
 
-		if (y < yCut)
-		{ 
-			if (x < xCut)
-			{
-				if (maxContours[0][0] < contourSize)
-				{
-					maxContours[0][0] = contourSize;
-					maxContours[1][0] = i;
-				}
-			}
-			else
-			{
-				if (maxContours[0][1] < contourSize)
-				{
-					maxContours[0][1] = contourSize;
-					maxContours[1][1] = i;
-				}
-			}
+		int signNum = (x - xCut > 0) + 2 * (y - yCut > 0);
+		int qIdx = 0; // Quadrantic index
+		switch (signNum)
+		{
+		case 0:// No.0 Quadrant
+			qIdx = 0;
+			break;
+		case 1:
+			qIdx = 1;
+			break;
+		case 2:
+			qIdx = 2;
+			break;
+		case 3:
+			qIdx = 3;
+			break;
+		default:
+			cout << "Fish Analysis Error" << endl;
+			exit(0);
+		}
+		if (maxContours[0][qIdx] < contourSize)
+		{
+			maxContours[0][qIdx] = contourSize;
+			maxContours[1][qIdx] = i;
+		}
+	}
+
+	// assign largest contour to each fish
+	for (int i = 0; i < numFish; i++)
+	{
+		if (maxContours[1][i] == -1)
+		{
+			allFish[i].pauseFrames++;
+			cout << "Fish: " << i << " not found! " << endl;
+			fishFlag = false;
 		}
 		else
 		{
-			if (x < xCut)
-			{
-				if (maxContours[0][2] < contourSize)
-				{
-					maxContours[0][2] = contourSize;
-					maxContours[1][2] = i;
-				}
-			}
-			else {
-				if (maxContours[0][3] < contourSize)
-				{
-					maxContours[0][3] = contourSize;
-					maxContours[1][3] = i;
-				}
-			}
-		}
-		
-		// assign largest contour to each fish
-		for (int i = 0; i < numFish; i++)
-		{
-			if (maxContours[1][i] == -1)
-			{
-				allFish[i].pauseFrames++;
-				cout << "Fish: " << i << " not found! " << endl;
-				fishFlag = false;
-			}
-			else
-			{
-				allFish[i].pauseFrames = 0;
-				allFish[i].fishContour = contours[maxContours[1][i]];
-				allFish[i].findPosition();
-				fishFlag = true;
-			}
+			allFish[i].pauseFrames = 0;
+			allFish[i].fishContour = contours[maxContours[1][i]];
+			allFish[i].findPosition();
+			fishFlag = true;
 		}
 	}
+
 	return fishFlag;
+	
 }
 /*
 	Find the head, center, tail and headingAngle of the fish
@@ -145,6 +138,24 @@ bool ArenaData::findAllFish()
 void FishData::findPosition()
 {
 	RotatedRect R = minAreaRect(fishContour);
+	Point2f mPts[4]; // mid points of long edges and short edges
+	if (R.size.height < R.size.width)
+	{
+		mPts[0] = R.center - R.size.height / 2;
+		mPts[1] = R.center + R.size.height / 2;
+		mPts[2] = R.center - R.size.width / 2;
+		mPts[3] = R.center + R.size.width / 2;
+	}
+	else
+	{
+		mPts[0] = R.center - R.size.width / 2;
+		mPts[1] = R.center + R.size.width / 2;
+		mPts[2] = R.center - R.size.height / 2;
+		mPts[3] = R.center + R.size.height / 2;
+	}
+
+
+
 	Point2f BPs[4]; // box points
 	R.points(BPs);
 
@@ -162,22 +173,21 @@ void FishData::findPosition()
 	vector<Point2f> refPts = { (BPs[0] + BPs[shortEdgeIdx]) / 2, (BPs[2] + BPs[longEdgeIdx]) / 2 };
 	if (findHeadSide(M, refPts[0]))
 	{
-		int headIdx = find_closest_point_on_contour(fishContour, refPts[0]);
+		int headIdx = findClosestPt(fishContour, refPts[0]);
 		head = fishContour[headIdx];
-		int tailIdx = find_closest_point_on_contour(fishContour, refPts[1]);
+		int tailIdx = findClosestPt(fishContour, refPts[1]);
 		tail = fishContour[tailIdx];	
 	}
 	else {
-		int headIdx = find_closest_point_on_contour(fishContour, refPts[1]);
+		int headIdx = findClosestPt(fishContour, refPts[1]);
 		head = fishContour[headIdx];
-		int tailIdx = find_closest_point_on_contour(fishContour, refPts[0]);
+		int tailIdx = findClosestPt(fishContour, refPts[0]);
 		tail = fishContour[tailIdx];
 	}
 	Moments Mom = moments(fishContour);
 	center = Point(Mom.m10 / Mom.m00, Mom.m01 / Mom.m00);
 	Point T2H = head - tail; // tail to head
 	headingAngle = atan2(T2H.y, T2H.x) * 180 / PI;
-	
 }
 
 /*
@@ -186,40 +196,41 @@ void FishData::findPosition()
 */
 bool FishData::findHeadSide(Point2f* M, Point2f refPt)
 {
-	Point2f vM = M[1] - M[0];
-	Point2f vRef = refPt - M[0];// contour half of negative skewness contains refPt
-	bool skewness = vM.x*vRef.y - vM.y*vRef.x > 0;
-	int idx0 = find_closest_point_on_contour(fishContour, Point(M[0]));
-	int idx1 = find_closest_point_on_contour(fishContour, Point(M[1]));
+	
+
+	vector<int> indices = findPtsLineIntersectContour(fishContour, M[0], M[1]);
+	int idxMidPt = (indices[0] + indices[1]) / 2;
+	Point2f midPtContour = fishContour[idxMidPt];
+	double dist2line = getPt2LineDistance(refPt, M[0], M[1]);
+	double dist2pt = norm(midPtContour - refPt);
 
 	vector<vector<Point>> contourHalves(2);
-	if (idx0 < idx1)
+	if (idx0 == idx1)
 	{
-		// contour half of negative skewness contains refPt
-		contourHalves[0].insert(contourHalves[0].end(), fishContour.begin() + idx0, fishContour.begin() + idx1);
-		contourHalves[1].insert(contourHalves[1].end(), fishContour.begin() + idx1, fishContour.end());
-		contourHalves[1].insert(contourHalves[1].end(),fishContour.begin(),fishContour.begin()+idx0);
-	}
-	else if (idx0 == idx1){
-		cout << "Something wrong with midline." << endl;
+		cout << "The contour is too thin to cut in-between" << endl;
+		return false;
 	}
 	else {
 		// contour half of negative skewness contains refPt
-		contourHalves[0].insert(contourHalves[0].end(), fishContour.begin() + idx0, fishContour.end());
-		contourHalves[0].insert(contourHalves[0].end(), fishContour.begin(), fishContour.begin() + idx1);
-		contourHalves[1].insert(contourHalves[1].end(), fishContour.begin() + idx1, fishContour.begin() + idx0);
+		contourHalves[0].insert(contourHalves[0].end(), fishContour.begin() + indices[0], fishContour.begin() + indices[1]);
+		contourHalves[1].insert(contourHalves[1].end(), fishContour.begin() + indices[1], fishContour.end());
+		contourHalves[1].insert(contourHalves[1].end(), fishContour.begin(), fishContour.begin() + indices[0]);
 	}
-	vector<int> areas(2,0);
+
+	vector<int> areas(2);
 	areas[0] = contourArea(contourHalves[0]);
 	areas[1] = contourArea(contourHalves[1]);
-	if (skewness < 0)
-		return areas[0] > areas[1];
+
+	int aIdx; // index of area where refPt is in.
+	if (dist2line < dist2pt) // refPt is not in-between idx0 -> idx1
+		aIdx = 1;
 	else
-		return areas[1] > areas[0];
+		aIdx = 0;
+	return areas[aIdx] > areas[!aIdx];
 }
 
-/*Find the closest point on the contour to the reference point*/
-int find_closest_point_on_contour(vector<Point>& contour, Point point)
+/*Find the closest point on the contour to the reference point, return the index findClosestPt*/
+int findClosestPt(vector<Point>& contour, Point point)
 {
 	double minDist = 1000000;
 	double tempDist = 0;
@@ -228,7 +239,7 @@ int find_closest_point_on_contour(vector<Point>& contour, Point point)
 	for (int i = 0; i < contour.size(); i++)
 	{
 		temp = contour[i];
-		tempDist = getDistance(contour[i], point);
+		tempDist = norm(contour[i] - point);
 
 		if (tempDist < minDist)
 		{
@@ -240,15 +251,58 @@ int find_closest_point_on_contour(vector<Point>& contour, Point point)
 	return goodIndex;
 }
 
-/* Get the Euclidean distance between two Points */
-double getDistance(Point A, Point B)
+
+
+/* Get the Euclidean distance from point P to line AB */
+double getPt2LineDistance(Point2f P, Point2f A, Point2f B)
 {
-	double distance;
-	distance = sqrtf(powf((A.x - B.x), 2) + powf((A.y - B.y), 2));
-	return distance;
+	Point2f BA = B - A; // the vector from A to B
+	//Point2f PA = P - A; // the vector from A to P
+	double dist = abs(BA.y*P.x - BA.x*P.y + B.cross(A)) / norm(BA);
+	return dist;
 }
 
-void rot_90_CW(Mat src, Mat dst)
+/* Find 2 intersection points of a line (AB) and contour */
+vector<int> findPtsLineIntersectContour(vector<Point>& contour, Point2f A, Point2f B)
+{
+	vector<int> goodIndices(2);
+	Point2f curPt; // current point
+	vector<Point> ptList; // store potential intersection points
+	vector<int> idxList; // store indices of potential intersection points
+	double distThre = 2.0; // threshold to decide whether it is an intersection pt
+	for (int i = 0; i < contour.size(); i++)
+	{
+		curPt = contour[i];
+		double pt2line = getPt2LineDistance(curPt, A, B);
+		if ( pt2line < distThre)
+		{
+			ptList.push_back(contour[i]);
+			idxList.push_back(i);
+		}
+
+	}
+
+	// assign intersection points to each side
+	int idxA = findClosestPt(ptList, A); // the one closest to A
+	int idxB = findClosestPt(ptList, B); // the one closest to B
+
+	if (idxA < idxB)
+	{
+		goodIndices[0] = idxList[idxA];
+		goodIndices[1] = idxList[idxB];
+	}
+	else
+	{
+		goodIndices[0] = idxList[idxB];
+		goodIndices[1] = idxList[idxA];
+	}
+
+	
+	return goodIndices;
+
+}
+
+void rot90CW(Mat src, Mat dst)
 {
 	Mat temp;
 	flip(src, temp, 0);

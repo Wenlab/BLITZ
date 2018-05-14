@@ -57,7 +57,7 @@ public:
 		ITI = 0;
 	}
 	/* Initialize the experiment */
-	bool initialize(float* allAreaPos, const char* imgName);
+	bool initialize(const char* imgName);
 	/* Prepare background image for MOG subtractor */
 	void prepareBgImg();
 	/* Run the entire operant learning procedure */
