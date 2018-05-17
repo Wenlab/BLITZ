@@ -32,21 +32,15 @@ using namespace std;
 using namespace Pylon;
 
 
-bool CameraData::initialize()
+bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int frameRate)
 {
 	const char* serialNums[MAX_CAMERAS] = { "21552672","22510229","22510230" };
-	//const int frameRate = 10;
-	//const int width = 784;
-	//const int height = 784;
 	const int offSetX[MAX_CAMERAS] = { 419, 1154, 830 };
 	const int offSetY[MAX_CAMERAS] = { 17, 165, 66 };
 	Pylon::EPixelType pixelFormat = Pylon::EPixelType::PixelType_Mono8;
 
 	Pylon::PylonInitialize();
 	Pylon::CTlFactory&TlFactory = Pylon::CTlFactory::GetInstance();
-
-	cout << "How many cameras to use?" << endl;
-	cin >> numCameras;
 	
 	// Make sure cameras are attached in order
 	for (int i = 0; i < numCameras; i++)
@@ -60,8 +54,8 @@ bool CameraData::initialize()
 	{
 		cameras[i].Attach(TlFactory.CreateDevice(di[i]));
 		cameras[i].Open();
-		cameras[i].Width = width;
-		cameras[i].Height = height;
+		cameras[i].Width = frameWidth;
+		cameras[i].Height = frameHeight;
 		cameras[i].OffsetX = offSetX[i];
 		cameras[i].OffsetY = offSetY[i];
 		cameras[i].AcquisitionFrameRateEnable.SetValue(true);

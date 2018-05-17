@@ -28,7 +28,6 @@
 
 // Include standard libraries
 #include <iostream>
-#include <chrono>
 #include <string>
 
 
@@ -36,33 +35,103 @@ using namespace std;
 using namespace cv;
 
 
-bool ExperimentData::initialize(const char* imgName)
+bool ExperimentData::initialize()
 {
+	
+	const vector<vector<float>> allAreaPos =
+	{
+		{ 0.233f, 0.300f, 0.28f, 1.40f },
+		{ 0.800f, -0.850f, 0.28f, 1.40f },
+		{ -0.740f, -0.850f, 0.28f, 1.40f }
+	};
+	// y division pos for all fish
+	vector<vector<int>> yDivs =
+	{
+		{ 383, 383, 390, 390 },
+		{ 383, 383, 390, 390 },
+		{ 383, 383, 390, 390 }
+	};
+
+	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
+	string imgFolderPath = "Images/";
+
+
+	showWelcomeMsg();
+
+	string imgStr = imgFolderPath + CSpattern + ".jpg";
+	const char* imgName = imgStr.c_str();
+	string CSstr = get_CS_string(CSpattern);
+	string timeStr = get_current_date_time();
+
+	numCameras = enquireNumCams();
+	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
+		return false;
+	cout << endl; // separated with an empty line
+
+	cout << "Initializing the projector screen... " << endl;
+	if (!screen.initialize(imgName))
+		return false;
+	cout << endl; // separated with an empty line
+
+	/* Initialize the serial port */
 	if (!thePort.initialize(COM_NUM))
 		return false;
-	if (!cams.initialize())
-		return false;
-	const int historyLen = 2000; // used in MOG subtractor
-	int numFishList[] = {2, 2, 2}; // the number of fish in each arena
-	int binThreList[] = {30, 30, 30}; // the background threshold for each arena
-	for (int i = 0; i < cams.numCameras; i++)
+	cout << endl; // separated with an empty line
+
+	int fishAge = enquireFishAge();
+	string expTask = enquireExpTask();
+	
+	for (int i = 0; i < numCameras; i++)
 	{
-		ArenaData arena(binThreList[i],numFishList[i]);
-		arena.pMOG = cv::createBackgroundSubtractorMOG2(historyLen, arena.binThre, false);
+		// create ArenaData and push it into exp.allArenas
+		vector<string> fishIDs = enquireFishIDs(i);
+		ArenaData arena(binThreList[i], fishIDs.size());
+		arena.initialize(fishIDs, fishAge, yDivs[i]);
 		allArenas.push_back(arena);
+
+		// create AreaData and push it into screen.allAreas
+		int yDup = screen.mode->height * (allAreaPos[i][1] + allAreaPos[i][3] * 1 / 4);
+		int yDdown = screen.mode->height * (allAreaPos[i][1] + allAreaPos[i][3] * 3 / 4);
+		vector<int> allYDivide = { yDup, yDup, yDdown, yDdown };
+		AreaData area(allAreaPos[i], arena.numFish);
+		area.initialize(allYDivide);
+		screen.allAreas.push_back(area);
+
+		// Append strain info to contentName
+		string strainName = get_strainName(fishIDs[0][0]);
+		string contentName = timeStr + "_" + "Arena" + to_string(i+1) 
+			+ "_" + strainName + "_" + to_string(fishAge)
+			+ "dpf_" + expTask + "_" + CSstr;
+
+		/* Create yaml and video files to write in */
+		if (!writeOut.initialize(contentName, WIDTH, HEIGHT, FRAMERATE))
+			return false;
+
+		/* Write out general experiment context info */
+			
+		writeOut.writeKeyValuePair("FishIDs", strVec2str(fishIDs), i);
+		writeOut.writeKeyValuePair("FishAge", fishAge, i);
+		writeOut.writeKeyValuePair("FishStrain", strainName, i);
+		writeOut.writeKeyValuePair("Task", expTask, i);
+		writeOut.writeKeyValuePair("ExpStartTime", timeStr, i);
+		writeOut.writeKeyValuePair("FrameRate", FRAMERATE, i);
+		writeOut.writeKeyValuePair("FrameSize", Size(WIDTH, HEIGHT), i);
+		writeOut.writeKeyValuePair("xCut", X_CUT, i);
+		writeOut.writeKeyValuePair("yCut", Y_CUT, i);
+		writeOut.writeKeyValuePair("yDivide", yDivs[i], i);
+
+
+
+
 	}
-	if (!writeOut.initialize(cams.numCameras,cams.frameRate,cams.width,cams.height))
-		return false;
-	if (!screen.initialize(imgName, 3))
-		return false;
 
 	expTimer.start();
 	return true;
 }
 
-void ExperimentData::prepareBgImg()
+void ExperimentData::prepareBgImg(const int prepareTime)
 {
-	const int prepareTime = 1 * 30; // seconds
+	
 	while (expTimer.getElapsedTimeInSec() < prepareTime)
 	{
 		cams.grabPylonImg();
@@ -77,7 +146,7 @@ void ExperimentData::prepareBgImg()
 			CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
 		rawImg.copyTo(allArenas[cIdx].opencvImg);
 		if (cIdx != 0)
-			rot_90_CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
+			rot90CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
 		allArenas[cIdx].pMOG->apply(allArenas[cIdx].opencvImg, allArenas[cIdx].subImg);
 		screen.renderTexture();
 	}
@@ -89,41 +158,15 @@ void ExperimentData::prepareBgImg()
 
 void ExperimentData::runOLexp()
 {
-	// Get system time
-	chrono::system_clock::time_point p = chrono::system_clock::now();
-	time_t t = chrono::system_clock::to_time_t(p);
-	char timeStr[26];
-	ctime_s(timeStr,sizeof timeStr, &t);
 
-	// Write out the general info for the experiment, only once
-	for (int i = 0; i < cams.numCameras; i++)
-	{
-		writeOut.yamlVec[i] << "ExpStartTime" << timeStr;
-		writeOut.yamlVec[i] << "FrameRate" << cams.frameRate;
-		writeOut.yamlVec[i] << "FrameSize" << Size(cams.width, cams.height);
-		writeOut.yamlVec[i] << "xCut" << allArenas[i].xCut;
-		writeOut.yamlVec[i] << "yCut" << allArenas[i].xCut;
-		vector<int> yDivideVec;
-		for (int j = 0; j < screen.allAreas[i].numPatches; j++)
-			yDivideVec.push_back(screen.allAreas[i].allPatches[j].yDivide);
-
-		writeOut.yamlVec[i] << "DelimY" << yDivideVec;
-
-		string fishName;
-		for (int j = 0; j < allArenas[i].numFish; j++)
-		{
-			fishName = "Fish" + to_string(i);
-			writeOut.yamlVec[i] << fishName << "[";
-			writeOut.yamlVec[i] << screen.allAreas[i].allPatches[j].yDivide;
-			writeOut.yamlVec[i] << "]";
-		}
-	}
-
+	const int prepareTime = 1 * 30;
 	const int baselineEndTime = 1 * 60; // seconds
 	const int trainingEndTime = 5 * 60; // seconds
 	const int blackoutEndTime = 8 * 60; // seconds
 	const int testEndTime = 10 * 60; // seconds
 	const int expEndTime = testEndTime + 1;
+
+	prepareBgImg(prepareTime);
 
 	while (sElapsed <= expEndTime)// giant grabbing loop
 	{
@@ -136,7 +179,7 @@ void ExperimentData::runOLexp()
 			CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
 		rawImg.copyTo(allArenas[cIdx].opencvImg);
 		if (cIdx != 0)
-			rot_90_CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
+			rot90CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
 		// MOG motion tracking
 		allArenas[cIdx].pMOG->apply(allArenas[cIdx].opencvImg, allArenas[cIdx].subImg);
 
@@ -188,7 +231,7 @@ void ExperimentData::runOLexp()
 		screen.renderTexture();
 		writeOutFrame();
 		annotateFishImgs();
-		//imshow("Display", allArenas[0].opencvImg);
+		
 		displayFishImgs("Display");
 	}
 }
@@ -286,13 +329,13 @@ void ExperimentData::updatePatternInTest()
 bool ExperimentData::ifGiveShock(int fishIdx)
 {
 	int cIdx = cams.cIdx;
-	FishData fish = allArenas[cIdx].allFish[fishIdx];
 	PatchData patch = screen.allAreas[cIdx].allPatches[fishIdx];
 	int pIdx = patch.pIdx; // patternIdx
-	int delimY = patch.yDivide;
-	Point head = fish.head;
-	int headingAngle = fish.headingAngle;
-	int lastShockTime = fish.lastShockTime;
+	int yDivide = allArenas[cIdx].allFish[fishIdx].yDiv;
+	Point head = allArenas[cIdx].allFish[fishIdx].head;
+	int headingAngle = allArenas[cIdx].allFish[fishIdx].headingAngle;
+	int lastShockTime = allArenas[cIdx].allFish[fishIdx].lastShockTime;
+	int lastFishPatternUpdate = allArenas[cIdx].allFish[fishIdx].lastFishPatternUpdate;
 
 	/* Control parameters */
 	int thinkingTime = 7; // seconds, give fish some thinking time
@@ -302,15 +345,15 @@ bool ExperimentData::ifGiveShock(int fishIdx)
 
 	if (pIdx == 2) // blackout 
 		return false;
-	if (sElapsed < fish.lastFishPatternUpdate + thinkingTime)
+	if (sElapsed < lastFishPatternUpdate + thinkingTime)
 		return false;
-	if (sElapsed < fish.lastShockTime + shockCD)
+	if (sElapsed < lastShockTime + shockCD)
 		return false;
 	if (head.x == -1) // invalid frame
 		return false;
 	if (pIdx) // patternIdx == 1, since 2 is already excluded
 	{
-		if (head.y < delimY) // in non-CS area
+		if (head.y < yDivide) // in non-CS area
 			return false;
 		else {
 			if (sElapsed - lastShockTime > CStimeThre)
@@ -325,7 +368,7 @@ bool ExperimentData::ifGiveShock(int fishIdx)
 	}
 	else
 	{
-		if (head.y > delimY)
+		if (head.y > yDivide)
 			return false;
 		else {
 			if (sElapsed - lastShockTime > CStimeThre)
@@ -361,26 +404,24 @@ void ExperimentData::writeOutFrame()
 	writeOut.yamlVec[cIdx] << "Frames" << "[";
 	// Python-like inline compact form 
 	// general experimental info
-	writeOut.yamlVec[cIdx] << "{:" << "FrameNum" << idxFrame << "}";
-	writeOut.yamlVec[cIdx] << "{:" << "ExpPhase" << expPhase << "}";
-	writeOut.yamlVec[cIdx] << "{:" << "sElapsed" << sElapsed << "}";
-	writeOut.yamlVec[cIdx] << "{:" << "msRemElapsed" << msRemElapsed << "}";
+	writeOut.writeKeyValueInline("FrameNum", idxFrame, cIdx);
+	writeOut.writeKeyValueInline("ExpPhase", expPhase, cIdx);
+	writeOut.writeKeyValueInline("sElapsed", sElapsed, cIdx);
+	writeOut.writeKeyValueInline("msRemElapsed", msRemElapsed, cIdx);
+
 	// specific fish analysis data
 	vector<FishData> allFish = allArenas[cIdx].allFish;
 	vector<PatchData> allPatches = screen.allAreas[cIdx].allPatches;
 	string fishName;
 	for (int i = 0; i < allFish.size(); i++)
 	{
-		writeOut.yamlVec[cIdx] << "{:" << "FishIdx" << i << "}";
-		//fishName = "Fish" + to_string(i);
-		//writeOut.yamlVec[cIdx] << fishName << "[";
-		writeOut.yamlVec[cIdx] << "{:" << "Head" << allFish[i].head << "}";
-		writeOut.yamlVec[cIdx] << "{:" << "Tail" << allFish[i].tail << "}";
-		writeOut.yamlVec[cIdx] << "{:" << "Center" << allFish[i].center << "}";
-		writeOut.yamlVec[cIdx] << "{:" << "HeadingAngle" << allFish[i].headingAngle << "}";
-		writeOut.yamlVec[cIdx] << "{:" << "ShockOn" << allFish[i].shockOn << "}";
-		writeOut.yamlVec[cIdx] << "{:" << "PatternIdx" << allPatches[i].pIdx << "}";
-		//writeOut.yamlVec[cIdx] << "]";
+		writeOut.writeKeyValueInline("FishIdx", i, cIdx);
+		writeOut.writeKeyValueInline("Head", allFish[i].head, cIdx);
+		writeOut.writeKeyValueInline("Tail", allFish[i].tail, cIdx);
+		writeOut.writeKeyValueInline("Center", allFish[i].center, cIdx);
+		writeOut.writeKeyValueInline("HeadingAngle", allFish[i].headingAngle, cIdx);
+		writeOut.writeKeyValueInline("ShockOn", allFish[i].shockOn, cIdx);
+		writeOut.writeKeyValueInline("PatternIdx", allPatches[i].pIdx, cIdx);
 	}
 	writeOut.yamlVec[cIdx] << "]";
 
@@ -403,34 +444,34 @@ void ExperimentData::displayFishImgs(string title) {
 
 	// If the number of arguments is lesser than 0 or greater than 12
 	// return without displaying
-	if (cams.numCameras <= 0) {
+	if (numCameras <= 0) {
 		printf("Number of arguments too small....\n");
 		return;
 	}
-	else if (cams.numCameras > 14) {
+	else if (numCameras > 14) {
 		printf("Number of arguments too large, can only handle maximally 12 images at a time ...\n");
 		return;
 	}
 	// Determine the size of the image,
 	// and the number of rows/cols
 	// from number of arguments
-	else if (cams.numCameras == 1) {
+	else if (numCameras == 1) {
 		w = h = 1;
 		size = 300;
 	}
-	else if (cams.numCameras == 2) {
+	else if (numCameras == 2) {
 		w = 2; h = 1;
 		size = 300;
 	}
-	else if (cams.numCameras == 3 || cams.numCameras == 4) {
+	else if (numCameras == 3 || numCameras == 4) {
 		w = 2; h = 2;
 		size = 300;
 	}
-	else if (cams.numCameras == 5 || cams.numCameras == 6) {
+	else if (numCameras == 5 || numCameras == 6) {
 		w = 3; h = 2;
 		size = 200;
 	}
-	else if (cams.numCameras == 7 || cams.numCameras == 8) {
+	else if (numCameras == 7 || numCameras == 8) {
 		w = 4; h = 2;
 		size = 200;
 	}
@@ -443,7 +484,7 @@ void ExperimentData::displayFishImgs(string title) {
 	Mat DispImage = Mat::zeros(Size(100 + size * w, 60 + size * h), CV_8UC1);
 
 	// Loop for cams.numCameras number of arguments
-	for (i = 0, m = 20, n = 20; i < cams.numCameras; i++, m += (20 + size)) {
+	for (i = 0, m = 20, n = 20; i < numCameras; i++, m += (20 + size)) {
 		// Get the Pointer to the IplImage
 		//Mat img = va_arg(args, Mat);
 		Mat img = allArenas[i].opencvImg;
@@ -484,7 +525,7 @@ void ExperimentData::displayFishImgs(string title) {
 
 void ExperimentData::annotateFishImgs()
 {
-	for (int i = 0; i < cams.numCameras; i++)
+	for (int i = 0; i < numCameras; i++)
 	{
 		ArenaData arena = allArenas[i];
 		for (int j = 0; j < allArenas[i].numFish; j++)

@@ -57,30 +57,29 @@ private:
 	; // nothing for now
 public:
 	// methods
-	PatchData(float patchWidth, float patchHeight, int patchYdivide,
+	PatchData(std::vector<float> patchRect, const int patchYdivide,
 			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
 			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
 			: shader(vertexPath, fragmentPath)
+			, rect(patchRect)
+			, yDivide(patchYdivide)
 	{
-		width = patchWidth;
-		height = patchHeight;
-		yDivide = patchYdivide;
 		/* Frequent updating variable */
 		pIdx = 0;
 		
 		shader.use();
-		shader.setInt("yDivide",yDivide);
+		shader.setInt("yDivide", yDivide);
 		shader.setInt("patternIdx", pIdx);
 	}
 	
-	bool initialize(float* pos);
+	bool initialize();
 	/* Initialize vertices and their buffers with providing pos(x,y) */
-	void initVertices(float* pos);
+	void initVertices();
 	/* Update pattern by giving the shader new pattern index */
 	void updatePattern();
 	// properties
-	float width, height; // in screen coordinates
-	int yDivide;
+	const std::vector<float> rect; // upper-left corner (x, y, width, height)
+	const int yDivide;
 	int pIdx; // pattern index
 	
 	Shader shader;
@@ -97,42 +96,42 @@ private:
 public:
 	// methods
 	/* Enquire the number of patches in an arena */
-	AreaData(const float* areaPos, int n = PATCHES_PER_ARENA)
+	AreaData(std::vector<float> areaRect, int n = 1)
+		: rect(areaRect)
+		, numPatches(n)
 	{
-		numPatches = n;
-		pos[0] = areaPos[0];
-		pos[1] = areaPos[1];
-		width = areaPos[2]; // Make it argument
-		height = areaPos[3];
+		
 	}
-	bool initialize(const int* yDivideArr);
+	bool initialize(std::vector<int> yDivideVec);
 	// properties
 	std::vector<PatchData> allPatches;
-	int numPatches;
-	float pos[2]; // upper-left corner
-	float width, height;
+	const int numPatches;
+	const std::vector<float> rect; // upper-left corner (x, y, width, height)
 };
 
 class ScreenData 
 {
-private:
-	; // nothing for now
+private: // only used within class
+	GLFWmonitor * * monitors;
+	
+	GLFWwindow* window;
+	// buffer idx to store texture
+	unsigned int texture0;
 public:
 	// methods
 	ScreenData() // constructor
 	{
 		
 	}
-	bool initialize(const char* filename, int numAreas);
-	/* Initialize GLFW environment*/
-	bool initGLFWenvironment();
+	/* Initilize screen environment and coordinates */
+	bool initialize(const char* filename);
+	/* GLFW initialize and configure window */
 	bool init_glfw_window();
+	/* glad: load all OpenGL function pointers */
 	bool init_glad();
+	/* load txture from image */
 	bool loadTextureIntoBuffers(const char* filename);
-	//Shader init_shader(const char* vsName, const char* fsName, int delimY);
-	//void init_texture_buffers(int idxArena, int idxPatch, const float* vertex);
-	//bool load_texture_into_buffers(const char* fileName);
-
+	
 	/* Update pattern for specific area */
 	void updatePattern(int cIdx);
 	/* Update patternIdx for all shaders in the screen */
@@ -144,9 +143,8 @@ public:
 
 
 	// properties
-	GLFWmonitor** monitors;
 	const GLFWvidmode* mode;
-	GLFWwindow* window;
+
 	/* 3(#arenas) * 4(patchesPerArena)
 		Scheme for fish positions in arena
 		|		|		|
@@ -158,7 +156,7 @@ public:
 		|		|		|
 	*/
 	std::vector<AreaData> allAreas;
-	unsigned int texture0;
+	
 	int numAreas;
 
 };

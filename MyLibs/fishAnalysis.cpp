@@ -56,14 +56,24 @@ TODO:
 1. Abolish fishFlag?
 2. Consize the recursive ifs
 */
+
+void ArenaData::initialize(vector<string> fishIDs, int fishAge, vector<int> yDivs)
+{
+	const int historyLen = 2000; // used in MOG subtractor
+	pMOG = cv::createBackgroundSubtractorMOG2(historyLen, binThre, false);
+	for (int i = 0; i < numFish; i++)
+	{
+		FishData fish(fishIDs[i], fishAge, yDivs[i]);
+		allFish.push_back(fish);
+	}
+}
+
 bool ArenaData::findAllFish()
 {
 	bool fishFlag = false;
 	// outer contours are counter clockwise
 	vector<vector<Point>> contours;
 	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE); 
-
-	//imshow("SubImg1", subImg);
 
 	// record largest contour of each quadratile and its index
 	// with initial values of -1 (not found)
@@ -83,7 +93,7 @@ bool ArenaData::findAllFish()
 		int x = int(M.m10 / M.m00);
 		int y = int(M.m01 / M.m00);
 
-		int signNum = (x - xCut > 0) + 2 * (y - yCut > 0);
+		int signNum = (x - X_CUT > 0) + 2 * (y - Y_CUT > 0);
 		int qIdx = 0; // Quadrantic index
 		switch (signNum)
 		{
@@ -138,50 +148,35 @@ bool ArenaData::findAllFish()
 void FishData::findPosition()
 {
 	RotatedRect R = minAreaRect(fishContour);
+	Point2f Pts[4];
+	R.points(Pts);
 	Point2f mPts[4]; // mid points of long edges and short edges
-	if (R.size.height < R.size.width)
+	if (R.size.height > R.size.width)
 	{
-		mPts[0] = R.center - R.size.height / 2;
-		mPts[1] = R.center + R.size.height / 2;
-		mPts[2] = R.center - R.size.width / 2;
-		mPts[3] = R.center + R.size.width / 2;
+		mPts[0] = (Pts[0] + Pts[1]) / 2;   //long edge middle point
+		mPts[1] = (Pts[1] + Pts[2]) / 2;   //short edge middle point
+		mPts[2] = (Pts[2] + Pts[3]) / 2;   //long edge middle point
+		mPts[3] = (Pts[3] + Pts[0]) / 2;   //short edge middle point
 	}
 	else
 	{
-		mPts[0] = R.center - R.size.width / 2;
-		mPts[1] = R.center + R.size.width / 2;
-		mPts[2] = R.center - R.size.height / 2;
-		mPts[3] = R.center + R.size.height / 2;
+		mPts[0] = (Pts[1] + Pts[2]) / 2;   //long edge middle point
+		mPts[1] = (Pts[2] + Pts[3]) / 2;   //short edge middle point
+		mPts[2] = (Pts[3] + Pts[0]) / 2;   //long edge middle point
+		mPts[3] = (Pts[0] + Pts[1]) / 2;   //short edge middle point
 	}
 
-
-
-	Point2f BPs[4]; // box points
-	R.points(BPs);
-
-	Point2f M[2];
-	int longEdgeIdx = 1;
-	int shortEdgeIdx = 3;
-	if (R.size.height < R.size.width)
+	if (findHeadSide(mPts))
 	{
-		longEdgeIdx = 3;
-		shortEdgeIdx = 1;
-	}
-	M[0] = (BPs[longEdgeIdx] + BPs[0]) / 2;
-	M[1] = (BPs[shortEdgeIdx] + BPs[2]) / 2;
-
-	vector<Point2f> refPts = { (BPs[0] + BPs[shortEdgeIdx]) / 2, (BPs[2] + BPs[longEdgeIdx]) / 2 };
-	if (findHeadSide(M, refPts[0]))
-	{
-		int headIdx = findClosestPt(fishContour, refPts[0]);
+		int headIdx = findClosestPt(fishContour, mPts[1]);
 		head = fishContour[headIdx];
-		int tailIdx = findClosestPt(fishContour, refPts[1]);
+		int tailIdx = findClosestPt(fishContour, mPts[3]);
 		tail = fishContour[tailIdx];	
 	}
 	else {
-		int headIdx = findClosestPt(fishContour, refPts[1]);
+		int headIdx = findClosestPt(fishContour, mPts[3]);
 		head = fishContour[headIdx];
-		int tailIdx = findClosestPt(fishContour, refPts[0]);
+		int tailIdx = findClosestPt(fishContour, mPts[1]);
 		tail = fishContour[tailIdx];
 	}
 	Moments Mom = moments(fishContour);
@@ -194,18 +189,16 @@ void FishData::findPosition()
 	Determine which side is fish's head 
 	by measuring the area of each half
 */
-bool FishData::findHeadSide(Point2f* M, Point2f refPt)
+bool FishData::findHeadSide(Point2f* M)
 {
-	
-
-	vector<int> indices = findPtsLineIntersectContour(fishContour, M[0], M[1]);
+	vector<int> indices = findPtsLineIntersectContour(fishContour, M[0], M[2]);
 	int idxMidPt = (indices[0] + indices[1]) / 2;
 	Point2f midPtContour = fishContour[idxMidPt];
-	double dist2line = getPt2LineDistance(refPt, M[0], M[1]);
-	double dist2pt = norm(midPtContour - refPt);
+	double dist2line = getPt2LineDistance(M[1], M[0], M[2]);
+	double dist2pt = norm(midPtContour - M[1]);
 
 	vector<vector<Point>> contourHalves(2);
-	if (idx0 == idx1)
+	if (indices[0] == indices[1])
 	{
 		cout << "The contour is too thin to cut in-between" << endl;
 		return false;

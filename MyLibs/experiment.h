@@ -36,6 +36,9 @@
 
 // User-defined macros
 #define COM_NUM 4
+#define WIDTH 784 // frame width for all cameras and video files
+#define HEIGHT 784 // frame height for all cameras and video files
+#define FRAMERATE 10 // frame rate for all cameras to capture videos
 
 class ExperimentData
 {
@@ -45,9 +48,11 @@ private:
 	;// nothing for now
 public:
 	// methods
-	ExperimentData(int fr = 10)
-		: cams(fr)
+	ExperimentData(std::string texName)
+		: CSpattern(texName)
 	{
+		numCameras = 0;
+
 		idxFrame = -1;
 		sElapsed = -1;
 		msRemElapsed = 0;
@@ -57,9 +62,9 @@ public:
 		ITI = 0;
 	}
 	/* Initialize the experiment */
-	bool initialize(const char* imgName);
+	bool initialize();
 	/* Prepare background image for MOG subtractor */
-	void prepareBgImg();
+	void prepareBgImg(const int prepareTime);
 	/* Run the entire operant learning procedure */
 	void runOLexp();
 	/* Update visual pattern in the baseline session */
@@ -81,6 +86,12 @@ public:
 	
 
 	// properties
+
+	// constant ones
+	const std::string CSpattern;
+	int numCameras;
+	
+
 	int idxFrame;
 	int sElapsed;
 	int msRemElapsed;

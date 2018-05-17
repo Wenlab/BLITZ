@@ -38,10 +38,32 @@
 using namespace std;
 using namespace cv;
 
-
-
 int main()
 {
+
+	string CS_Pattern = "redBlackCheckerboard";
+	ExperimentData exp(CS_Pattern);
+
+	if (!exp.initialize())
+	{
+		cout << "Experiment Initialization Failed." << endl;
+		exit(0);
+	}
+	else {
+		cout << "Experiment initialization finished." << endl;
+	}
+
+	exp.runOLexp();
+
+
+
+	/*
+	WO.writeKeyValuePair(a, "a", 0);
+	WO.writeKeyValuePair(expType, "ExpType", 0);
+	WO.writeKeyValuePair(timeStr, "ExpTime", 0);
+	WO.writeKeyValuePair(vec, "vector", 0);
+	*/
+	/*
 	const char imgName[] = "Images/redCheckerboard.jpg";
 
 	ExperimentData exp;
@@ -57,7 +79,7 @@ int main()
 		exp.screen.allAreas[0].allPatches[0].updatePattern();
 		exp.screen.renderTexture();
 	}
-
+	*/
 
 
 	/*Test screen function*/

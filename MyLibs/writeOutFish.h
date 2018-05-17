@@ -48,23 +48,66 @@ public:
 	{
 
 	}
-	bool initialize(int numCameras, int frameRate, int width, int height);
+	bool initialize(std::string contentName, int width, int height, int frameRate);
 	
+	
+	/* Write out the context information for the experiment, only once */
+	void writeExpContext(int numFiles);
+
+
+	// template functions
+	/* Write out key value pairs */
+	template <typename T>
+	void writeKeyValuePair(std::string vName, T var, int idxFile)
+	{
+		yamlVec[idxFile] << vName << var;
+	}
+	/* Write out key-value pair in a line*/
+	template <typename T>
+	void writeKeyValueInline(std::string vName, T var, int idxFile)
+	{
+		yamlVec[idxFile] << "{:" << vName << var << "}";
+	};
+
 	
 	// properties
+ 
+
+	std::string expTask;
+
+
 	std::vector<cv::FileStorage> yamlVec;
 	std::vector<cv::VideoWriter> videoVec;
 };
 
-template <typename T>
-void writeOutVarInline(cv::FileStorage fs, T var, std::string vName)
-{
-	fs << "Frame" << "[";
-	fs << "{:" << vName << var << "}";
-	fs << "]";
-};
+/* Show software description and welcome messages to user */
+void showWelcomeMsg();
+
+/* Get strain name of fish */
+std::string get_strainName(char firstChar);
+
+/* Get CS string to append to the filenames of yaml and video files */
+std::string get_CS_string(std::string CSpattern);
+
+/* Get experiment start local time */
+std::string get_current_date_time();
+
+int enquireNumCams();
+
+int enquireFishAge();
+std::string enquireExpTask();
+
+/* Ask for fish IDs in the arena */
+std::vector<std::string> enquireFishIDs(int arenaIdx);
+
+/* convert string vector to int-vector like formatted output */
+std::string strVec2str(std::vector<std::string> strVec);
 
 
+/* Case insensitive comparasion 
+Adapted from Timmmm, https://stackoverflow.com/a/4119881
+*/
+bool iequals(const std::string& a, const std::string& b);
 
 #endif // !_GUARD_WRITEOUTFISH_H
 

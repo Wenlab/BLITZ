@@ -14,6 +14,9 @@
 * Filename: talk2screen.h
 * Abstract: this file contains all function definitions
 *			used to present visual stimulus to fish
+* 
+* A great portion of code was adapted from learnopengl.com, which is a great 
+* website to learn OpenGL
 *
 * Current Version: 2.1
 * Author: Wenbin Yang <bysin7@gmail.com>
@@ -34,13 +37,13 @@
 using namespace std;
 
 
-bool PatchData::initialize(float* pos)
+bool PatchData::initialize()
 {
-	initVertices(pos);
+	initVertices();
 	return true;
 }
 
-void PatchData::initVertices(float* pos)
+void PatchData::initVertices()
 {
 	const unsigned int indices[TRIANGLES_PER_PATCH * 3] =
 	{
@@ -50,10 +53,10 @@ void PatchData::initVertices(float* pos)
 
 	float vertices[32] =
 	{	// positions (0-2)      // colors (3-5)         // texture coordinates (6-7)
-		pos[0], pos[1], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // top left
-		pos[0], pos[1] + height, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, height, // bottom left
-		pos[0] - width, pos[1] + height, 0.0f, 0.0f, 0.0f, 0.0f, width, height, // bottom right
-		pos[0] - width, pos[1], 0.0f, 0.0f, 0.0f, 0.0f, width, 0.0f // top right
+		rect[0], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // top left
+		rect[0], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, rect[3], // bottom left
+		rect[0] - rect[2], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], rect[3], // bottom right
+		rect[0] - rect[2], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], 0.0f // top right
 	};
 
 	glGenVertexArrays(1, &VAO);
@@ -84,6 +87,42 @@ void PatchData::updatePattern()
 	shader.setInt("patternIdx", pIdx);
 }
 
+bool AreaData::initialize(vector<int> yDivideVec)
+{
+	for (int i = 0; i < numPatches; i++)
+	{
+		vector<float> patchRect = rect;
+		switch (i) {
+		case 0:
+
+			break;// do nothing
+		case 1:
+		{
+			patchRect[0] -= patchRect[2] / 2; // minus half area width
+			break;
+		}
+		case 2:
+		{
+			patchRect[1] += patchRect[3] / 2;
+			break;
+		}
+		case 3:
+		{
+			patchRect[0] -= patchRect[2] / 2;
+			patchRect[1] += patchRect[3] / 2;
+			break;
+		}
+		default:;
+		}
+		patchRect[2] /= 2; // the width of patch is half of area width
+		patchRect[3] /= 2; // the height of patch is half of area width
+		PatchData patch(patchRect, yDivideVec[i]);
+		patch.initialize();
+		allPatches.push_back(patch);
+	}
+	return true;
+}
+
 void ScreenData::updatePattern()
 {
 	for (int i = 0; i < allAreas.size(); i++)
@@ -110,83 +149,17 @@ void ScreenData::updatePattern(int cIdx)
 
 }
 
-bool AreaData::initialize(const int* yDivideArr)
-{
-	for (int i = 0; i < numPatches; i++)
-	{
-		PatchData patch(width/2,height/2,yDivideArr[i]);
-		switch (i){
-			case 0: 
-				break;// do nothing
-			case 1:
-			{
-				pos[0] -= patch.width;
-				break;
-			}
-			case 2:
-			{
-				pos[1] += patch.height;
-				break;
-			}
-			case 3:
-			{
-				pos[0] -= patch.width;
-				pos[1] += patch.height;
-				break;
-			}
-			default:;
-		}
 
-		patch.initialize(pos);
-		allPatches.push_back(patch);
-	}
-	return true;
-}
-
-bool ScreenData::initGLFWenvironment()
+bool ScreenData::initialize(const char* imgName)
 {
-	/* Initialize GLFW environment */
+	/* GLFW initialize and configure */
 	if (!init_glfw_window())
 		return false;
+
+	/* glad: load all OpenGL function pointers */
 	if (!init_glad())
 		return false;
-	return true;
-}
 
-// allAreaPos is a 2D array
-bool ScreenData::initialize(const char* imgName, int numAreas)
-{
-	float areaWidth = 0.24f; // In screen coordinates
-	float areaHeight = 0.88f;
-
-	const float allAreaPos[][4] =
-	{
-		{ 0.233f, 0.470f, 0.30f, areaHeight }, // midlle arena
-		{ 0.800f, -0.680f, 0.28f, areaHeight }, // left arena
-		{ -0.760f, -0.680f, areaWidth, areaHeight } // right arena
-	};
-	const int yDivideArr[][4] = // in pixels
-	{
-		{ 894, 894, 1000, 1000 }, // middle arena
-		{ 305, 305, 400, 400 }, // left arena
-		{ 305, 305, 400, 400 } // right arena
-	};
-
-	initGLFWenvironment();
-
-	
-
-	for (int i = 0; i < numAreas; i++)
-	{
-		//const int arr[] = { 100,100,200,200 }; // array of delimY positions
-		//vector<int> delimYVec(arr, arr + sizeof(arr) / sizeof(arr[0]));
-		
-		AreaData area(allAreaPos[i],2); // make it a (x,y,width,height) list
-		area.initialize(yDivideArr[i]);
-		allAreas.push_back(area);
-	}
-
-	
 	if (!loadTextureIntoBuffers(imgName))
 		return false;
 	return true;

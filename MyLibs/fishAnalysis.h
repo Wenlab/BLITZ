@@ -36,7 +36,8 @@
 #include <vector>
 
 #define MAX_FISH_PER_ARENA 4
-
+#define X_CUT 385 // x position to separate fish 0,1 and 2,3
+#define Y_CUT 784 // y position to separate fish 0,1 and 2,3
 
 /* Define related methods and properties for a single fish */
 class FishData {
@@ -45,7 +46,10 @@ private:
 	; // nothing for now
 public:
 	// methods
-	FishData() // constructor
+	FishData(std::string fishID = "", int fishAge = 0, int yDivide = 0) // constructor
+		: ID(fishID)
+		, age(fishAge)
+		, yDiv(yDivide)
 	{
 		lastBlackoutStart = -1;
 		lastFishPatternUpdate = -1;
@@ -66,9 +70,14 @@ public:
 	*/
 	void findPosition();
 	/*Determine which side is fish's head by measuring the area of each half*/
-	bool findHeadSide(cv::Point2f* M, cv::Point2f refPt);
+	bool findHeadSide(cv::Point2f* M);
 	// properties
 
+	// const properties
+	const std::string ID;
+	const int age;
+	// TODO: assign yDivide in the initialization function
+	int yDiv; // the division pos between CS and NCS pattern
 
 	int lastBlackoutStart;
 	int lastFishPatternUpdate;
@@ -93,13 +102,11 @@ private:
 	;// nothing for now
 public:
 	// methods
-	ArenaData(int BWthre = 30, int n = 4) // constructor
+	ArenaData(int BWthre = 30, int n = 1) // constructor
+		: numFish(n)
 	{
-		xCut = 385;
-		yCut = 784;
-		numFish = n;
 		binThre = BWthre;
-		allFish.resize(numFish); // allocate memory
+		allFish.reserve(numFish); // allocate memory
 	}
 
 	/* find all fish contours in the arena at the same time
@@ -120,16 +127,14 @@ public:
 	1. Abolish fishFlag?
 	2. Consize the recursive ifs
 	*/
+	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
 	bool findAllFish(); 
 	
 								   
 	// properties
-	int xCut;
-	int yCut;
 
-	int numFish;
-	int binThre;
-	//int xCut, yCut; // the partition positions in the arena
+	const int numFish;
+	int binThre; // in the future, this might be adjusted in the GUI 
 	
 	cv::Ptr<cv::BackgroundSubtractor> pMOG; // one pMOG for one arena
 	cv::Mat opencvImg, HUDSimg, subImg;

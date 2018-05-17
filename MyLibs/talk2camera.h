@@ -51,24 +51,14 @@ private:
 	;// nothing for now
 public:
 	// methods
-	CameraData(int fr = 10) // constructor
+	CameraData() // constructor
 	{
-		numCameras = 0;
-		/* To keep following paras consistent across all cameras, initilize them here */
-		frameRate = fr;
-		height = 784;
-		width = 784;
-		//exposureTime = -1;
+	
 	}
-	bool initialize();
+	bool initialize(int nCams, int frameWidth, int frameHeight, int frameRate);
 	/* Grab Pylon image from cameras */
 	bool grabPylonImg();
 	// properties
-	int numCameras;
-
-	int height, width;
-	//int exposureTime;
-	int frameRate;
 	
 	Pylon::CDeviceInfo di[MAX_CAMERAS];
 	Pylon::CBaslerUsbInstantCameraArray cameras;
