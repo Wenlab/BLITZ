@@ -124,7 +124,7 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(const char* filename);
+	bool initialize(const char* filename, int nAreas);
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */

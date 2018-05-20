@@ -150,8 +150,10 @@ void ScreenData::updatePattern(int cIdx)
 }
 
 
-bool ScreenData::initialize(const char* imgName)
+bool ScreenData::initialize(const char* imgName, int nAreas)
 {
+	numAreas = nAreas;
+	allAreas.reserve(nAreas);
 	/* GLFW initialize and configure */
 	if (!init_glfw_window())
 		return false;

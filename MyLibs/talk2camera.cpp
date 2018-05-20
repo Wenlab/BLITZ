@@ -35,8 +35,8 @@ using namespace Pylon;
 bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int frameRate)
 {
 	const char* serialNums[MAX_CAMERAS] = { "21552672","22510229","22510230" };
-	const int offSetX[MAX_CAMERAS] = { 419, 1154, 830 };
-	const int offSetY[MAX_CAMERAS] = { 17, 165, 66 };
+	const int offSetX[MAX_CAMERAS] = { 737, 1153, 981 };
+	const int offSetY[MAX_CAMERAS] = { 107, 49, 214 };
 	Pylon::EPixelType pixelFormat = Pylon::EPixelType::PixelType_Mono8;
 
 	Pylon::PylonInitialize();
@@ -61,7 +61,7 @@ bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int
 		cameras[i].AcquisitionFrameRateEnable.SetValue(true);
 		cameras[i].AcquisitionFrameRate.SetValue(frameRate);
 		// Print the model name of the camera.
-		std::cout << "Using device " << cameras[i].GetDeviceInfo().GetSerialNumber() << std::endl;
+		std::cout << "Using camera " << cameras[i].GetDeviceInfo().GetSerialNumber() << std::endl;
 	}
 	formatConverter.OutputPixelFormat = pixelFormat;
 	cameras.StartGrabbing();

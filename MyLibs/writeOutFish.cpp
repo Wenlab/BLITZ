@@ -113,11 +113,11 @@ string get_current_date_time()
 	}
 
 	string timeStr = "2018"; // add year
-	if (timeVec[1].compare("May")) // add month
+	if (timeVec[1].compare("May")==0) // add month
 		timeStr += "05";
-	else if (timeVec[1].compare("Jun"))
+	else if (timeVec[1].compare("Jun")==0)
 		timeStr += "06";
-	else if (timeVec[1].compare("Jul"))
+	else if (timeVec[1].compare("Jul")==0)
 		timeStr += "07";
 
 	// add day, separator, to separator date and time
@@ -232,11 +232,9 @@ int enquireNumCams()
 vector<string> enquireFishIDs(int arenaIdx)
 {
 	showFishPosDiagram();
-	cout << "Enter fishIDs used in the Arena " << arenaIdx << endl;
-	cout << "Enter all fishIDs with ',' as separator. (e.g. G11, G14)" << endl;
+	cout << "Enter fishIDs used in the Arena " << arenaIdx + 1 << endl;
+	cout << "Enter all fishIDs with ',' as separator. (e.g. G11,G14)" << endl;
 
-
-	
 
 	string inputStr;
 	getline(cin, inputStr);

@@ -29,6 +29,9 @@
 // Include standard libraries
 #include <iostream>
 #include <string>
+#include <random>
+#include <iterator>
+#include <functional>
 
 
 using namespace std;
@@ -40,16 +43,23 @@ bool ExperimentData::initialize()
 	
 	const vector<vector<float>> allAreaPos =
 	{
-		{ 0.233f, 0.300f, 0.28f, 1.40f },
-		{ 0.800f, -0.850f, 0.28f, 1.40f },
-		{ -0.740f, -0.850f, 0.28f, 1.40f }
+		{  0.082f, 0.300f, 0.258f, 1.40f },
+		{  0.826f, -0.810f, 0.258f, 1.40f },
+		{ -0.665f, -0.810f, 0.258f, 1.40f }
 	};
 	// y division pos for all fish
 	vector<vector<int>> yDivs =
 	{
-		{ 383, 383, 390, 390 },
-		{ 383, 383, 390, 390 },
-		{ 383, 383, 390, 390 }
+		{ 383, 383, 384, 384 },
+		{ 383, 383, 384, 384 },
+		{ 383, 383, 384, 384 }
+	};
+
+	vector<vector<int>> yPatternDivs =
+	{
+		{886,886,900,900},
+		{305,305,350,350},
+		{305,305,350,350}
 	};
 
 	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
@@ -68,8 +78,8 @@ bool ExperimentData::initialize()
 		return false;
 	cout << endl; // separated with an empty line
 
-	cout << "Initializing the projector screen... " << endl;
-	if (!screen.initialize(imgName))
+	cout << "Initializing the projector screen ... " << endl;
+	if (!screen.initialize(imgName, numCameras))
 		return false;
 	cout << endl; // separated with an empty line
 
@@ -90,11 +100,12 @@ bool ExperimentData::initialize()
 		allArenas.push_back(arena);
 
 		// create AreaData and push it into screen.allAreas
-		int yDup = screen.mode->height * (allAreaPos[i][1] + allAreaPos[i][3] * 1 / 4);
-		int yDdown = screen.mode->height * (allAreaPos[i][1] + allAreaPos[i][3] * 3 / 4);
-		vector<int> allYDivide = { yDup, yDup, yDdown, yDdown };
+		// the screen coordinates are (-1,1)
+		//int yDup = screen.mode->height/2 * (allAreaPos[i][1] + allAreaPos[i][3] * 1 / 4 + 1);
+		//int yDdown = screen.mode->height/2 * (allAreaPos[i][1] + allAreaPos[i][3] * 3 / 4 + 1);
+		//vector<int> allYDivide = { yDup, yDup, yDdown, yDdown };
 		AreaData area(allAreaPos[i], arena.numFish);
-		area.initialize(allYDivide);
+		area.initialize(yPatternDivs[i]);
 		screen.allAreas.push_back(area);
 
 		// Append strain info to contentName
@@ -112,6 +123,7 @@ bool ExperimentData::initialize()
 		writeOut.writeKeyValuePair("FishIDs", strVec2str(fishIDs), i);
 		writeOut.writeKeyValuePair("FishAge", fishAge, i);
 		writeOut.writeKeyValuePair("FishStrain", strainName, i);
+		writeOut.writeKeyValuePair("Arena", i+1, i); // record which arena is in use
 		writeOut.writeKeyValuePair("Task", expTask, i);
 		writeOut.writeKeyValuePair("ExpStartTime", timeStr, i);
 		writeOut.writeKeyValuePair("FrameRate", FRAMERATE, i);
@@ -156,19 +168,115 @@ void ExperimentData::prepareBgImg(const int prepareTime)
 	
 }
 
-void ExperimentData::runOLexp()
+void ExperimentData::runUnpairedOLexp()
 {
+	const int prepareTime = 1 * 60; // seconnds, default 1 min
+	const int baselineEndTime = 1 * 60; // seconds, default 10 mins
+	const int trainingEndTime = 8 * 60; // seconds, default 20 mins
+	const int blackoutEndTime = 8 * 60; // seconds, default 1 min
+	const int testEndTime = 10 * 60; // seconds, default 18 mins (including memory extinction period)
+	const int expEndTime = testEndTime;
 
-	const int prepareTime = 1 * 30;
-	const int baselineEndTime = 1 * 60; // seconds
-	const int trainingEndTime = 5 * 60; // seconds
-	const int blackoutEndTime = 8 * 60; // seconds
-	const int testEndTime = 10 * 60; // seconds
-	const int expEndTime = testEndTime + 1;
+	const int numShocks = 20; // comparable to shocks fish received in the normal OLexp group
+	
+	vector<int> vec;
+	for (int i = baselineEndTime * FRAMERATE; i < trainingEndTime*FRAMERATE; i++)
+		vec.push_back(i);
+	
+	// First create an instance of an engine.
+	random_device rnd_device;
+	// Specify the engine and distribution.
+	mt19937 g(rnd_device());
+	shuffle(vec.begin(), vec.end(), g);
+	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
+	
+
 
 	prepareBgImg(prepareTime);
 
-	while (sElapsed <= expEndTime)// giant grabbing loop
+	while (idxFrame < numCameras * expEndTime * FRAMERATE)// giant grabbing loop
+	{
+		cams.grabPylonImg();
+		idxFrame++;
+		int cIdx = cams.cIdx;
+		// TODO: make the following block into function
+		/* Convert Pylon image to opencvImg */
+		Mat rawImg = Mat(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight(),
+			CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
+		rawImg.copyTo(allArenas[cIdx].opencvImg);
+		if (cIdx != 0)
+			rot90CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
+		// MOG motion tracking
+		allArenas[cIdx].pMOG->apply(allArenas[cIdx].opencvImg, allArenas[cIdx].subImg);
+
+		sElapsed = expTimer.getElapsedTimeInSec();
+		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
+		cout << "Time: " << sElapsed << " (s) " << endl;
+		if (!allArenas[cIdx].findAllFish())
+			cout << "in arena: " << cIdx << endl;
+		if (sElapsed < baselineEndTime)
+		{
+			expPhase = 0;
+			updatePatternInBaseline();
+		}
+		else if (sElapsed < trainingEndTime)
+		{
+			expPhase = 1;
+			for (int i = 0; i < allArenas[cIdx].numFish; i++)
+			{	// find certain element in the vector
+				int target = (idxFrame - cIdx) / numCameras;
+				if (find(rndVec.begin(), rndVec.end(), target) != rndVec.end())
+					giveFishShock(i);
+				else
+					allArenas[cIdx].allFish[i].shockOn = 0;
+					
+				updatePatternInTraining(i);
+			}
+		}
+		else if (sElapsed < blackoutEndTime)
+		{
+			expPhase = 2;
+			/* TODO: The following code should be done only once */
+			for (int i = 0; i < allArenas[cIdx].numFish; i++)
+			{
+				allArenas[cIdx].allFish[i].shockOn = 0;
+				allArenas[cIdx].allFish[i].patternIndex = 2;
+			}
+		}
+		else if (sElapsed <= testEndTime)
+		{
+			expPhase = 3;
+			updatePatternInTest();
+		}
+		else
+		{ // experiment ends
+		  //cout << "Experiment ended. " << endl;
+		  //exit(0);
+		}
+		screen.updatePattern();
+		screen.renderTexture();
+		writeOutFrame();
+		annotateFishImgs();
+
+		displayFishImgs("Display");
+	}
+	cout << "Experiment ended. " << endl;
+}
+
+
+void ExperimentData::runOLexp()
+{
+
+	const int prepareTime = 1 * 60; // seconnds, default 1 min
+	const int baselineEndTime = 1 * 60; // seconds, default 10 mins
+	const int trainingEndTime = 9 * 60; // seconds, default 20 mins
+	const int blackoutEndTime = 9 * 60; // seconds, default 1 min
+	const int testEndTime = 11 * 60; // seconds, default 18 mins (including memory extinction period)
+	const int expEndTime = testEndTime;
+
+	prepareBgImg(prepareTime);
+
+	while (idxFrame < numCameras * expEndTime * FRAMERATE )// giant grabbing loop
 	{
 		cams.grabPylonImg();
 		idxFrame++;
@@ -200,6 +308,8 @@ void ExperimentData::runOLexp()
 			{
 				if (ifGiveShock(i))
 					giveFishShock(i);
+				else
+					allArenas[cIdx].allFish[i].shockOn = 0;
 				updatePatternInTraining(i);
 			}
 		}
@@ -220,20 +330,17 @@ void ExperimentData::runOLexp()
 		}
 		else
 		{ // experiment ends
-			cout << "Experiment ended. " << endl;
-			exit(0);
+			//cout << "Experiment ended. " << endl;
+			//exit(0);
 		}
-		// TODO: level up the patternIdx update function to screen level
-		for (int i = 0; i < screen.allAreas[cIdx].numPatches; i++)
-		{
-			screen.allAreas[cIdx].allPatches[i].updatePattern();
-		}
+		screen.updatePattern();
 		screen.renderTexture();
 		writeOutFrame();
 		annotateFishImgs();
 		
 		displayFishImgs("Display");
 	}
+	cout << "Experiment ended. " << endl;
 }
 
 void ExperimentData::updatePatternInBaseline()
@@ -245,11 +352,14 @@ void ExperimentData::updatePatternInBaseline()
 		// uniformly choose a time from 15s to 45s
 		baselineInterval = rand() % 30 + 15;
 
-		int cIdx = cams.cIdx;
-		for (int i = 0; i < screen.allAreas[cIdx].numPatches; i++)
+		for (int i = 0; i < screen.numAreas; i++)
 		{
-			screen.allAreas[cIdx].allPatches[i].pIdx = !screen.allAreas[cIdx].allPatches[i].pIdx;
+			for (int j = 0; j < screen.allAreas[i].numPatches; j++)
+			{
+				screen.allAreas[i].allPatches[j].pIdx = !screen.allAreas[i].allPatches[j].pIdx;
+			}
 		}
+		
 
 	}
 	
@@ -318,10 +428,12 @@ void ExperimentData::updatePatternInTest()
 	{
 		cout << "Update pattern during test" << endl;
 		lastScreenPatternUpdate = sElapsed;
-		int cIdx = cams.cIdx;
-		for (int i = 0; i < screen.allAreas[cIdx].numPatches; i++)
+		for (int i = 0; i < screen.numAreas; i++)
 		{
-			screen.allAreas[cIdx].allPatches[i].pIdx = !screen.allAreas[cIdx].allPatches[i].pIdx;
+			for (int j = 0; j < screen.allAreas[i].numPatches; j++)
+			{
+				screen.allAreas[i].allPatches[j].pIdx = !screen.allAreas[i].allPatches[j].pIdx;
+			}
 		}
 	}
 }
@@ -389,7 +501,7 @@ void ExperimentData::giveFishShock(int fishIdx)
 {
 	int cIdx = cams.cIdx;
 	// give a electric pulse
-	thePort.givePulse(MAX_FISH_PER_ARENA*cIdx + fishIdx);
+	thePort.givePulse(2*cIdx + fishIdx);
 	allArenas[cIdx].allFish[fishIdx].shockOn = 1;
 	allArenas[cIdx].allFish[fishIdx].lastShockTime = sElapsed;
 }

@@ -65,6 +65,8 @@ public:
 	bool initialize();
 	/* Prepare background image for MOG subtractor */
 	void prepareBgImg(const int prepareTime);
+	/* Run unpaired training in the operant learning procedure */
+	void runUnpairedOLexp();
 	/* Run the entire operant learning procedure */
 	void runOLexp();
 	/* Update visual pattern in the baseline session */
