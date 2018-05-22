@@ -140,12 +140,11 @@ void ScreenData::updatePattern()
 void ScreenData::updatePattern(int cIdx)
 {
 	
-		AreaData area = allAreas[cIdx];
-		for (int j = 0; j < area.numPatches; j++)
-		{
-			area.allPatches[j].updatePattern();
-		}
-	
+	AreaData area = allAreas[cIdx];
+	for (int j = 0; j < area.numPatches; j++)
+	{
+		area.allPatches[j].updatePattern();
+	}	
 
 }
 

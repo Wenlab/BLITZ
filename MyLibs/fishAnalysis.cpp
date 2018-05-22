@@ -92,6 +92,7 @@ bool ArenaData::findAllFish()
 		Moments M = moments(tempContour); // to find the center
 		int x = int(M.m10 / M.m00);
 		int y = int(M.m01 / M.m00);
+		Point center = Point(x, y);
 
 		int signNum = (x - X_CUT > 0) + 2 * (y - Y_CUT > 0);
 		int qIdx = 0; // Quadrantic index
@@ -138,6 +139,7 @@ bool ArenaData::findAllFish()
 		}
 	}
 
+
 	return fishFlag;
 	
 }
@@ -147,42 +149,29 @@ bool ArenaData::findAllFish()
 */
 void FishData::findPosition()
 {
-	RotatedRect R = minAreaRect(fishContour);
-	Point2f Pts[4];
-	R.points(Pts);
-	Point2f mPts[4]; // mid points of long edges and short edges
-	if (R.size.height > R.size.width)
+	Vec4f lineVec;
+	fitLine(fishContour, lineVec, CV_DIST_L2, 0, 0.01, 0.1);
+	double stepSize = 100;
+	vector<int> endIdx = findPtsLineIntersectContour(fishContour, 
+		Point2f(lineVec[2] - stepSize * lineVec[0], lineVec[3] - stepSize * lineVec[1]), // on one side, far from the center point
+		Point2f(lineVec[2] + stepSize * lineVec[0], lineVec[3] + stepSize * lineVec[1]));// on the other side, far from the center point
+
+	Moments M = moments(fishContour); // to find the center
+	
+	center = Point(M.m10 / M.m00, M.m01 / M.m00);
+	Point EP1 = fishContour[endIdx[0]];
+	Point EP2 = fishContour[endIdx[1]];
+	if (norm(EP1 - center) < norm(EP2 - center))
 	{
-		mPts[0] = (Pts[0] + Pts[1]) / 2;   //long edge middle point
-		mPts[1] = (Pts[1] + Pts[2]) / 2;   //short edge middle point
-		mPts[2] = (Pts[2] + Pts[3]) / 2;   //long edge middle point
-		mPts[3] = (Pts[3] + Pts[0]) / 2;   //short edge middle point
+		head = EP1; tail = EP2;
 	}
 	else
 	{
-		mPts[0] = (Pts[1] + Pts[2]) / 2;   //long edge middle point
-		mPts[1] = (Pts[2] + Pts[3]) / 2;   //short edge middle point
-		mPts[2] = (Pts[3] + Pts[0]) / 2;   //long edge middle point
-		mPts[3] = (Pts[0] + Pts[1]) / 2;   //short edge middle point
+		head = EP2; tail = EP1;
 	}
-
-	if (findHeadSide(mPts))
-	{
-		int headIdx = findClosestPt(fishContour, mPts[1]);
-		head = fishContour[headIdx];
-		int tailIdx = findClosestPt(fishContour, mPts[3]);
-		tail = fishContour[tailIdx];	
-	}
-	else {
-		int headIdx = findClosestPt(fishContour, mPts[3]);
-		head = fishContour[headIdx];
-		int tailIdx = findClosestPt(fishContour, mPts[1]);
-		tail = fishContour[tailIdx];
-	}
-	Moments Mom = moments(fishContour);
-	center = Point(Mom.m10 / Mom.m00, Mom.m01 / Mom.m00);
-	Point T2H = head - tail; // tail to head
+	Point T2H = head - tail; // tail to head, only applied to small fish
 	headingAngle = atan2(T2H.y, T2H.x) * 180 / PI;
+	
 }
 
 /*
@@ -262,7 +251,7 @@ vector<int> findPtsLineIntersectContour(vector<Point>& contour, Point2f A, Point
 	Point2f curPt; // current point
 	vector<Point> ptList; // store potential intersection points
 	vector<int> idxList; // store indices of potential intersection points
-	double distThre = 2.0; // threshold to decide whether it is an intersection pt
+	double distThre = 1.0; // threshold to decide whether it is an intersection pt
 	for (int i = 0; i < contour.size(); i++)
 	{
 		curPt = contour[i];
