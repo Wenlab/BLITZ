@@ -37,7 +37,6 @@
 using namespace std;
 using namespace cv;
 
-
 bool ExperimentData::initialize()
 {
 	
@@ -78,7 +77,7 @@ bool ExperimentData::initialize()
 		return false;
 	cout << endl; // separated with an empty line
 
-	cout << "Initializing the projector screen ... " << endl;
+	cout << "Initializing the projector screen .. " << endl;
 	if (!screen.initialize(imgName, numCameras))
 		return false;
 	cout << endl; // separated with an empty line
@@ -131,8 +130,6 @@ bool ExperimentData::initialize()
 		writeOut.writeKeyValuePair("xCut", X_CUT, i);
 		writeOut.writeKeyValuePair("yCut", Y_CUT, i);
 		writeOut.writeKeyValuePair("yDivide", yDivs[i], i);
-
-
 
 
 	}
