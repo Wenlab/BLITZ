@@ -50,36 +50,15 @@ int main()
 		exit(0);
 	}
 	else {
-		cout << "Experiment initialization finished." << endl;
+		cout << "Experiment initialized." << endl;
 	}
 
 	exp.runOLexp();
 
 
 
-	/*
-	WO.writeKeyValuePair(a, "a", 0);
-	WO.writeKeyValuePair(expType, "ExpType", 0);
-	WO.writeKeyValuePair(timeStr, "ExpTime", 0);
-	WO.writeKeyValuePair(vec, "vector", 0);
-	*/
-	/*
-	const char imgName[] = "Images/redCheckerboard.jpg";
-
-	ExperimentData exp;
-
-	exp.initialize(imgName);
-
-	while (1)
-	{
-		int timeInSec = exp.expTimer.getElapsedTimeInSec();
-		cout << "Time (s) : " << timeInSec << endl;
-		if (timeInSec % 10 == 0)
-			exp.screen.allAreas[0].allPatches[0].pIdx = !exp.screen.allAreas[0].allPatches[0].pIdx;
-		exp.screen.allAreas[0].allPatches[0].updatePattern();
-		exp.screen.renderTexture();
-	}
-	*/
+	
+	
 
 
 	/*Test screen function*/
