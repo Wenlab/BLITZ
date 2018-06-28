@@ -38,6 +38,6 @@ Please contact Wenbin Yang, bysin7 (at) gmail (dot) com with questions or feedba
 Step by step install With Visual Studio 2017 for Windows 7 64 Bit
 -----------------------------------------------------------------
 * Install OpenCV
-* Install OpenGL
+* Install OpenGL with GLFW3.0
 * Install Balser Pylon 5
 * To be continued...
