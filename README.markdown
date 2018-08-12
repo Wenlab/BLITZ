@@ -33,7 +33,7 @@ Contact
 Please contact Wenbin Yang, bysin7 (at) gmail (dot) com with questions or feedback.
 
 
-Step by step install With Visual Studio 2017 for Windows 7 64 Bit
+Step by step install With Visual Studio 2017 for Windows 7/10 64 Bit
 -----------------------------------------------------------------
 * Install OpenCV 3.0 or later
 * Install OpenGL with GLFW3.0
