@@ -36,7 +36,7 @@ Please contact Wenbin Yang, bysin7 (at) gmail (dot) com with questions or feedba
 Step by step install With Visual Studio 2017 for Windows 7/10 64 Bit
 -----------------------------------------------------------------
 * Install OpenCV 3.0 or later
-* Install OpenGL with GLFW3.0
+* Install OpenGL with GLFW3.0; (Check [this great website](https://learnopengl.com/) for more details.)
 * Install Balser Pylon 5
 * Clone the repository to a new empty c++ project in VS2017
 * At the project Property Pages, Set "Character Set" -> "Use UniCode Character Set" and configure all libs and includes with OpenCV, OpenGL and Pylon 5. (More details at their official websites.)
