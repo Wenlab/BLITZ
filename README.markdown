@@ -40,9 +40,8 @@ Step by step install With Visual Studio 2017 for Windows 7/10 64 Bit
     Other two processes are similar to this one.
 * Install OpenGL with GLFW3.0 or later
   * Follow the tutorial in [this website](https://learnopengl.com/). Do not forget to install GLAD after installation of GLFW. It won't     cost you too much time.
-  * tips: the glad.c file is decided by your OpenGL version and something else, so the glad.c file which in the repository may not           match your case. Remember to replace it with your own file. It is important!! 
-* Install Basler Pylon 5
-  * After Pylon 5 installation, if your computer doesn't configure it for you auotmaticly. Check this [link](https://www.baslerweb.com/fp-1476182890/media/downloads/documents/application_notes/AW00136801000_Getting_Started_with_pylon5_and_OpenCV.pdf) to get started with         OpenCV and pylon.
+  * tips: Download the correct glad.c based on your OpenGL version from [this website](https://glad.dav1d.de/) and replace the original     glad.c file. More details are provided in the tutorial. 
+* Install Basler Pylon 5 and configure the VS with this [tutorial](https://www.baslerweb.com/fp-1476182890/media/downloads/documents/application_notes/AW00136801000_Getting_Started_with_pylon5_and_OpenCV.pdf) to get started with         OpenCV and pylon.
 * Clone the repository to a new empty c++ project in VS2017
 * At the project Property Pages, Set "Character Set" -> "Use UniCode Character Set" and configure all libs and includes with OpenCV, OpenGL and Pylon 5. 
 * Then build and run, you are all set.
