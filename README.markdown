@@ -39,7 +39,7 @@ Step by step install With Visual Studio 2017 for Windows 7/10 64 Bit
   * If you configure all libs and includes with OpenCV successfully, installation of OpenGL and Pylon 5 will be very easy for you.
     Other two processes are similar to this one.
 * Install OpenGL with GLFW3.0 or later
-  * Follow the tutorial in [this website](https://learnopengl.com/). Do not forget installing GLAD after installation of GLFW. It won't     cost you too much time.
+  * Follow the tutorial in [this website](https://learnopengl.com/). Do not forget to install GLAD after installation of GLFW. It won't     cost you too much time.
   * tips: You can download Windows pre-compiled binaries as an alternative. Click "64-bit Windows binaries" to download it. 
 * Install Balser Pylon 5
   * Click [here](https://www.baslerweb.com/en/sales-support/downloads/software-downloads/) and download pylon Camera Software Suite.
