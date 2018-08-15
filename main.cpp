@@ -41,8 +41,10 @@ using namespace cv;
 int main()
 {
 
-	string CS_Pattern = "redBlackCheckerboard";
+        string CS_Pattern = "redBlackCheckerboard";
 	ExperimentData exp(CS_Pattern);
+        exp.cap.open("exp.avi");
+	
 
 	if (!exp.initialize())
 	{
@@ -54,8 +56,6 @@ int main()
 	}
 
 	exp.runOLexp();
-
-
 
 	
 	
