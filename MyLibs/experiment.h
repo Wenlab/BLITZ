@@ -33,7 +33,6 @@
 #include "talk2relay.h"
 #include "talk2screen.h"
 #include "writeOutFish.h"
-
 // User-defined macros
 #define COM_NUM 4
 #define WIDTH 784 // frame width for all cameras and video files
@@ -51,7 +50,7 @@ public:
 	ExperimentData(std::string texName)
 		: CSpattern(texName)
 	{
-		numCameras = 0;
+		numCameras = 1;
 
 		idxFrame = -1;
 		sElapsed = -1;
@@ -87,6 +86,9 @@ public:
 	void displayFishImgs(std::string title);
 	
 
+	//my function
+	void ConvertPylonToOpencv(cv::Mat rawImg, int cIdx);
+
 	// properties
 
 	// constant ones
@@ -112,15 +114,11 @@ public:
 	PortData thePort;
 	WriteOutData writeOut;
 
+	cv::VideoCapture cap;
+
+
+
 };
-
-
-
-
-
-
-
-
 
 
 #endif _GUARD_EXPERIMENT_H
