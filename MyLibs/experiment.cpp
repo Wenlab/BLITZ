@@ -38,9 +38,13 @@ using namespace std;
 using namespace cv;
 
 bool ExperimentData::initialize()
+//bool布尔型变量，只有true & false
+//初始化函数
 {
 	
 	const vector<vector<float>> allAreaPos =
+		//向量容器的元素是浮点型向量，类似于数组的数组
+		//具体数值的选取原则尚不清楚
 	{
 		{  0.082f, 0.300f, 0.258f, 1.40f },
 		{  0.826f, -0.810f, 0.258f, 1.40f },
@@ -63,29 +67,36 @@ bool ExperimentData::initialize()
 
 	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
 	string imgFolderPath = "Images/";
-
+	//图像路径
 
 	showWelcomeMsg();
-
+	//这个函数的作用仅仅是打印几行字出来
 	string imgStr = imgFolderPath + CSpattern + ".jpg";
 	const char* imgName = imgStr.c_str();
 	string CSstr = get_CS_string(CSpattern);
 	string timeStr = get_current_date_time();
-
+	//当前的时间用字符串表示
 	numCameras = enquireNumCams();
-	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
-		return false;
-	cout << endl; // separated with an empty line
+	//摄像头的数量
 
-	cout << "Initializing the projector screen .. " << endl;
-	if (!screen.initialize(imgName, numCameras))
-		return false;
-	cout << endl; // separated with an empty line
+
+	//相机不进行初始化，目前不知道这会有什么影响
+	//if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
+	//	return false;
+	//cout << endl; // separated with an empty line
+
+	
+	
+	//这个初始化是干嘛的看不懂
+	//cout << "Initializing the projector screen .. " << endl;
+	//if (!screen.initialize(imgName, numCameras))
+	//	return false;
+	//cout << endl; // separated with an empty line
 
 	/* Initialize the serial port */
-	if (!thePort.initialize(COM_NUM))
-		return false;
-	cout << endl; // separated with an empty line
+	//if (!thePort.initialize(COM_NUM))
+	//	return false;
+	//cout << endl; // separated with an empty line
 
 	int fishAge = enquireFishAge();
 	string expTask = enquireExpTask();
@@ -94,7 +105,14 @@ bool ExperimentData::initialize()
 	{
 		// create ArenaData and push it into exp.allArenas
 		vector<string> fishIDs = enquireFishIDs(i);
+		//enquireFishIDs  不知道这是在干嘛
+
+
+
+		//do not know the meaning of fishIDs ????
 		ArenaData arena(binThreList[i], fishIDs.size());
+		//这一行也搞不懂是在干什么
+		//看起来像是要阈值化处理？？  
 		arena.initialize(fishIDs, fishAge, yDivs[i]);
 		allArenas.push_back(arena);
 
@@ -103,9 +121,9 @@ bool ExperimentData::initialize()
 		//int yDup = screen.mode->height/2 * (allAreaPos[i][1] + allAreaPos[i][3] * 1 / 4 + 1);
 		//int yDdown = screen.mode->height/2 * (allAreaPos[i][1] + allAreaPos[i][3] * 3 / 4 + 1);
 		//vector<int> allYDivide = { yDup, yDup, yDdown, yDdown };
-		AreaData area(allAreaPos[i], arena.numFish);
+		/*AreaData area(allAreaPos[i], arena.numFish);
 		area.initialize(yPatternDivs[i]);
-		screen.allAreas.push_back(area);
+		screen.allAreas.push_back(area);*/
 
 		// Append strain info to contentName
 		string strainName = get_strainName(fishIDs[0][0]);
@@ -113,23 +131,23 @@ bool ExperimentData::initialize()
 			+ "_" + strainName + "_" + to_string(fishAge)
 			+ "dpf_" + expTask + "_" + CSstr;
 
-		/* Create yaml and video files to write in */
-		if (!writeOut.initialize(contentName, WIDTH, HEIGHT, FRAMERATE))
-			return false;
+		///* Create yaml and video files to write in */
+		//if (!writeOut.initialize(contentName, WIDTH, HEIGHT, FRAMERATE))
+		//	return false;
 
 		/* Write out general experiment context info */
 			
-		writeOut.writeKeyValuePair("FishIDs", strVec2str(fishIDs), i);
-		writeOut.writeKeyValuePair("FishAge", fishAge, i);
-		writeOut.writeKeyValuePair("FishStrain", strainName, i);
-		writeOut.writeKeyValuePair("Arena", i+1, i); // record which arena is in use
-		writeOut.writeKeyValuePair("Task", expTask, i);
-		writeOut.writeKeyValuePair("ExpStartTime", timeStr, i);
-		writeOut.writeKeyValuePair("FrameRate", FRAMERATE, i);
-		writeOut.writeKeyValuePair("FrameSize", Size(WIDTH, HEIGHT), i);
-		writeOut.writeKeyValuePair("xCut", X_CUT, i);
-		writeOut.writeKeyValuePair("yCut", Y_CUT, i);
-		writeOut.writeKeyValuePair("yDivide", yDivs[i], i);
+		//writeOut.writeKeyValuePair("FishIDs", strVec2str(fishIDs), i);
+		//writeOut.writeKeyValuePair("FishAge", fishAge, i);
+		//writeOut.writeKeyValuePair("FishStrain", strainName, i);
+		//writeOut.writeKeyValuePair("Arena", i+1, i); // record which arena is in use
+		//writeOut.writeKeyValuePair("Task", expTask, i);
+		//writeOut.writeKeyValuePair("ExpStartTime", timeStr, i);
+		//writeOut.writeKeyValuePair("FrameRate", FRAMERATE, i);
+		//writeOut.writeKeyValuePair("FrameSize", Size(WIDTH, HEIGHT), i);
+		//writeOut.writeKeyValuePair("xCut", X_CUT, i);
+		//writeOut.writeKeyValuePair("yCut", Y_CUT, i);
+		//writeOut.writeKeyValuePair("yDivide", yDivs[i], i);
 
 
 	}
@@ -138,33 +156,49 @@ bool ExperimentData::initialize()
 	return true;
 }
 
-void ExperimentData::prepareBgImg(const int prepareTime)
-{
-	
-	while (expTimer.getElapsedTimeInSec() < prepareTime)
-	{
-		cams.grabPylonImg();
-		int timeInSec = expTimer.getElapsedTimeInSec();
-		// Display progress message in the command window
-		cout << "Preparing... " << timeInSec << " in " << to_string(prepareTime) << " s" << endl;
-
-		int cIdx = cams.cIdx;
-
-		/* Convert Pylon image to opencvImg */
-		Mat rawImg = Mat(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight(),
-			CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
-		rawImg.copyTo(allArenas[cIdx].opencvImg);
-		if (cIdx != 0)
-			rot90CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
-		allArenas[cIdx].pMOG->apply(allArenas[cIdx].opencvImg, allArenas[cIdx].subImg);
-		screen.renderTexture();
+void ExperimentData::ConvertPylonToOpencv(Mat rawImg, int cIdx) {
+	rawImg.copyTo(allArenas[cIdx].opencvImg);
+	if (cIdx != 0) {
+		//图像顺时针旋转90°
+		rot90CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
 	}
-		
-	expTimer.start(); // reset timer to 0
-	
-	
+	allArenas[cIdx].pMOG->apply(allArenas[cIdx].opencvImg, allArenas[cIdx].subImg);
 }
 
+void ExperimentData::prepareBgImg(const int prepareTime)
+{
+	while (expTimer.getElapsedTimeInSec() < prepareTime)
+	{
+
+		//cams.grabPylonImg();
+		//从相机中获取图像
+		int timeInSec = expTimer.getElapsedTimeInSec();         //以下这三行没有实质性作用
+		// Display progress message in the command window                                                          
+		cout << "Preparing... " << timeInSec << " in " << to_string(prepareTime) << " s" << endl;
+
+		//int cIdx = cams.cIdx;
+		int cIdx = 0;
+
+		/* Convert Pylon image to opencvImg */
+		/*Mat rawImg = Mat(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight(),
+			CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());*/
+		Mat rawImg;
+
+		cap>>rawImg;
+		ConvertPylonToOpencv(rawImg, cIdx);
+		imshow("cap", rawImg);
+		waitKey(10);
+		imshow("opencv", allArenas[cIdx].opencvImg);
+		waitKey(10);
+		imshow("subImg", allArenas[cIdx].subImg);
+		waitKey(10);
+		//pMOG 是BackgroundSubtractor类型指针，与背景分割MOG算法有关
+		//screen.renderTexture();
+		
+	}
+	expTimer.start(); // reset timer to 0
+	destroyAllWindows();
+}
 void ExperimentData::runUnpairedOLexp()
 {
 	const int prepareTime = 1 * 60; // seconnds, default 1 min
@@ -181,14 +215,12 @@ void ExperimentData::runUnpairedOLexp()
 		vec.push_back(i);
 	
 	// First create an instance of an engine.
-	random_device rnd_device;
+	random_device rnd_device;   //随机数生成器（随机数引擎的种子）
 	// Specify the engine and distribution.
-	mt19937 g(rnd_device());
-	shuffle(vec.begin(), vec.end(), g);
+	mt19937 g(rnd_device());      //调用种子生成随机数分布
+	shuffle(vec.begin(), vec.end(), g);    //随机排列向量容器内的数
 	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
-	
-
-
+	//rndVec这个容器内复制vec的前numShocks的数据
 	prepareBgImg(prepareTime);
 
 	while (idxFrame < numCameras * expEndTime * FRAMERATE)// giant grabbing loop
@@ -205,7 +237,6 @@ void ExperimentData::runUnpairedOLexp()
 			rot90CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
 		// MOG motion tracking
 		allArenas[cIdx].pMOG->apply(allArenas[cIdx].opencvImg, allArenas[cIdx].subImg);
-
 		sElapsed = expTimer.getElapsedTimeInSec();
 		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 		cout << "Time: " << sElapsed << " (s) " << endl;
@@ -226,7 +257,6 @@ void ExperimentData::runUnpairedOLexp()
 					giveFishShock(i);
 				else
 					allArenas[cIdx].allFish[i].shockOn = 0;
-					
 				updatePatternInTraining(i);
 			}
 		}
@@ -263,78 +293,90 @@ void ExperimentData::runUnpairedOLexp()
 
 void ExperimentData::runOLexp()
 {
-
-	const int prepareTime = 1 * 60; // seconnds, default 1 min
+	//准备时间
+	const int prepareTime = 1 * 60; // seconnds, default 1 min   
+	//只放格子背景的时间
 	const int baselineEndTime = 1 * 60; // seconds, default 10 mins
+	//电击训练时间
 	const int trainingEndTime = 9 * 60; // seconds, default 20 mins
+	//遮光时间
 	const int blackoutEndTime = 9 * 60; // seconds, default 1 min
+	//测试时间
 	const int testEndTime = 11 * 60; // seconds, default 18 mins (including memory extinction period)
+	//实验结束时间与训练结束时间一致
 	const int expEndTime = testEndTime;
 
-	prepareBgImg(prepareTime);
-
+	//准备MOG tracking的背景
+	prepareBgImg(5);
+	
 	while (idxFrame < numCameras * expEndTime * FRAMERATE )// giant grabbing loop
 	{
-		cams.grabPylonImg();
+		//获取摄像头图片
+		
+		//cams.grabPylonImg();
+		
+		//计数器 +1，最开始从-1开始的
 		idxFrame++;
-		int cIdx = cams.cIdx;
+		
+		//int cIdx = cams.cIdx;           //对应上摄像头编号
+		int cIdx = 0;
+
+
 		// TODO: make the following block into function
 		/* Convert Pylon image to opencvImg */
-		Mat rawImg = Mat(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight(),
-			CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
-		rawImg.copyTo(allArenas[cIdx].opencvImg);
-		if (cIdx != 0)
-			rot90CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
-		// MOG motion tracking
-		allArenas[cIdx].pMOG->apply(allArenas[cIdx].opencvImg, allArenas[cIdx].subImg);
-
-		sElapsed = expTimer.getElapsedTimeInSec();
-		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
+		/*Mat rawImg = Mat(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight(),
+			CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());*/
+		Mat rawImg;
+		ConvertPylonToOpencv(rawImg, cIdx);
+		
+		sElapsed = expTimer.getElapsedTimeInSec();                  //不懂，看样子跟读时间有关，
+		                                                            //在前面的prepareBgImg函数结束处是Timer.start
+		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;        //不懂
 		cout << "Time: " << sElapsed << " (s) " << endl;
+
 		if (!allArenas[cIdx].findAllFish())
 			cout << "in arena: " << cIdx << endl;
-		if (sElapsed < baselineEndTime)
-		{
-			expPhase = 0;
-			updatePatternInBaseline();
-		}
-		else if (sElapsed < trainingEndTime)
-		{
-			expPhase = 1;
-			for (int i = 0; i < allArenas[cIdx].numFish; i++)
-			{
-				if (ifGiveShock(i))
-					giveFishShock(i);
-				else
-					allArenas[cIdx].allFish[i].shockOn = 0;
-				updatePatternInTraining(i);
-			}
-		}
-		else if (sElapsed < blackoutEndTime)
-		{
-			expPhase = 2;
-			/* TODO: The following code should be done only once */
-			for (int i = 0; i < allArenas[cIdx].numFish; i++)
-			{
-				allArenas[cIdx].allFish[i].shockOn = 0;
-				allArenas[cIdx].allFish[i].patternIndex = 2;
-			}			
-		}
-		else if (sElapsed <= testEndTime)
-		{
-			expPhase = 3;
-			updatePatternInTest();
-		}
-		else
-		{ // experiment ends
-			//cout << "Experiment ended. " << endl;
-			//exit(0);
-		}
-		screen.updatePattern();
-		screen.renderTexture();
-		writeOutFrame();
-		annotateFishImgs();
-		
+		//if (sElapsed < baselineEndTime)
+		//{
+		//	expPhase = 0;                               //baseline = 0, training = 1, blackout = 2, test = 3
+		//	updatePatternInBaseline();                  //更新下面的表格分布
+		//}
+		//else if (sElapsed < trainingEndTime)
+		//{
+		//	expPhase = 1;
+		//	for (int i = 0; i < allArenas[cIdx].numFish; i++)
+		//	{
+		//		if (ifGiveShock(i))
+		//			giveFishShock(i);
+		//		else
+		//			allArenas[cIdx].allFish[i].shockOn = 0;
+		//		updatePatternInTraining(i);
+		//	}
+		//}
+		//else if (sElapsed < blackoutEndTime)
+		//{
+		//	expPhase = 2;
+		//	/* TODO: The following code should be done only once */
+		//	for (int i = 0; i < allArenas[cIdx].numFish; i++)
+		//	{
+		//		allArenas[cIdx].allFish[i].shockOn = 0;
+		//		allArenas[cIdx].allFish[i].patternIndex = 2;     //这个不懂是啥
+		//	}			
+		//}
+		//else if (sElapsed <= testEndTime)
+		//{
+		//	expPhase = 3;
+		//	updatePatternInTest();
+		//}
+		//else
+		//{ // experiment ends
+		//	//cout << "Experiment ended. " << endl;
+		//	//exit(0);
+		//}
+		//screen.updatePattern();           //下面这四行搞不懂，看样子是展示给用户看的
+		//screen.renderTexture();
+		//writeOutFrame();
+		//annotateFishImgs();
 		displayFishImgs("Display");
 	}
 	cout << "Experiment ended. " << endl;
@@ -651,8 +693,6 @@ void ExperimentData::annotateFishImgs()
 				continue;
 			circle(allArenas[i].opencvImg, head, 5, Scalar(255), 2);
 			circle(allArenas[i].opencvImg, allArenas[i].allFish[j].tail, 3, Scalar(255), 2);
-
-			
 
 		}
 	}
