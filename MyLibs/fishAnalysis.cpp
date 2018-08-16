@@ -226,7 +226,7 @@ void ArenaData::BlackoutExp() {
 	for (int i = 0; i < numFish; i++)
 	{
 	    allFish[i].shockOn = 0;
-		allFish[i].patternIndex = 2;     
+	    allFish[i].patternIndex = 2;     
 	}
 }
 
