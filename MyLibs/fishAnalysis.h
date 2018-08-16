@@ -32,8 +32,6 @@
 #include <opencv2/video/video.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <pylon/PylonIncludes.h>
-#include <pylon/ImageFormatConverter.h>
 
 // Include standard libraries
 #include <vector>
@@ -132,7 +130,7 @@ public:
 	*/
 	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
 	bool findAllFish(); 
-	void prepareBgImg(int width,int height,int cIdx, Pylon::CPylonImage pylonImg);						   
+	void prepareBgImg(int width,int height,int cIdx, uint8_t* buffer);						   
 	// properties
 
 	const int numFish;
