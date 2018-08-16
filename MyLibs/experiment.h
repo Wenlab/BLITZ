@@ -77,7 +77,10 @@ public:
 	/* Decide whether to give shock to the fish */
 	bool ifGiveShock(int fishIdx);
 	/* Give the fish a electric pulse */
-	void giveFishShock(int fishIdx);
+	void giveFishShock(int fishIdx, int flag);
+	
+	void TrainingExp(int cIdx);
+	
 	/* Write out info of a frame to disk */
 	void writeOutFrame();
 	/* Decorate images with fish's heads, tails and visual pattern's info */
