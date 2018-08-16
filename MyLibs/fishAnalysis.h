@@ -129,7 +129,6 @@ public:
 	*/
 	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
 	bool findAllFish(); 
-	
 								   
 	// properties
 
