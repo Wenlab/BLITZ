@@ -130,9 +130,10 @@ public:
 	*/
 	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
 	bool findAllFish(); 
-	void prepareBgImg(int width,int height,int cIdx, uint8_t* buffer);						   
+	void prepareBgImg(int width,int height,int cIdx, uint8_t* buffer);	
+	void BlackoutExp();
 	// properties
-
+ 
 	const int numFish;
 	int binThre; // in the future, this might be adjusted in the GUI 
 	
