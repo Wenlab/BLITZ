@@ -211,6 +211,17 @@ bool FishData::findHeadSide(Point2f* M)
 	return areas[aIdx] > areas[!aIdx];
 }
 
+void ArenaData::prepareBgImg(CameraData cams) {
+	Mat rawImg = Mat(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight(),
+		CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
+	rawImg.copyTo(opencvImg);
+	if (cams.cIdx != 0) {
+		//图像顺时针旋转90°
+		rot90CW(opencvImg, opencvImg);
+	}
+	pMOG->apply(opencvImg,subImg);
+}
+
 /*Find the closest point on the contour to the reference point, return the index findClosestPt*/
 int findClosestPt(vector<Point>& contour, Point point)
 {
