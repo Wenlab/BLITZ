@@ -286,14 +286,7 @@ void ExperimentData::runOLexp()
 		else if (sElapsed < trainingEndTime)
 		{
 			expPhase = 1;
-			for (int i = 0; i < allArenas[cIdx].numFish; i++)
-			{
-				if (ifGiveShock(i))
-					giveFishShock(i);
-				else
-					allArenas[cIdx].allFish[i].shockOn = 0;
-				updatePatternInTraining(i);
-			}
+			TrainingExp(cIdx);
 		}
 		else if (sElapsed < blackoutEndTime)
 		{
@@ -475,15 +468,24 @@ bool ExperimentData::ifGiveShock(int fishIdx)
 
 }
 
-void ExperimentData::giveFishShock(int fishIdx)
+void ExperimentData::giveFishShock(int fishIdx, int flag)
 {
 	int cIdx = cams.cIdx;
+	allArenas[cIdx].allFish[fishIdx].shockOn = flag;
+	if (!flag)
+		return;
 	// give a electric pulse
 	thePort.givePulse(2*cIdx + fishIdx);
-	allArenas[cIdx].allFish[fishIdx].shockOn = 1;
 	allArenas[cIdx].allFish[fishIdx].lastShockTime = sElapsed;
 }
 
+void ExperimentData::TrainingExp(int cIdx) {
+	for (int i = 0; i < allArenas[cIdx].numFish; i++)
+	{
+		giveFishShock(i, ifGiveShock(i));
+		updatePatternInTraining(i);
+	}
+}
 
 void ExperimentData::writeOutFrame()
 {
