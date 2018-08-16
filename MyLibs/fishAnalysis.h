@@ -129,7 +129,7 @@ public:
 	*/
 	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
 	bool findAllFish(); 
-	void prepareBgImg(CameraData cams);							   
+	void prepareBgImg(int width,int height,int cIdx, Pylon::CPylonImage pylonImg);						   
 	// properties
 
 	const int numFish;
