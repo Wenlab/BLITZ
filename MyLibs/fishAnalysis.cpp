@@ -211,11 +211,11 @@ bool FishData::findHeadSide(Point2f* M)
 	return areas[aIdx] > areas[!aIdx];
 }
 
-void ArenaData::prepareBgImg(CameraData cams) {
-	Mat rawImg = Mat(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight(),
-		CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
+void ArenaData::prepareBgImg(int width,int height,int cIdx, Pylon::CPylonImage pylonImg) {
+	Mat rawImg = Mat(width, height,
+		CV_8UC1, (uint8_t*)pylonImg.GetBuffer());
 	rawImg.copyTo(opencvImg);
-	if (cams.cIdx != 0) {
+	if (cIdx != 0) {
 		//图像顺时针旋转90°
 		rot90CW(opencvImg, opencvImg);
 	}
