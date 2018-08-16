@@ -150,12 +150,8 @@ void ExperimentData::prepareBgImg(const int prepareTime)
 		int cIdx = cams.cIdx;
 
 		/* Convert Pylon image to opencvImg */
-		Mat rawImg = Mat(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight(),
-			CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
-		rawImg.copyTo(allArenas[cIdx].opencvImg);
-		if (cIdx != 0)
-			rot90CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
-		allArenas[cIdx].pMOG->apply(allArenas[cIdx].opencvImg, allArenas[cIdx].subImg);
+		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
+			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
 		screen.renderTexture();
 	}
 		
@@ -195,16 +191,11 @@ void ExperimentData::runUnpairedOLexp()
 		cams.grabPylonImg();
 		idxFrame++;
 		int cIdx = cams.cIdx;
-		// TODO: make the following block into function
+		
 		/* Convert Pylon image to opencvImg */
-		Mat rawImg = Mat(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight(),
-			CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
-		rawImg.copyTo(allArenas[cIdx].opencvImg);
-		if (cIdx != 0)
-			rot90CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
-		// MOG motion tracking
-		allArenas[cIdx].pMOG->apply(allArenas[cIdx].opencvImg, allArenas[cIdx].subImg);
-
+		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
+			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
+		
 		sElapsed = expTimer.getElapsedTimeInSec();
 		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 		cout << "Time: " << sElapsed << " (s) " << endl;
@@ -277,16 +268,11 @@ void ExperimentData::runOLexp()
 		cams.grabPylonImg();
 		idxFrame++;
 		int cIdx = cams.cIdx;
-		// TODO: make the following block into function
+		
 		/* Convert Pylon image to opencvImg */
-		Mat rawImg = Mat(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight(),
-			CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
-		rawImg.copyTo(allArenas[cIdx].opencvImg);
-		if (cIdx != 0)
-			rot90CW(allArenas[cIdx].opencvImg, allArenas[cIdx].opencvImg);
-		// MOG motion tracking
-		allArenas[cIdx].pMOG->apply(allArenas[cIdx].opencvImg, allArenas[cIdx].subImg);
-
+		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
+			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
+		
 		sElapsed = expTimer.getElapsedTimeInSec();
 		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 		cout << "Time: " << sElapsed << " (s) " << endl;
@@ -313,11 +299,7 @@ void ExperimentData::runOLexp()
 		{
 			expPhase = 2;
 			/* TODO: The following code should be done only once */
-			for (int i = 0; i < allArenas[cIdx].numFish; i++)
-			{
-				allArenas[cIdx].allFish[i].shockOn = 0;
-				allArenas[cIdx].allFish[i].patternIndex = 2;
-			}			
+			allArenas[cIdx].BlackoutExp();	
 		}
 		else if (sElapsed <= testEndTime)
 		{
