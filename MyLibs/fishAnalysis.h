@@ -31,7 +31,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/video/video.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
+#include "talk2camera.h"              
 // Include standard libraries
 #include <vector>
 
@@ -129,7 +129,7 @@ public:
 	*/
 	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
 	bool findAllFish(); 
-								   
+	void prepareBgImg(CameraData cams);							   
 	// properties
 
 	const int numFish;
