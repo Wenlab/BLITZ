@@ -31,7 +31,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/video/video.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include "talk2camera.h"              
+
+#include <pylon/PylonIncludes.h>
+#include <pylon/ImageFormatConverter.h>
+
 // Include standard libraries
 #include <vector>
 
