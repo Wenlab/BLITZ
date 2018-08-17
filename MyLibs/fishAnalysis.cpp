@@ -350,11 +350,8 @@ vector<int> findPtsLineIntersectContour(vector<Point>& contour, Point2f A, Point
 }
 
 void rot90CW(Mat src, Mat dst)
-//运行结果是将src顺时针旋转90°存储到dst中
 {
 	Mat temp;
 	flip(src, temp, 0);
-	//图像上下反转
 	transpose(temp, dst);
-	//矩阵转置
 }
