@@ -262,7 +262,6 @@ void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
 	Mat rawImg = Mat(width, height,CV_8UC1, buffer);
 	rawImg.copyTo(opencvImg);
 	if (cIdx != 0) {
-		//图像顺时针旋转90°
 		rot90CW(opencvImg, opencvImg);
 	}
 	pMOG->apply(opencvImg, subImg);
