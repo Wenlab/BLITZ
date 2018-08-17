@@ -38,13 +38,9 @@ using namespace std;
 using namespace cv;
 
 bool ExperimentData::initialize()
-//bool布尔型变量，只有true & false
-//初始化函数
 {
 	
 	const vector<vector<float>> allAreaPos =
-		//向量容器的元素是浮点型向量，类似于数组的数组
-		//具体数值的选取原则尚不清楚
 	{
 		{  0.082f, 0.300f, 0.258f, 1.40f },
 		{  0.826f, -0.810f, 0.258f, 1.40f },
@@ -67,17 +63,13 @@ bool ExperimentData::initialize()
 
 	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
 	string imgFolderPath = "Images/";
-	//图像路径
 
 	showWelcomeMsg();
-	//这个函数的作用仅仅是打印几行字出来
 	string imgStr = imgFolderPath + CSpattern + ".jpg";
 	const char* imgName = imgStr.c_str();
 	string CSstr = get_CS_string(CSpattern);
 	string timeStr = get_current_date_time();
-	//当前的时间用字符串表示
 	numCameras = enquireNumCams();
-	//摄像头的数量
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
 		return false;
 	cout << endl; // separated with an empty line
@@ -101,16 +93,13 @@ bool ExperimentData::initialize()
 		vector<string> fishIDs = enquireFishIDs(i);
 
 		ArenaData arena(binThreList[i], fishIDs.size());
-		//这一行也搞不懂是在干什么
-		//**********这一行要好好看看************
-        //看起来像是要阈值化处理？？
 
 		arena.initialize(fishIDs, fishAge, yDivs[i]);
 		allArenas.push_back(arena);
 
 		// create AreaData and push it into screen.allAreas
 		// the screen coordinates are (-1,1)
-		AreaData area(allAreaPos[i], arena.numFish);   //这里下面三行还存在一点问题
+		AreaData area(allAreaPos[i], arena.numFish); 
 		area.initialize(yPatternDivs[i]);
 		screen.allAreas.push_back(area);
 
@@ -149,8 +138,7 @@ void ExperimentData::prepareBgImg(const int prepareTime)
 	while (expTimer.getElapsedTimeInSec() < prepareTime)
 	{
 		cams.grabPylonImg();
-		//从相机中获取图像
-		int timeInSec = expTimer.getElapsedTimeInSec();         //以下这三行没有实质性作用
+		int timeInSec = expTimer.getElapsedTimeInSec();       
 		// Display progress message in the command window                                                          
 		cout << "Preparing... " << timeInSec << " in " << to_string(prepareTime) << " s" << endl;
 
@@ -159,9 +147,8 @@ void ExperimentData::prepareBgImg(const int prepareTime)
 		/* Convert Pylon image to opencvImg */
 		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
 			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
-		//pMOG 是BackgroundSubtractor类型指针，与背景分割MOG算法有关
+		
 		screen.renderTexture();
-		//在屏幕上呈现设计好的图案，但是并不能看懂这个是怎么设计的
 	}
 	expTimer.start(); // reset timer to 0
 }
@@ -181,12 +168,12 @@ void ExperimentData::runUnpairedOLexp()
 		vec.push_back(i);
 	
 	// First create an instance of an engine.
-	random_device rnd_device;   //随机数生成器（随机数引擎的种子）
+	random_device rnd_device;   
 	// Specify the engine and distribution.
-	mt19937 g(rnd_device());      //调用种子生成随机数分布
-	shuffle(vec.begin(), vec.end(), g);    //随机排列向量容器内的数
+	mt19937 g(rnd_device());      
+	shuffle(vec.begin(), vec.end(), g);  
 	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
-	//rndVec这个容器内复制vec的前numShocks的数据
+	
 	prepareBgImg(prepareTime);
 
 	while (idxFrame < numCameras * expEndTime * FRAMERATE)// giant grabbing loop
@@ -254,38 +241,28 @@ void ExperimentData::runUnpairedOLexp()
 
 void ExperimentData::runOLexp()
 {
-	//准备时间
 	const int prepareTime = 1 * 60; // seconnds, default 1 min   
-	//只放格子背景的时间
 	const int baselineEndTime = 1 * 60; // seconds, default 10 mins
-	//电击训练时间
 	const int trainingEndTime = 9 * 60; // seconds, default 20 mins
-	//遮光时间
 	const int blackoutEndTime = 9 * 60; // seconds, default 1 min
-	//测试时间
 	const int testEndTime = 11 * 60; // seconds, default 18 mins (including memory extinction period)
-	//实验结束时间与训练结束时间一致
 	const int expEndTime = testEndTime;
 
-	//准备MOG tracking的背景
 	prepareBgImg(prepareTime);
 	
 	while (idxFrame < numCameras * expEndTime * FRAMERATE )// giant grabbing loop
 	{
-		//获取摄像头图片
 		cams.grabPylonImg();
 		
-		//计数器 +1，最开始从-1开始的
 		idxFrame++;
 		
-		int cIdx = cams.cIdx;           //对应上摄像头编号
+		int cIdx = cams.cIdx;      
 
 		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
 			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
 
 		sElapsed = expTimer.getElapsedTimeInSec();     
-		//msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000; 
-		//上面这个变量一直没用到，干脆先注释掉
+		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000; 
 		cout << "Time: " << sElapsed << " (s) " << endl;
 
 		if (!allArenas[cIdx].findAllFish())
