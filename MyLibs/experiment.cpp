@@ -212,11 +212,7 @@ void ExperimentData::runUnpairedOLexp()
 		{
 			expPhase = 2;
 			/* TODO: The following code should be done only once */
-			for (int i = 0; i < allArenas[cIdx].numFish; i++)
-			{
-				allArenas[cIdx].allFish[i].shockOn = 0;
-				allArenas[cIdx].allFish[i].patternIndex = 2;
-			}
+			allArenas[cIdx].BlackoutExp();
 		}
 		else if (sElapsed <= testEndTime)
 		{
