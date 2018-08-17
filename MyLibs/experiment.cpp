@@ -17,6 +17,7 @@
 * Current Version: 2.0
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Modified on: Apr. 28, 2018
+
 * Replaced Version: 1.1
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Created on: Jan. 1, 2018
@@ -37,9 +38,13 @@ using namespace std;
 using namespace cv;
 
 bool ExperimentData::initialize()
+//bool布尔型变量，只有true & false
+//初始化函数
 {
 	
 	const vector<vector<float>> allAreaPos =
+		//向量容器的元素是浮点型向量，类似于数组的数组
+		//具体数值的选取原则尚不清楚
 	{
 		{  0.082f, 0.300f, 0.258f, 1.40f },
 		{  0.826f, -0.810f, 0.258f, 1.40f },
@@ -62,16 +67,17 @@ bool ExperimentData::initialize()
 
 	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
 	string imgFolderPath = "Images/";
-
+	//图像路径
 
 	showWelcomeMsg();
-
+	//这个函数的作用仅仅是打印几行字出来
 	string imgStr = imgFolderPath + CSpattern + ".jpg";
 	const char* imgName = imgStr.c_str();
 	string CSstr = get_CS_string(CSpattern);
 	string timeStr = get_current_date_time();
-
+	//当前的时间用字符串表示
 	numCameras = enquireNumCams();
+	//摄像头的数量
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
 		return false;
 	cout << endl; // separated with an empty line
@@ -93,16 +99,18 @@ bool ExperimentData::initialize()
 	{
 		// create ArenaData and push it into exp.allArenas
 		vector<string> fishIDs = enquireFishIDs(i);
+
 		ArenaData arena(binThreList[i], fishIDs.size());
+		//这一行也搞不懂是在干什么
+		//**********这一行要好好看看************
+        //看起来像是要阈值化处理？？
+
 		arena.initialize(fishIDs, fishAge, yDivs[i]);
 		allArenas.push_back(arena);
 
 		// create AreaData and push it into screen.allAreas
 		// the screen coordinates are (-1,1)
-		//int yDup = screen.mode->height/2 * (allAreaPos[i][1] + allAreaPos[i][3] * 1 / 4 + 1);
-		//int yDdown = screen.mode->height/2 * (allAreaPos[i][1] + allAreaPos[i][3] * 3 / 4 + 1);
-		//vector<int> allYDivide = { yDup, yDup, yDdown, yDdown };
-		AreaData area(allAreaPos[i], arena.numFish);
+		AreaData area(allAreaPos[i], arena.numFish);   //这里下面三行还存在一点问题
 		area.initialize(yPatternDivs[i]);
 		screen.allAreas.push_back(area);
 
@@ -132,19 +140,18 @@ bool ExperimentData::initialize()
 
 
 	}
-
 	expTimer.start();
 	return true;
 }
 
 void ExperimentData::prepareBgImg(const int prepareTime)
 {
-	
 	while (expTimer.getElapsedTimeInSec() < prepareTime)
 	{
 		cams.grabPylonImg();
-		int timeInSec = expTimer.getElapsedTimeInSec();
-		// Display progress message in the command window
+		//从相机中获取图像
+		int timeInSec = expTimer.getElapsedTimeInSec();         //以下这三行没有实质性作用
+		// Display progress message in the command window                                                          
 		cout << "Preparing... " << timeInSec << " in " << to_string(prepareTime) << " s" << endl;
 
 		int cIdx = cams.cIdx;
@@ -152,14 +159,12 @@ void ExperimentData::prepareBgImg(const int prepareTime)
 		/* Convert Pylon image to opencvImg */
 		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
 			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
+		//pMOG 是BackgroundSubtractor类型指针，与背景分割MOG算法有关
 		screen.renderTexture();
+		//在屏幕上呈现设计好的图案，但是并不能看懂这个是怎么设计的
 	}
-		
 	expTimer.start(); // reset timer to 0
-	
-	
 }
-
 void ExperimentData::runUnpairedOLexp()
 {
 	const int prepareTime = 1 * 60; // seconnds, default 1 min
@@ -176,14 +181,12 @@ void ExperimentData::runUnpairedOLexp()
 		vec.push_back(i);
 	
 	// First create an instance of an engine.
-	random_device rnd_device;
+	random_device rnd_device;   //随机数生成器（随机数引擎的种子）
 	// Specify the engine and distribution.
-	mt19937 g(rnd_device());
-	shuffle(vec.begin(), vec.end(), g);
+	mt19937 g(rnd_device());      //调用种子生成随机数分布
+	shuffle(vec.begin(), vec.end(), g);    //随机排列向量容器内的数
 	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
-	
-
-
+	//rndVec这个容器内复制vec的前numShocks的数据
 	prepareBgImg(prepareTime);
 
 	while (idxFrame < numCameras * expEndTime * FRAMERATE)// giant grabbing loop
@@ -191,11 +194,10 @@ void ExperimentData::runUnpairedOLexp()
 		cams.grabPylonImg();
 		idxFrame++;
 		int cIdx = cams.cIdx;
-		
+		// TODO: make the following block into function
 		/* Convert Pylon image to opencvImg */
 		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
 			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
-		
 		sElapsed = expTimer.getElapsedTimeInSec();
 		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 		cout << "Time: " << sElapsed << " (s) " << endl;
@@ -204,7 +206,7 @@ void ExperimentData::runUnpairedOLexp()
 		if (sElapsed < baselineEndTime)
 		{
 			expPhase = 0;
-			updatePatternInBaseline();
+			screen.updatePatternInBaseline(sElapsed);
 		}
 		else if (sElapsed < trainingEndTime)
 		{
@@ -213,10 +215,9 @@ void ExperimentData::runUnpairedOLexp()
 			{	// find certain element in the vector
 				int target = (idxFrame - cIdx) / numCameras;
 				if (find(rndVec.begin(), rndVec.end(), target) != rndVec.end())
-					giveFishShock(i);
+					giveFishShock(i,1);
 				else
 					allArenas[cIdx].allFish[i].shockOn = 0;
-					
 				updatePatternInTraining(i);
 			}
 		}
@@ -233,7 +234,7 @@ void ExperimentData::runUnpairedOLexp()
 		else if (sElapsed <= testEndTime)
 		{
 			expPhase = 3;
-			updatePatternInTest();
+			screen.updatePatternInTest(sElapsed);
 		}
 		else
 		{ // experiment ends
@@ -253,35 +254,46 @@ void ExperimentData::runUnpairedOLexp()
 
 void ExperimentData::runOLexp()
 {
-
-	const int prepareTime = 1 * 60; // seconnds, default 1 min
+	//准备时间
+	const int prepareTime = 1 * 60; // seconnds, default 1 min   
+	//只放格子背景的时间
 	const int baselineEndTime = 1 * 60; // seconds, default 10 mins
+	//电击训练时间
 	const int trainingEndTime = 9 * 60; // seconds, default 20 mins
+	//遮光时间
 	const int blackoutEndTime = 9 * 60; // seconds, default 1 min
+	//测试时间
 	const int testEndTime = 11 * 60; // seconds, default 18 mins (including memory extinction period)
+	//实验结束时间与训练结束时间一致
 	const int expEndTime = testEndTime;
 
+	//准备MOG tracking的背景
 	prepareBgImg(prepareTime);
-
+	
 	while (idxFrame < numCameras * expEndTime * FRAMERATE )// giant grabbing loop
 	{
+		//获取摄像头图片
 		cams.grabPylonImg();
-		idxFrame++;
-		int cIdx = cams.cIdx;
 		
-		/* Convert Pylon image to opencvImg */
+		//计数器 +1，最开始从-1开始的
+		idxFrame++;
+		
+		int cIdx = cams.cIdx;           //对应上摄像头编号
+
 		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
 			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
-		
-		sElapsed = expTimer.getElapsedTimeInSec();
-		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
+
+		sElapsed = expTimer.getElapsedTimeInSec();     
+		//msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000; 
+		//上面这个变量一直没用到，干脆先注释掉
 		cout << "Time: " << sElapsed << " (s) " << endl;
+
 		if (!allArenas[cIdx].findAllFish())
 			cout << "in arena: " << cIdx << endl;
 		if (sElapsed < baselineEndTime)
 		{
-			expPhase = 0;
-			updatePatternInBaseline();
+			expPhase = 0;             //baseline = 0, training = 1, blackout = 2, test = 3
+			screen.updatePatternInBaseline(sElapsed);                
 		}
 		else if (sElapsed < trainingEndTime)
 		{
@@ -291,50 +303,28 @@ void ExperimentData::runOLexp()
 		else if (sElapsed < blackoutEndTime)
 		{
 			expPhase = 2;
-			/* TODO: The following code should be done only once */
-			allArenas[cIdx].BlackoutExp();	
+			allArenas[cIdx].BlackoutExp();
 		}
 		else if (sElapsed <= testEndTime)
 		{
 			expPhase = 3;
-			updatePatternInTest();
+			screen.updatePatternInTest(sElapsed);
 		}
 		else
 		{ // experiment ends
 			//cout << "Experiment ended. " << endl;
 			//exit(0);
 		}
-		screen.updatePattern();
+		screen.updatePattern();         
 		screen.renderTexture();
 		writeOutFrame();
 		annotateFishImgs();
-		
 		displayFishImgs("Display");
 	}
 	cout << "Experiment ended. " << endl;
 }
 
-void ExperimentData::updatePatternInBaseline()
-{
-	if (sElapsed > lastScreenPatternUpdate + baselineInterval)
-	{
-		cout << "Update pattern during baseline session " << endl;
-		lastScreenPatternUpdate = sElapsed;
-		// uniformly choose a time from 15s to 45s
-		baselineInterval = rand() % 30 + 15;
 
-		for (int i = 0; i < screen.numAreas; i++)
-		{
-			for (int j = 0; j < screen.allAreas[i].numPatches; j++)
-			{
-				screen.allAreas[i].allPatches[j].pIdx = !screen.allAreas[i].allPatches[j].pIdx;
-			}
-		}
-		
-
-	}
-	
-}
 
 void ExperimentData::updatePatternInTraining(int fishIdx)
 {
@@ -361,7 +351,6 @@ void ExperimentData::updatePatternInTraining(int fishIdx)
 			// restart a trial
 			allArenas[cIdx].allFish[fishIdx].lastTimeInCS = sElapsed;
 			allArenas[cIdx].allFish[fishIdx].lastTimeInNCS = sElapsed;
-
 		}
 	}
 	else {
@@ -387,86 +376,8 @@ void ExperimentData::updatePatternInTraining(int fishIdx)
 			allArenas[cIdx].allFish[fishIdx].lastBlackoutStart = sElapsed;
 		}
 	}
-
-
-
 }
 
-void ExperimentData::updatePatternInTest()
-{
-	int testInterval = 30; // seconds, the interval in test is fixed
-	if (sElapsed > lastScreenPatternUpdate + testInterval)
-	{
-		cout << "Update pattern during test" << endl;
-		lastScreenPatternUpdate = sElapsed;
-		for (int i = 0; i < screen.numAreas; i++)
-		{
-			for (int j = 0; j < screen.allAreas[i].numPatches; j++)
-			{
-				screen.allAreas[i].allPatches[j].pIdx = !screen.allAreas[i].allPatches[j].pIdx;
-			}
-		}
-	}
-}
-
-bool ExperimentData::ifGiveShock(int fishIdx)
-{
-	int cIdx = cams.cIdx;
-	PatchData patch = screen.allAreas[cIdx].allPatches[fishIdx];
-	int pIdx = patch.pIdx; // patternIdx
-	int yDivide = allArenas[cIdx].allFish[fishIdx].yDiv;
-	Point head = allArenas[cIdx].allFish[fishIdx].head;
-	int headingAngle = allArenas[cIdx].allFish[fishIdx].headingAngle;
-	int lastShockTime = allArenas[cIdx].allFish[fishIdx].lastShockTime;
-	int lastFishPatternUpdate = allArenas[cIdx].allFish[fishIdx].lastFishPatternUpdate;
-
-	/* Control parameters */
-	int thinkingTime = 7; // seconds, give fish some thinking time
-	int shockCD = 3; // seconds
-	/* Give fish a shock whenever it stays in CS area too long */
-	int CStimeThre = 10;
-
-	if (pIdx == 2) // blackout 
-		return false;
-	if (sElapsed < lastFishPatternUpdate + thinkingTime)
-		return false;
-	if (sElapsed < lastShockTime + shockCD)
-		return false;
-	if (head.x == -1) // invalid frame
-		return false;
-	if (pIdx) // patternIdx == 1, since 2 is already excluded
-	{
-		if (head.y < yDivide) // in non-CS area
-			return false;
-		else {
-			if (sElapsed - lastShockTime > CStimeThre)
-				return true;
-			else {
-				if (headingAngle < 0) // fish is trying to escape CS area
-					return false;
-				else
-					return true;
-			}
-		}
-	}
-	else
-	{
-		if (head.y > yDivide)
-			return false;
-		else {
-			if (sElapsed - lastShockTime > CStimeThre)
-				return true;
-			else {
-				if (headingAngle > 0) // fish is trying to escape CS area
-					return false;
-				else
-					return true;
-			}
-		}
-	}
-	
-
-}
 
 void ExperimentData::giveFishShock(int fishIdx, int flag)
 {
@@ -482,7 +393,8 @@ void ExperimentData::giveFishShock(int fishIdx, int flag)
 void ExperimentData::TrainingExp(int cIdx) {
 	for (int i = 0; i < allArenas[cIdx].numFish; i++)
 	{
-		giveFishShock(i, ifGiveShock(i));
+		int pIdx = screen.allAreas[cIdx].allPatches[i].pIdx;
+		giveFishShock(i, allArenas[cIdx].allFish[i].ifGiveShock(pIdx,sElapsed));
 		updatePatternInTraining(i);
 	}
 }
@@ -578,7 +490,6 @@ void ExperimentData::displayFishImgs(string title) {
 	// Loop for cams.numCameras number of arguments
 	for (i = 0, m = 20, n = 20; i < numCameras; i++, m += (20 + size)) {
 		// Get the Pointer to the IplImage
-		//Mat img = va_arg(args, Mat);
 		Mat img = allArenas[i].opencvImg;
 		// Check whether it is NULL or not
 		// If it is NULL, release the image, and return
@@ -609,7 +520,6 @@ void ExperimentData::displayFishImgs(string title) {
 		Mat temp; resize(img, temp, Size(ROI.width, ROI.height));
 		temp.copyTo(DispImage(ROI));
 	}
-
 	// Create a new window, and show the Single Big Image
 	namedWindow(title, 1);
 	imshow(title, DispImage);
@@ -635,8 +545,7 @@ void ExperimentData::annotateFishImgs()
 			circle(allArenas[i].opencvImg, head, 5, Scalar(255), 2);
 			circle(allArenas[i].opencvImg, allArenas[i].allFish[j].tail, 3, Scalar(255), 2);
 
-			
-
 		}
 	}
 }
+
