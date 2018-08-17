@@ -17,6 +17,7 @@
 * Current Version: 2.0
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Modified on: Apr. 28, 2018
+
 * Replaced Version: 1.1
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Created on: Jan. 1, 2018
@@ -56,8 +57,6 @@ public:
 		sElapsed = -1;
 		msRemElapsed = 0;
 		expPhase = -1;
-		lastScreenPatternUpdate = -1;
-		baselineInterval = 0;
 		ITI = 0;
 	}
 	/* Initialize the experiment */
@@ -68,19 +67,15 @@ public:
 	void runUnpairedOLexp();
 	/* Run the entire operant learning procedure */
 	void runOLexp();
-	/* Update visual pattern in the baseline session */
-	void updatePatternInBaseline();
+	
 	/* Update visual pattern in the training session */
 	void updatePatternInTraining(int fishIdx);
-	/* Update visual pattern in the test session */
-	void updatePatternInTest();
-	/* Decide whether to give shock to the fish */
-	bool ifGiveShock(int fishIdx);
+	
+	
 	/* Give the fish a electric pulse */
 	void giveFishShock(int fishIdx, int flag);
-	
+	/* Experiment during the training period */
 	void TrainingExp(int cIdx);
-	
 	/* Write out info of a frame to disk */
 	void writeOutFrame();
 	/* Decorate images with fish's heads, tails and visual pattern's info */
@@ -101,9 +96,6 @@ public:
 	int msRemElapsed;
 	int expPhase;
 	/* Update time for the entire screen */
-	int lastScreenPatternUpdate;
-	/* Interval for updating pattern in baseline session, which is a random number in range */
-	int baselineInterval;
 	/* Inter-trial Interval */
 	int ITI;
 
@@ -115,14 +107,6 @@ public:
 	WriteOutData writeOut;
 
 };
-
-
-
-
-
-
-
-
 
 
 #endif _GUARD_EXPERIMENT_H
