@@ -77,6 +77,9 @@ public:
 	void initVertices();
 	/* Update pattern by giving the shader new pattern index */
 	void updatePattern();
+	
+	
+
 	// properties
 	const std::vector<float> rect; // upper-left corner (x, y, width, height)
 	const int yDivide;
@@ -138,9 +141,12 @@ public:
 	void updatePattern();
 	/* Render designed pattern on the screen */
 	void renderTexture();
-	/* Update pattern for a single shader */
-	//void updatePatternInShader(int idxArena, int idxPatch, int patternIdx);
 
+	
+	/* Update pattern in test experiment */
+	void updatePatternInTest(int sElapsed);
+	/* Update pattern in baseline experiment */
+	void updatePatternInBaseline(int sElapsed);
 
 	// properties
 	const GLFWvidmode* mode;
@@ -158,7 +164,9 @@ public:
 	std::vector<AreaData> allAreas;
 	
 	int numAreas;
-
+	int lastScreenPatternUpdate;
+	/* Interval for updating pattern in baseline session, which is a random number in range */
+	int baselineInterval;
 };
 
 #endif // !_GUARD_TALK2SCREEN_H
