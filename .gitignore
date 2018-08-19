@@ -1,0 +1,14 @@
+$ git status
+$ cat .git/info/exclude
+# ignore objects and archives, anywhere in the tree.
+**.[oa]
+$ cat Documentation/.gitignore
+# ignore generated html files,
+*.html
+
+# ignore VS configuring and generated files
+*.vcxproj
+*.filters
+*.user
+/x64
+/x86
