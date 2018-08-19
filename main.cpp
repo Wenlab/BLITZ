@@ -18,7 +18,6 @@
 * Current Version: 2.0
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Modified on: Apr. 28, 2018
-
 * Replaced Version: 1.1
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Created on: Jan. 1, 2018
@@ -66,10 +65,6 @@ int main()
 	  (0.233f, 0.300f)  (0.800f, -0.850f)  (-0.740f, -0.850f)
 	  width, height: all (0.28f, 1.40f)  
 	
-
-
-
-
 	const char imgName[] = "Images/redCheckerboard.jpg";
 	float allAreaPos[3][2] = { {0.233f, 0.300f}, {0.800f, -0.850f}, {-0.740f, -0.850f} };
 	
@@ -84,9 +79,6 @@ int main()
 	const int delimYarr[] = { 900,900,1000,1000 };
 	area1.initialize(delimYarr);
 	screen.allAreas.push_back(area1);
-
-
-
 	while (1)
 	{
 		int timeInSec = expTimer.getElapsedTimeInSec();
@@ -132,7 +124,6 @@ int main()
 	{
 		vName = "Head" + to_string(i);
 		fs << "{:" << vName << headVec[i] << "}";
-
 	}
 	fs << "]";
 	*/
@@ -148,7 +139,6 @@ int main()
 		cout << "Time (s): " << timeInSec << endl;
 		if (timeInSec > 10)
 			expTimer.start();
-
 	}
 	*/
 
@@ -156,10 +146,8 @@ int main()
 	
 	Timer expTimer;
 	expTimer.start();
-
 	CameraData cams;
 	cams.initialize();
-
 	while (cams.grabPylonImg())
 	{
 		cout << "Time (s) : " << expTimer.getElapsedTimeInSec() << endl;
@@ -167,7 +155,6 @@ int main()
 		// Display the grabbed image.
 		Pylon::DisplayImage(1, cams.ptrGrabResult);
 #endif
-
 	}
 	*/
 

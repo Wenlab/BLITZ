@@ -211,6 +211,70 @@ bool FishData::findHeadSide(Point2f* M)
 	return areas[aIdx] > areas[!aIdx];
 }
 
+bool FishData::ifGiveShock(int pIdx, int sElapsed) {
+	/* Control parameters */
+	int thinkingTime = 7; // seconds, give fish some thinking time
+	int shockCD = 3; // seconds
+					 /* Give fish a shock whenever it stays in CS area too long */
+	int CStimeThre = 10;
+
+	if (pIdx == 2) // blackout 
+		return false;
+	if (sElapsed < lastFishPatternUpdate + thinkingTime)
+		return false;
+	if (sElapsed < lastShockTime + shockCD)
+		return false;
+	if (head.x == -1) // invalid frame
+		return false;
+	if (pIdx) // patternIdx == 1, since 2 is already excluded
+	{
+		if (head.y < yDiv) // in non-CS area
+			return false;
+		else {
+			if (sElapsed - lastShockTime > CStimeThre)
+				return true;
+			else {
+				if (headingAngle < 0) // fish is trying to escape CS area
+					return false;
+				else
+					return true;
+			}
+		}
+	}
+	else
+	{
+		if (head.y > yDiv)
+			return false;
+		else {
+			if (sElapsed - lastShockTime > CStimeThre)
+				return true;
+			else {
+				if (headingAngle > 0) // fish is trying to escape CS area
+					return false;
+				else
+					return true;
+			}
+		}
+	}
+}
+
+void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
+	Mat rawImg = Mat(width, height,CV_8UC1, buffer);
+	rawImg.copyTo(opencvImg);
+	if (cIdx != 0) {
+		rot90CW(opencvImg, opencvImg);
+	}
+	pMOG->apply(opencvImg, subImg);
+}
+
+void ArenaData::BlackoutExp() {
+	for (int i = 0; i < numFish; i++)
+	{
+	    allFish[i].shockOn = 0;
+		allFish[i].patternIndex = 2;     
+	}
+}
+
 /*Find the closest point on the contour to the reference point, return the index findClosestPt*/
 int findClosestPt(vector<Point>& contour, Point point)
 {

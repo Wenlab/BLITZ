@@ -71,8 +71,10 @@ public:
 	void findPosition();
 	/*Determine which side is fish's head by measuring the area of each half*/
 	bool findHeadSide(cv::Point2f* M);
-	// properties
 
+	bool ifGiveShock(int pIdx, int sElapsed);
+
+	// properties
 	// const properties
 	const std::string ID;
 	const int age;
@@ -135,7 +137,10 @@ public:
 
 	const int numFish;
 	int binThre; // in the future, this might be adjusted in the GUI 
-	
+	void prepareBgImg(int width, int height, int cIdx, uint8_t* buffer);
+
+	void BlackoutExp();
+
 	cv::Ptr<cv::BackgroundSubtractor> pMOG; // one pMOG for one arena
 	cv::Mat opencvImg, HUDSimg, subImg;
 	std::vector<FishData> allFish;
@@ -156,3 +161,4 @@ std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv
 
 
 #endif // !_GUARD_FISHANALYSIS_H
+
