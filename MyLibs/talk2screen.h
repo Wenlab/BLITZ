@@ -65,8 +65,7 @@ public:
 			, yDivide(patchYdivide)
 	{
 		/* Frequent updating variable */
-		pIdx = 0;
-		
+		pIdx = 0;	
 		shader.use();
 		shader.setInt("yDivide", yDivide);
 		shader.setInt("patternIdx", pIdx);

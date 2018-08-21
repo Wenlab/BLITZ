@@ -42,9 +42,9 @@ bool ExperimentData::initialize()
 	
 	const vector<vector<float>> allAreaPos =
 	{
-		{  0.082f, 0.300f, 0.258f, 1.40f },
-		{  0.826f, -0.810f, 0.258f, 1.40f },
-		{ -0.665f, -0.810f, 0.258f, 1.40f }
+		{ 0.082f, 0.300f, 0.258f, 0.668f },
+		{ 0.840f, -0.810f, 0.258f, 0.73f },
+		{ -0.665f, -0.810f, 0.258f, 0.73f }
 	};
 	// y division pos for all fish
 	vector<vector<int>> yDivs =
@@ -56,9 +56,9 @@ bool ExperimentData::initialize()
 
 	vector<vector<int>> yPatternDivs =
 	{
-		{886,886,900,900},
-		{305,305,350,350},
-		{305,305,350,350}
+		{ 818, 818, 942, 942 },
+		{ 247, 247, 365, 365 },
+		{ 238, 238, 358, 358 }
 	};
 
 	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
