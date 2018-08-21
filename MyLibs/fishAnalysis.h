@@ -93,8 +93,6 @@ public:
 	std::vector<cv::Point> fishContour;
 	cv::Point head, tail, center;
 	int headingAngle;
-
-
 };
 
 /* Define all infos including fish for a single arena */

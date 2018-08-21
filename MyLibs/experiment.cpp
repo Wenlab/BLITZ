@@ -213,6 +213,8 @@ void ExperimentData::runUnpairedOLexp()
 			expPhase = 2;
 			/* TODO: The following code should be done only once */
 			allArenas[cIdx].BlackoutExp();
+			screen.BlackoutExp();
+			/* The problem is I change pIdx of allArenas but pIdx of area is the useful one*/
 		}
 		else if (sElapsed <= testEndTime)
 		{
@@ -240,7 +242,7 @@ void ExperimentData::runOLexp()
 	const int prepareTime = 1 * 60 / 10; // seconnds, default 1 min   
 	const int baselineEndTime = 1 * 60 / 10; // seconds, default 10 mins
 	const int trainingEndTime = 9 * 60 / 10; // seconds, default 20 mins
-	const int blackoutEndTime = 9 * 60 / 9; // seconds, default 1 min
+	const int blackoutEndTime = 9 * 60 / 6; // seconds, default 1 min
 	const int testEndTime = 11 * 60 / 5; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
@@ -276,6 +278,7 @@ void ExperimentData::runOLexp()
 		else if (sElapsed < blackoutEndTime)
 		{
 			expPhase = 2;
+			screen.BlackoutExp();
 			allArenas[cIdx].BlackoutExp();
 		}
 		else if (sElapsed <= testEndTime)
@@ -284,7 +287,7 @@ void ExperimentData::runOLexp()
 			screen.updatePatternInTest(sElapsed);
 		}
 		else
-		{ // experiment ends
+		{   // experiment ends
 			//cout << "Experiment ended. " << endl;
 			//exit(0);
 		}
@@ -359,7 +362,7 @@ void ExperimentData::giveFishShock(int fishIdx, int flag)
 	if (!flag)
 		return;
 	// give a electric pulse
-	thePort.givePulse(2*cIdx + fishIdx);
+	thePort.givePulse(4*cIdx + fishIdx);
 	allArenas[cIdx].allFish[fishIdx].lastShockTime = sElapsed;
 }
 
@@ -367,7 +370,8 @@ void ExperimentData::TrainingExp(int cIdx) {
 	for (int i = 0; i < allArenas[cIdx].numFish; i++)
 	{
 		int pIdx = screen.allAreas[cIdx].allPatches[i].pIdx;
-		giveFishShock(i, allArenas[cIdx].allFish[i].ifGiveShock(pIdx,sElapsed));
+		int flag = allArenas[cIdx].allFish[i].ifGiveShock(pIdx, sElapsed);
+		giveFishShock(i, flag);
 		updatePatternInTraining(i);
 	}
 }

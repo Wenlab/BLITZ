@@ -63,10 +63,8 @@ void PatchData::initVertices()
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 	glBindVertexArray(VAO);
-
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
@@ -133,7 +131,6 @@ void ScreenData::updatePattern()
 			area.allPatches[j].updatePattern();
 		}
 	}
-
 }
 
 /* update pattern for specific area */
@@ -177,6 +174,16 @@ void ScreenData::updatePatternInBaseline(int sElapsed) {
 			{
 				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
 			}
+		}
+	}
+}
+
+void ScreenData::BlackoutExp() {
+	for (int i = 0; i < numAreas; i++)
+	{
+		for (int j = 0; j < allAreas[i].numPatches; j++)
+		{
+			allAreas[i].allPatches[j].pIdx = 2;
 		}
 	}
 }

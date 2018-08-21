@@ -70,7 +70,7 @@ void ArenaData::initialize(vector<string> fishIDs, int fishAge, vector<int> yDiv
 
 bool ArenaData::findAllFish()
 {
-	bool fishFlag = false;
+	bool fishFlag = true;
 	// outer contours are counter clockwise
 	vector<vector<Point>> contours;
 	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE); 
@@ -135,7 +135,6 @@ bool ArenaData::findAllFish()
 			allFish[i].pauseFrames = 0;
 			allFish[i].fishContour = contours[maxContours[1][i]];
 			allFish[i].findPosition();
-			fishFlag = true;
 		}
 	}
 
@@ -271,7 +270,6 @@ void ArenaData::BlackoutExp() {
 	for (int i = 0; i < numFish; i++)
 	{
 	    allFish[i].shockOn = 0;
-		allFish[i].patternIndex = 2;     
 	}
 }
 

@@ -318,7 +318,7 @@ bool CSerialPort::WriteData(unsigned char* pData, unsigned int length)
         /** purge com */  
         PurgeComm(m_hComm, PURGE_RXCLEAR | PURGE_RXABORT);  
         LeaveCriticalSection(&m_csCommunicationSync);  
-  
+
         return false;  
     }  
 

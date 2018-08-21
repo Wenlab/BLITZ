@@ -146,6 +146,9 @@ public:
 	void updatePatternInTest(int sElapsed);
 	/* Update pattern in baseline experiment */
 	void updatePatternInBaseline(int sElapsed);
+	/* Update pattern in the blackout experiment */
+	void BlackoutExp();
+
 
 	// properties
 	const GLFWvidmode* mode;

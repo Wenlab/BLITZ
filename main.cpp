@@ -44,29 +44,38 @@ int main()
 
 	if (!exp.initialize())
 	{
-		cout << "Experiment Initialization Failed." << endl;
-		exit(0);
+	cout << "Experiment Initialization Failed." << endl;
+	exit(0);
 	}
 	else {
-		cout << "Experiment initialized." << endl;
+	cout << "Experiment initialized." << endl;
 	}
 
 	exp.runOLexp();
-	system("pause");
-	/*string CS_Pattern = "redBlackCheckerboard";
+
+
+	/* Test serial port
+	string CS_Pattern = "redBlackCheckerboard";
 	ExperimentData exp(CS_Pattern);
-
-	if (!exp.initialize())
+	if (!exp.thePort.initialize(COM_NUM)) {
+		cout << "Initialize failed" << endl;
+		return false;
+	}
+	int flag;
+	cout << endl; // separated with an empty line
+	for (int i = 0; i < 12; i++)
 	{
-		cout << "Experiment Initialization Failed." << endl;
-		exit(0);
+		flag = exp.thePort.givePulse(i);
+		waitKey(100);
+		cout << "Give shock:" << i << endl;
+		if (flag = 0)
+		{
+			cout << "Failed" << endl;
+		}
 	}
-	else {
-		cout << "Experiment initialized." << endl;
-	}
+	*/
 
-	exp.runOLexp();*/
-
+	
 	/* main function
 	string CS_Pattern = "redBlackCheckerboard";
 	ExperimentData exp(CS_Pattern);
