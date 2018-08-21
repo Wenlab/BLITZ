@@ -237,11 +237,11 @@ void ExperimentData::runUnpairedOLexp()
 
 void ExperimentData::runOLexp()
 {
-	const int prepareTime = 1 * 60; // seconnds, default 1 min   
-	const int baselineEndTime = 1 * 60; // seconds, default 10 mins
-	const int trainingEndTime = 9 * 60; // seconds, default 20 mins
-	const int blackoutEndTime = 9 * 60; // seconds, default 1 min
-	const int testEndTime = 11 * 60; // seconds, default 18 mins (including memory extinction period)
+	const int prepareTime = 1 * 60 / 10; // seconnds, default 1 min   
+	const int baselineEndTime = 1 * 60 / 10; // seconds, default 10 mins
+	const int trainingEndTime = 9 * 60 / 10; // seconds, default 20 mins
+	const int blackoutEndTime = 9 * 60 / 9; // seconds, default 1 min
+	const int testEndTime = 11 * 60 / 5; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
 	prepareBgImg(prepareTime);
@@ -507,10 +507,10 @@ void ExperimentData::annotateFishImgs()
 		{
 			int pIdx = screen.allAreas[i].allPatches[j].pIdx;
 			// Put text on each image respectively
-			if (pIdx == 0)
+			/*if (pIdx == 0)
 				putText(allArenas[i].opencvImg, "CS TOP", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
 			else if (pIdx == 1)
-				putText(allArenas[i].opencvImg, "CS BOTTOM", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
+				putText(allArenas[i].opencvImg, "CS BOTTOM", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);*/
 
 			Point head = allArenas[i].allFish[j].head;
 			if (head.x == -1) // invalid fish analysis data

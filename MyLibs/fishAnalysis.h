@@ -37,7 +37,7 @@
 
 #define MAX_FISH_PER_ARENA 4
 #define X_CUT 385 // x position to separate fish 0,1 and 2,3
-#define Y_CUT 784 // y position to separate fish 0,1 and 2,3
+#define Y_CUT 385 // y position to separate fish 0,1 and 2,3
 
 /* Define related methods and properties for a single fish */
 class FishData {
