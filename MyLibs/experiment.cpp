@@ -49,9 +49,9 @@ bool ExperimentData::initialize()
 	// y division pos for all fish
 	vector<vector<int>> yDivs =
 	{
-		{ 383, 383, 384, 384 },
-		{ 383, 383, 384, 384 },
-		{ 383, 383, 384, 384 }
+		{ 195, 195, 574, 574 },
+		{ 223, 223, 588, 588 },
+		{ 214, 214, 588, 588 }
 	};
 
 	vector<vector<int>> yPatternDivs =

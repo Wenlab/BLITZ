@@ -39,27 +39,28 @@ using namespace cv;
 
 int main()
 {
+
 	const char imgName[] = "Images/redBlackCheckerboard.jpg";
 	const vector<vector<float>> allAreaPos =
 	{
 		{ 0.082f, 0.300f, 0.258f, 0.668f },
-		{ 0.840f, -0.810f, 0.258f, 0.73f },
-		{  -0.665f, -0.810f, 0.258f  , 0.73f }
+	{ 0.840f, -0.810f, 0.258f, 0.73f },
+	{ -0.665f, -0.810f, 0.258f  , 0.73f }
 	};
 	vector<vector<int>> yPatternDivs =
 	{
 		{ 818, 818, 942, 942 },
-		{ 247, 247, 365, 365 },
-		{ 238, 238, 358, 358 }
+	{ 247, 247, 365, 365 },
+	{ 238, 238, 358, 358 }
 	};
 
 	Timer expTimer;
 	expTimer.start();
 	ScreenData screen;
-	screen.initialize(imgName,1);
+	screen.initialize(imgName, 1);
 	screen.loadTextureIntoBuffers(imgName);
-	AreaData area1(allAreaPos[2], 4);
-	area1.initialize(yPatternDivs[2]);
+	AreaData area1(allAreaPos[1], 4);
+	area1.initialize(yPatternDivs[1]);
 	screen.allAreas.push_back(area1);
 	int patchIdx = 0;
 	while (1)
@@ -72,6 +73,19 @@ int main()
 		screen.renderTexture();
 	}
 
+	/*string CS_Pattern = "redBlackCheckerboard";
+	ExperimentData exp(CS_Pattern);
+
+	if (!exp.initialize())
+	{
+		cout << "Experiment Initialization Failed." << endl;
+		exit(0);
+	}
+	else {
+		cout << "Experiment initialized." << endl;
+	}
+
+	exp.runOLexp();*/
 
 	/* main function
 	string CS_Pattern = "redBlackCheckerboard";
@@ -91,9 +105,6 @@ int main()
 
 
 	
-	
-
-
 	
 	/* Test screen function
 	
