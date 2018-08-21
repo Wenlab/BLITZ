@@ -94,32 +94,39 @@ int main()
 	
 
 
-	/*Test screen function*/
-	/*		Area1			  Area2				  Area3 
-	  (0.233f, 0.300f)  (0.800f, -0.850f)  (-0.740f, -0.850f)
-	  width, height: all (0.28f, 1.40f)  
 	
-	const char imgName[] = "Images/redCheckerboard.jpg";
-	float allAreaPos[3][2] = { {0.233f, 0.300f}, {0.800f, -0.850f}, {-0.740f, -0.850f} };
+	/* Test screen function
 	
-	
+	const char imgName[] = "Images/redBlackCheckerboard.jpg";
+	const vector<vector<float>> allAreaPos =
+	{
+		{ 0.082f, 0.300f, 0.258f, 0.668f },
+		{ 0.840f, -0.810f, 0.258f, 0.73f },
+		{  -0.665f, -0.810f, 0.258f  , 0.73f }
+	};
+	vector<vector<int>> yPatternDivs =
+	{
+		{ 818, 818, 942, 942 },
+		{ 247, 247, 365, 365 },
+		{ 238, 238, 358, 358 }
+	};
+
 	Timer expTimer;
 	expTimer.start();
 	ScreenData screen;
-	screen.initGLFWenvironment();
+	screen.initialize(imgName,1);
 	screen.loadTextureIntoBuffers(imgName);
-	float* areaPos = allAreaPos[0];
-	AreaData area1(areaPos,2);
-	const int delimYarr[] = { 900,900,1000,1000 };
-	area1.initialize(delimYarr);
+	AreaData area1(allAreaPos[2], 4);
+	area1.initialize(yPatternDivs[2]);
 	screen.allAreas.push_back(area1);
+	int patchIdx = 0;
 	while (1)
 	{
 		int timeInSec = expTimer.getElapsedTimeInSec();
 		cout << "Time (s) : " << timeInSec << endl;
 		if (timeInSec % 10 == 0)
-			screen.allAreas[0].allPatches[0].pIdx = !screen.allAreas[0].allPatches[0].pIdx;
-		screen.allAreas[0].allPatches[0].updatePattern();
+			screen.allAreas[0].allPatches[patchIdx].pIdx = !screen.allAreas[0].allPatches[patchIdx].pIdx;
+		screen.allAreas[0].allPatches[patchIdx].updatePattern();
 		screen.renderTexture();
 	}
 	*/
