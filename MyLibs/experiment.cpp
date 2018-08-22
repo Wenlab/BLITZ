@@ -120,6 +120,7 @@ bool ExperimentData::initialize()
 		writeOut.writeKeyValuePair("FishStrain", strainName, i);
 		writeOut.writeKeyValuePair("Arena", i+1, i); // record which arena is in use
 		writeOut.writeKeyValuePair("Task", expTask, i);
+		writeOut.writeKeyValuePair("CSpattern", CSstr, i);
 		writeOut.writeKeyValuePair("ExpStartTime", timeStr, i);
 		writeOut.writeKeyValuePair("FrameRate", FRAMERATE, i);
 		writeOut.writeKeyValuePair("FrameSize", Size(WIDTH, HEIGHT), i);
@@ -239,11 +240,11 @@ void ExperimentData::runUnpairedOLexp()
 
 void ExperimentData::runOLexp()
 {
-	const int prepareTime = 1 * 60 / 10; // seconnds, default 1 min   
-	const int baselineEndTime = 1 * 60 / 10; // seconds, default 10 mins
-	const int trainingEndTime = 9 * 60 / 10; // seconds, default 20 mins
-	const int blackoutEndTime = 9 * 60 / 6; // seconds, default 1 min
-	const int testEndTime = 11 * 60 / 5; // seconds, default 18 mins (including memory extinction period)
+	const int prepareTime = 1 * 60 ; // seconnds, default 1 min   
+	const int baselineEndTime = 1 * 60 ; // seconds, default 10 mins
+	const int trainingEndTime = 9 * 60 ; // seconds, default 20 mins
+	const int blackoutEndTime = 10 * 60 ; // seconds, default 1 min
+	const int testEndTime = 11 * 60 ; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
 	prepareBgImg(prepareTime);
