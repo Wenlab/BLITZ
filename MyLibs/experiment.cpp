@@ -429,13 +429,10 @@ void ExperimentData::displayFishImgs(string title) {
 		printf("Number of arguments too small....\n");
 		return;
 	}
-	else if (numCameras > 14) {
+	else if (numCameras > 3) {
 		printf("Number of arguments too large, can only handle maximally 12 images at a time ...\n");
 		return;
 	}
-	// Determine the size of the image,
-	// and the number of rows/cols
-	// from number of arguments
 	else if (numCameras == 1) {
 		w = h = 1;
 		size = 300;
@@ -444,55 +441,30 @@ void ExperimentData::displayFishImgs(string title) {
 		w = 2; h = 1;
 		size = 300;
 	}
-	else if (numCameras == 3 || numCameras == 4) {
+	else if (numCameras == 3) {
 		w = 2; h = 2;
 		size = 300;
 	}
-	else if (numCameras == 5 || numCameras == 6) {
-		w = 3; h = 2;
-		size = 200;
-	}
-	else if (numCameras == 7 || numCameras == 8) {
-		w = 4; h = 2;
-		size = 200;
-	}
-	else {
-		w = 4; h = 3;
-		size = 150;
-	}
-
 	// Create a new 1 channel image
 	Mat DispImage = Mat::zeros(Size(100 + size * w, 60 + size * h), CV_8UC1);
-
 	// Loop for cams.numCameras number of arguments
 	for (i = 0, m = 20, n = 20; i < numCameras; i++, m += (20 + size)) {
 		// Get the Pointer to the IplImage
 		Mat img = allArenas[i].opencvImg;
-		// Check whether it is NULL or not
-		// If it is NULL, release the image, and return
 		if (img.empty()) {
-			printf("Invalid arguments");
+			std::cout << "Invalid arguments" << std::endl;
 			return;
 		}
-
-		// Find the width and height of the image
 		x = img.cols;
 		y = img.rows;
-
 		// Find whether height or width is greater in order to resize the image
 		max = (x > y) ? x : y;
-
 		// Find the scaling factor to resize the image
 		scale = (float)((float)max / size);
-
-		// Used to Align the images
 		if (i % w == 0 && m != 20) {
 			m = 20;
 			n += 20 + size;
 		}
-
-		// Set the image ROI to display the current image
-		// Resize the input image and copy the it to the Single Big Image
 		Rect ROI(m, n, (int)(x / scale), (int)(y / scale));
 		Mat temp; resize(img, temp, Size(ROI.width, ROI.height));
 		temp.copyTo(DispImage(ROI));
