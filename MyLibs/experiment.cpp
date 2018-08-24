@@ -82,7 +82,6 @@ bool ExperimentData::initialize()
 	/* Initialize the serial port */
 	if (!thePort.initialize(COM_NUM))
 		return false;
-		
 	cout << endl; // separated with an empty line
 
 	int fishAge = enquireFishAge();
@@ -94,7 +93,6 @@ bool ExperimentData::initialize()
 		vector<string> fishIDs = enquireFishIDs(i);
 
 		ArenaData arena(binThreList[i], fishIDs.size());
-
 		arena.initialize(fishIDs, fishAge, yDivs[i]);
 		allArenas.push_back(arena);
 
@@ -252,9 +250,9 @@ void ExperimentData::runOLexp()
 
 	while (idxFrame < numCameras * expEndTime * FRAMERATE )// giant grabbing loop
 	{
-		cams.grabPylonImg();
-
 		idxFrame++;
+
+		cams.grabPylonImg();
 
 		int cIdx = cams.cIdx;
 
@@ -508,22 +506,6 @@ void ExperimentData::annotateFishImgs()
 {
 	for (int i = 0; i < numCameras; i++)
 	{
-		ArenaData arena = allArenas[i];
-		for (int j = 0; j < allArenas[i].numFish; j++)
-		{
-			int pIdx = screen.allAreas[i].allPatches[j].pIdx;
-			// Put text on each image respectively
-			/*if (pIdx == 0)
-				putText(allArenas[i].opencvImg, "CS TOP", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
-			else if (pIdx == 1)
-				putText(allArenas[i].opencvImg, "CS BOTTOM", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);*/
-
-			Point head = allArenas[i].allFish[j].head;
-			if (head.x == -1) // invalid fish analysis data
-				continue;
-			circle(allArenas[i].opencvImg, head, 5, Scalar(255), 2);
-			circle(allArenas[i].opencvImg, allArenas[i].allFish[j].tail, 3, Scalar(255), 2);
-
-		}
+		allArenas[i].annotateFish();
 	}
 }

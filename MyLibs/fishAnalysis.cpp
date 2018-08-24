@@ -266,6 +266,24 @@ void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
 	pMOG->apply(opencvImg, subImg);
 }
 
+void ArenaData::annotateFish() {
+	for (int j = 0; j < numFish; j++)
+	{
+		/*
+		int pIdx = screen.allAreas[i].allPatches[j].pIdx;
+		if (pIdx == 0)
+		putText(allArenas[i].opencvImg, "CS TOP", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
+		else if (pIdx == 1)
+		putText(allArenas[i].opencvImg, "CS BOTTOM", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
+		*/
+		Point head = allFish[j].head;
+		if (head.x == -1) // invalid fish analysis data
+			continue;
+		circle(opencvImg, head, 5, Scalar(255), 2);
+		circle(opencvImg, allFish[j].tail, 3, Scalar(255), 2);
+	}
+}
+
 void ArenaData::BlackoutExp() {
 	for (int i = 0; i < numFish; i++)
 	{

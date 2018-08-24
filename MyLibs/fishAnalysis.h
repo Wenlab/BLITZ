@@ -136,7 +136,7 @@ public:
 	const int numFish;
 	int binThre; // in the future, this might be adjusted in the GUI 
 	void prepareBgImg(int width, int height, int cIdx, uint8_t* buffer);
-
+	void annotateFish();
 	void BlackoutExp();
 
 	cv::Ptr<cv::BackgroundSubtractor> pMOG; // one pMOG for one arena
