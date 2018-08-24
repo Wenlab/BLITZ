@@ -82,7 +82,6 @@ bool ExperimentData::initialize()
 	/* Initialize the serial port */
 	if (!thePort.initialize(COM_NUM))
 		return false;
-		gffsv 'vs ';
 		
 	cout << endl; // separated with an empty line
 
