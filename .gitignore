@@ -13,6 +13,7 @@ $ cat Documentation/.gitignore
 *.props
 *.c
 /.vs
+.vs/
 glad.c
 /x64
 /x86
