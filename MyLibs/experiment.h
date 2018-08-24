@@ -71,7 +71,6 @@ public:
 	/* Update visual pattern in the training session */
 	void updatePatternInTraining(int fishIdx);
 	
-	
 	/* Give the fish a electric pulse */
 	void giveFishShock(int fishIdx, int flag);
 	/* Experiment during the training period */
@@ -83,13 +82,11 @@ public:
 	/* Present fish images with annotations. The code is adapted from code in stackfow*/
 	void displayFishImgs(std::string title);
 	
-
 	// properties
 
 	// constant ones
 	const std::string CSpattern;
 	int numCameras;
-	
 
 	int idxFrame;
 	int sElapsed;
@@ -105,7 +102,6 @@ public:
 	ScreenData screen;
 	PortData thePort;
 	WriteOutData writeOut;
-
 };
 
 

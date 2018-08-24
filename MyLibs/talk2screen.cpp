@@ -121,6 +121,8 @@ bool AreaData::initialize(vector<int> yDivideVec)
 	return true;
 }
 
+// TODO: use the same-name function of the AreaData class to replace the inner loop
+/* Update patterns of the entire screen */
 void ScreenData::updatePattern()
 {
 	for (int i = 0; i < allAreas.size(); i++)
@@ -133,7 +135,9 @@ void ScreenData::updatePattern()
 	}
 }
 
+// TODO: degrade it to a member function of AreaData
 /* update pattern for specific area */
+// send the pIdx from the CPU side to the GPU side
 void ScreenData::updatePattern(int cIdx)
 {
 	
@@ -153,10 +157,13 @@ void ScreenData::updatePatternInTest(int sElapsed) {
 		lastScreenPatternUpdate = sElapsed;
 		for (int i = 0; i < numAreas; i++)
 		{
+			// TODO: allAreas[i].updatePattern();
 			for (int j = 0; j < allAreas[i].numPatches; j++)
 			{
 				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
+				allAreas[i].allPatches[j].updatePattern();
 			}
+			//
 		}
 	}
 }
@@ -173,17 +180,19 @@ void ScreenData::updatePatternInBaseline(int sElapsed) {
 			for (int j = 0; j < allAreas[i].numPatches; j++)
 			{
 				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
+				allAreas[i].allPatches[j].updatePattern();
 			}
 		}
 	}
 }
-
-void ScreenData::BlackoutExp() {
+// only need to run once
+void ScreenData::updatePatternInBlackout() {
 	for (int i = 0; i < numAreas; i++)
 	{
 		for (int j = 0; j < allAreas[i].numPatches; j++)
 		{
 			allAreas[i].allPatches[j].pIdx = 2;
+			allAreas[i].allPatches[j].updatePattern();
 		}
 	}
 }

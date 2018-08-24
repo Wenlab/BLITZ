@@ -114,11 +114,10 @@ public:
 class ScreenData 
 {
 private: // only used within class
-	GLFWmonitor * * monitors;
-	
+	GLFWmonitor * * monitors;	
 	GLFWwindow* window;
 	// buffer idx to store texture
-	unsigned int texture0;
+	unsigned int texture0; // TODO: put this variable into AreaData to make 3 different CS patterns
 public:
 	// methods
 	ScreenData() // constructor

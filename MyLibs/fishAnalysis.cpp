@@ -57,7 +57,11 @@ TODO:
 2. Consize the recursive ifs
 */
 
-void ArenaData::initialize(vector<string> fishIDs, int fishAge, vector<int> yDivs)
+void ArenaData::initialize(
+	vector<string> fishIDs, // unique fish IDs
+	int fishAge, 
+	vector<int> yDivs
+	)
 {
 	const int historyLen = 2000; // used in MOG subtractor
 	pMOG = cv::createBackgroundSubtractorMOG2(historyLen, binThre, false);
@@ -127,7 +131,6 @@ bool ArenaData::findAllFish()
 		if (maxContours[1][i] == -1)
 		{
 			allFish[i].pauseFrames++;
-			cout << "Fish: " << i << " not found! " << endl;
 			fishFlag = false;
 		}
 		else
@@ -266,6 +269,7 @@ void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
 	pMOG->apply(opencvImg, subImg);
 }
 
+// TODO: check whether this for loop necessary 
 void ArenaData::annotateFish() {
 	for (int j = 0; j < numFish; j++)
 	{
@@ -284,7 +288,7 @@ void ArenaData::annotateFish() {
 	}
 }
 
-void ArenaData::BlackoutExp() {
+void ArenaData::NoShock() {
 	for (int i = 0; i < numFish; i++)
 	{
 	    allFish[i].shockOn = 0;
