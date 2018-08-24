@@ -41,7 +41,6 @@ int main()
 {
 	string CS_Pattern = "redBlackCheckerboard";
 	ExperimentData exp(CS_Pattern);
-
 	if (!exp.initialize())
 	{
 	cout << "Experiment Initialization Failed." << endl;

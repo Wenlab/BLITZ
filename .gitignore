@@ -11,5 +11,6 @@ $ cat Documentation/.gitignore
 *.filters
 *.user
 *.props
+*glad.c
 /x64
 /x86
