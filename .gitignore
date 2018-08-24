@@ -10,5 +10,6 @@ $ cat Documentation/.gitignore
 *.vcxproj
 *.filters
 *.user
+*.props
 /x64
 /x86
