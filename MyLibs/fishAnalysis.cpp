@@ -288,7 +288,7 @@ void ArenaData::annotateFish() {
 	}
 }
 
-void ArenaData::NoShock() {
+void ArenaData::resetShocksOn() {
 	for (int i = 0; i < numFish; i++)
 	{
 	    allFish[i].shockOn = 0;

@@ -145,8 +145,10 @@ public:
 	void updatePatternInTest(int sElapsed);
 	/* Update pattern in baseline experiment */
 	void updatePatternInBaseline(int sElapsed);
+
+	void updatePatternInBlackout();
+
 	/* Update pattern in the blackout experiment */
-	void BlackoutExp();
 
 
 	// properties

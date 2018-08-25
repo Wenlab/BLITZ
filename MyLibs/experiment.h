@@ -72,16 +72,17 @@ public:
 	void updatePatternInTraining(int fishIdx);
 	
 	/* Give the fish a electric pulse */
-	void giveFishShock(int fishIdx, int flag);
+	void giveFishShock(int fishIdx);
 	/* Experiment during the training period */
-	void TrainingExp(int cIdx);
+	void trainFish(int cIdx);
 	/* Write out info of a frame to disk */
 	void writeOutFrame();
 	/* Decorate images with fish's heads, tails and visual pattern's info */
 	void annotateFishImgs();
 	/* Present fish images with annotations. The code is adapted from code in stackfow*/
 	void displayFishImgs(std::string title);
-	
+	/* Get current time */
+	void getTime();
 	// properties
 
 	// constant ones

@@ -130,7 +130,7 @@ public:
 
 	void annotateFish();
 	
-	void NoShock();
+	void resetShocksOn();
 								   
 	// properties
 	const int numFish;

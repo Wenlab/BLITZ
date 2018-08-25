@@ -186,9 +186,7 @@ void ExperimentData::runUnpairedOLexp()
 		/* Convert Pylon image to opencvImg */
 		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
 			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
-		sElapsed = expTimer.getElapsedTimeInSec();
-		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
-		cout << "Time: " << sElapsed << " (s) " << endl;
+		getTime();
 		if (!allArenas[cIdx].findAllFish())
 			cout << "in arena: " << cIdx << endl;
 		if (sElapsed < baselineEndTime)
@@ -203,7 +201,7 @@ void ExperimentData::runUnpairedOLexp()
 			{	// find certain element in the vector
 				int target = (idxFrame - cIdx) / numCameras;
 				if (find(rndVec.begin(), rndVec.end(), target) != rndVec.end())
-					giveFishShock(i,1);
+					giveFishShock(i);
 				else
 					allArenas[cIdx].allFish[i].shockOn = 0;
 				updatePatternInTraining(i);
@@ -212,10 +210,12 @@ void ExperimentData::runUnpairedOLexp()
 		else if (sElapsed < blackoutEndTime)
 		{
 			expPhase = 2;
-			/* TODO: The following code should be done only once */
-			allArenas[cIdx].NoShock();
-			screen.BlackoutExp();
-			/* The problem is I change pIdx of allArenas but pIdx of area is the useful one*/
+			if (idxFrame == trainingEndTime * FRAMERATE * numCameras + cIdx)
+			{
+				allArenas[cIdx].resetShocksOn();
+				// make it an AreaData method
+				screen.updatePatternInBlackout();
+			}
 		}
 		else if (sElapsed <= testEndTime)
 		{
@@ -262,11 +262,9 @@ void ExperimentData::runOLexp()
 			cIdx, 
 			(uint8_t*)cams.pylonImg.GetBuffer());
 
-		// make this code block into a ExpData::function
-		sElapsed = expTimer.getElapsedTimeInSec();
-		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
-		cout << "Time: " << sElapsed << " (s) " << endl;
-		////////////////////
+		
+		getTime();
+		
 		if (!allArenas[cIdx].findAllFish())
 			cout << "Fish in arena " << cIdx << "not found."<< endl;
 		if (sElapsed < baselineEndTime)
@@ -277,19 +275,17 @@ void ExperimentData::runOLexp()
 		else if (sElapsed < trainingEndTime)
 		{
 			expPhase = 1;
-			TrainingExp(cIdx);
+			trainFish(cIdx);
 		}
 		else if (sElapsed < blackoutEndTime)
 		{
 			expPhase = 2;
 			if (idxFrame == trainingEndTime * FRAMERATE * numCameras + cIdx)
 			{
-				allArenas[cIdx].resetShocksOn;
+				allArenas[cIdx].resetShocksOn();
 				// make it an AreaData method
 				screen.updatePatternInBlackout();
 			}
-			allArenas[cIdx].NoShock();
-			screen.BlackoutExp();
 		}
 		else if (sElapsed <= testEndTime)
 		{
@@ -310,26 +306,24 @@ void ExperimentData::runOLexp()
 	cout << "Experiment ended. " << endl;
 }
 
-// divide this function into two parts, one deals with fishAnalysis, the other deals with talk2screen
+// TODO:divide this function into two parts, one deals with fishAnalysis, the other deals with talk2screen
 void ExperimentData::updatePatternInTraining(int fishIdx)
 {
 	int cIdx = cams.cIdx;
 	FishData fish = allArenas[cIdx].allFish[fishIdx];
-	PatchData patch = screen.allAreas[cIdx].allPatches[fishIdx];
-	int pIdx = patch.pIdx; // patternIdx
-	int delimY = patch.yDivide;
-	int lastTimeInCS = fish.lastTimeInCS;
+	int pIdx = screen.allAreas[cIdx].allPatches[fishIdx].pIdx; // patternIdx
+	int delimY = screen.allAreas[cIdx].allPatches[fishIdx].yDivide;
+	int lastTimeInCS = allArenas[cIdx].allFish[fishIdx].lastTimeInCS;
 	/* Update visual pattern whenver fish stays longer than NCStimeThre in non-CS area */
 	int NCStimeThre = 48; // seconds
-	int lastBlackoutStart = fish.lastBlackoutStart;
-	Point head = fish.head;
+	int lastBlackoutStart = allArenas[cIdx].allFish[fishIdx].lastBlackoutStart;
+	Point head = allArenas[cIdx].allFish[fishIdx].head;
 
 	if (pIdx == 2)
 	{
 		if (sElapsed > lastBlackoutStart + ITI)
 		{
 			/* Randomly choose a pattern for the patch */
-			//allArenas[cIdx].allFish[fishIdx].patternIndex = rand() % 2;
 			screen.allAreas[cIdx].allPatches[fishIdx].pIdx = rand() % 2;
 			screen.allAreas[cIdx].allPatches[fishIdx].updatePattern();
 			allArenas[cIdx].allFish[fishIdx].lastFishPatternUpdate = sElapsed;
@@ -340,13 +334,13 @@ void ExperimentData::updatePatternInTraining(int fishIdx)
 	}
 	else {
 		// update lastTimeInCS and lastTimeInNCS of fish
+		// code block below is all about fish
 		if (pIdx) // patternIdx == 1, since patternIdx == 2 is excluded
 		{
 			if (head.y < delimY) // In non-CS area
 				allArenas[cIdx].allFish[fishIdx].lastTimeInNCS = sElapsed;
 			else
 				allArenas[cIdx].allFish[fishIdx].lastTimeInCS = sElapsed;
-
 		}
 		else {
 			if (head.y > delimY) // In non-CS area
@@ -364,12 +358,10 @@ void ExperimentData::updatePatternInTraining(int fishIdx)
 	}
 }
 
-void ExperimentData::giveFishShock(int fishIdx, int flag)
+void ExperimentData::giveFishShock(int fishIdx)
 {
 	int cIdx = cams.cIdx;
-	allArenas[cIdx].allFish[fishIdx].shockOn = flag;
-	if (!flag)
-		return;
+	allArenas[cIdx].allFish[fishIdx].shockOn = 1;
 	// give a electric pulse
 	thePort.givePulse(4*cIdx + fishIdx);
 	allArenas[cIdx].allFish[fishIdx].lastShockTime = sElapsed;
@@ -380,8 +372,9 @@ void ExperimentData::trainFish(int cIdx) {
 	{
 		int pIdx = screen.allAreas[cIdx].allPatches[i].pIdx;
 		// TODO: use if instead
-		int flag = allArenas[cIdx].allFish[i].ifGiveShock(pIdx, sElapsed);
-		giveFishShock(i, flag);
+		if (allArenas[cIdx].allFish[i].ifGiveShock(pIdx, sElapsed)) {
+			giveFishShock(i);
+		}
 		updatePatternInTraining(i);
 		// separate the above function into two functions
 	}
@@ -491,4 +484,10 @@ void ExperimentData::annotateFishImgs()
 	{
 		allArenas[i].annotateFish();
 	}
+}
+
+void ExperimentData::getTime() {
+	sElapsed = expTimer.getElapsedTimeInSec();
+	msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
+	cout << "Time: " << sElapsed << " (s) " << endl;
 }
