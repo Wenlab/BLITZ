@@ -105,6 +105,8 @@ public:
 		
 	}
 	bool initialize(std::vector<int> yDivideVec);
+	/* reverse all patch pattern */
+	void reverseAllPatches();
 	// properties
 	std::vector<PatchData> allPatches;
 	const int numPatches;
@@ -135,8 +137,6 @@ public:
 	
 	/* Update pattern for specific area */
 	void updatePattern(int cIdx);
-	/* Update patternIdx for all shaders in the screen */
-	void updatePattern();
 	/* Render designed pattern on the screen */
 	void renderTexture();
 
@@ -147,9 +147,6 @@ public:
 	void updatePatternInBaseline(int sElapsed);
 	/* Update pattern in blackout experiment */
 	void updatePatternInBlackout();
-	/* Update pattern in training experiment */
-	void updatePatternInTraining();
-	/* Update pattern in the blackout experiment */
 
 
 	// properties

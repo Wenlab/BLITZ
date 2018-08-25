@@ -228,7 +228,6 @@ void ExperimentData::runUnpairedOLexp()
 		  //cout << "Experiment ended. " << endl;
 		  //exit(0);
 		}
-		screen.updatePattern();
 		screen.renderTexture();
 		writeOutFrame();
 		annotateFishImgs();
@@ -298,7 +297,6 @@ void ExperimentData::runOLexp()
 			//cout << "Experiment ended. " << endl;
 			//exit(0);
 		}
-		//screen.updatePattern();
 		screen.renderTexture();
 		writeOutFrame();
 		annotateFishImgs();
@@ -328,7 +326,6 @@ void ExperimentData::trainFish(int cIdx) {
 		screen.allAreas[cIdx].allPatches[i].pIdx 
 			= allArenas[cIdx].allFish[i].updatePatternInTraining(sElapsed,pIdx,ITI);
 		screen.allAreas[cIdx].allPatches[i].updatePattern();
-		// separate the above function into two functions
 	}
 }
 

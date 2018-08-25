@@ -121,32 +121,26 @@ bool AreaData::initialize(vector<int> yDivideVec)
 	return true;
 }
 
-// TODO: use the same-name function of the AreaData class to replace the inner loop
-/* Update patterns of the entire screen */
-void ScreenData::updatePattern()
-{
-	for (int i = 0; i < allAreas.size(); i++)
+void AreaData::reverseAllPatches() {
+	for (int j = 0; j < numPatches; j++)
 	{
-		AreaData area = allAreas[i];
-		for (int j = 0; j < area.numPatches; j++)
-		{
-			area.allPatches[j].updatePattern();
-		}
+		allPatches[j].pIdx = !allPatches[j].pIdx;
+		allPatches[j].updatePattern();
 	}
 }
 
 // TODO: degrade it to a member function of AreaData
+// This function is useless now, 
+// but I don't know whether it will be useful when the patterns in three areas are different  
 /* update pattern for specific area */
 // send the pIdx from the CPU side to the GPU side
 void ScreenData::updatePattern(int cIdx)
 {
-	
 	AreaData area = allAreas[cIdx];
 	for (int j = 0; j < area.numPatches; j++)
 	{
 		area.allPatches[j].updatePattern();
 	}	
-
 }
 
 void ScreenData::updatePatternInTest(int sElapsed) {
@@ -157,12 +151,7 @@ void ScreenData::updatePatternInTest(int sElapsed) {
 		lastScreenPatternUpdate = sElapsed;
 		for (int i = 0; i < numAreas; i++)
 		{
-			// TODO: allAreas[i].updatePattern();
-			for (int j = 0; j < allAreas[i].numPatches; j++)
-			{
-				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
-				allAreas[i].allPatches[j].updatePattern();
-			}
+			allAreas[i].reverseAllPatches();
 		}
 	}
 }
@@ -184,6 +173,7 @@ void ScreenData::updatePatternInBaseline(int sElapsed) {
 		}
 	}
 }
+
 // only need to run once
 void ScreenData::updatePatternInBlackout() {
 	for (int i = 0; i < numAreas; i++)
@@ -194,10 +184,6 @@ void ScreenData::updatePatternInBlackout() {
 			allAreas[i].allPatches[j].updatePattern();
 		}
 	}
-}
-
-void ScreenData::updatePatternInTraining() {
-
 }
 
 bool ScreenData::initialize(const char* imgName, int nAreas)

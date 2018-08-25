@@ -302,6 +302,7 @@ void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
 }
 
 // TODO: check whether this for loop necessary 
+// I think it is necessary, but I can not confirm now
 void ArenaData::annotateFish() {
 	for (int j = 0; j < numFish; j++)
 	{
@@ -312,10 +313,9 @@ void ArenaData::annotateFish() {
 		else if (pIdx == 1)
 		putText(allArenas[i].opencvImg, "CS BOTTOM", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
 		*/
-		Point head = allFish[j].head;
-		if (head.x == -1) // invalid fish analysis data
+		if (allFish[j].head.x == -1) // invalid fish analysis data
 			continue;
-		circle(opencvImg, head, 5, Scalar(255), 2);
+		circle(opencvImg, allFish[j].head, 5, Scalar(255), 2);
 		circle(opencvImg, allFish[j].tail, 3, Scalar(255), 2);
 	}
 }
