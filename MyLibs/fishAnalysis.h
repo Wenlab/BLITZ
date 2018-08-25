@@ -52,9 +52,8 @@ public:
 		, yDiv(yDivide)
 	{
 		lastBlackoutStart = -1;
-		lastFishPatternUpdate = -1;
+		lastTimeUpdatePattern = -1;
 		lastTimeInCS = -1;
-		lastTimeInNCS = -1;
 		lastShockTime = -1;
 		pauseFrames = -1;
 		shockOn = false;
@@ -73,6 +72,8 @@ public:
 
 	bool ifGiveShock(int pIdx, int sElapsed);
 
+	int updatePatternInTraining(int sElapsed, int pIdx, int ITI);
+
 	// properties
 	// const properties
 	const std::string ID;
@@ -82,9 +83,8 @@ public:
 
 	int lastBlackoutStart;
 	
-	int lastFishPatternUpdate; // TODO: rename it or remove it
+	int lastTimeUpdatePattern; // TODO: rename it or remove it
 	int lastTimeInCS; // Keep this
-	int lastTimeInNCS;// TODO: remove this variable
 	int lastShockTime;
 	int pauseFrames;
 	bool shockOn;

@@ -163,7 +163,6 @@ void ScreenData::updatePatternInTest(int sElapsed) {
 				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
 				allAreas[i].allPatches[j].updatePattern();
 			}
-			//
 		}
 	}
 }
@@ -195,6 +194,10 @@ void ScreenData::updatePatternInBlackout() {
 			allAreas[i].allPatches[j].updatePattern();
 		}
 	}
+}
+
+void ScreenData::updatePatternInTraining() {
+
 }
 
 bool ScreenData::initialize(const char* imgName, int nAreas)

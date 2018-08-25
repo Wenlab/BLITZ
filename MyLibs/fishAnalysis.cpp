@@ -222,7 +222,7 @@ bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 
 	if (pIdx == 2) // blackout 
 		return false;
-	if (sElapsed < lastFishPatternUpdate + thinkingTime)
+	if (sElapsed < lastTimeUpdatePattern + thinkingTime)
 		return false;
 	if (sElapsed < lastShockTime + shockCD)
 		return false;
@@ -258,6 +258,38 @@ bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 			}
 		}
 	}
+}
+
+int FishData::updatePatternInTraining(int sElapsed,int pIdx, int ITI) {
+	int NCStimeThre = 48; // seconds
+	if (pIdx == 2)
+	{
+		if (sElapsed > lastBlackoutStart + ITI)
+		{
+			pIdx = rand() % 2;
+		    lastTimeUpdatePattern = sElapsed;
+			lastTimeInCS = sElapsed;
+		}
+	}
+	else {
+		// update lastTimeInCS and lastTimeInNCS of fish
+		if (pIdx) // patternIdx == 1, since patternIdx == 2 is excluded
+		{
+			if (head.y > yDiv)
+				lastTimeInCS = sElapsed;
+		}
+		else {
+			if (head.y < yDiv) // In non-CS area
+				lastTimeInCS = sElapsed;
+		}
+
+		if (sElapsed - lastTimeInCS > NCStimeThre) // if stays too long in non-CS area
+		{
+			pIdx = 2;
+			lastBlackoutStart = sElapsed;
+		}
+	}
+	return pIdx;
 }
 
 void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
