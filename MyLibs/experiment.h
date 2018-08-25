@@ -48,8 +48,9 @@ private:
 	;// nothing for now
 public:
 	// methods
-	ExperimentData(std::string texName)
+	ExperimentData(std::string texName, std::string pName)
 		: CSpattern(texName)
+		, pathName(pName)
 	{
 		numCameras = 0;
 
@@ -83,6 +84,7 @@ public:
 
 	// constant ones
 	const std::string CSpattern;
+	const std::string pathName;
 	int numCameras;
 
 	int idxFrame;

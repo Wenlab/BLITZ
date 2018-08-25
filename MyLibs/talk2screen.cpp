@@ -79,6 +79,7 @@ void PatchData::initVertices()
 	glEnableVertexAttribArray(2);
 }
 
+/* send pIdx from CPU to GPU */
 void PatchData::updatePattern()
 {
 	shader.use();
@@ -165,11 +166,7 @@ void ScreenData::updatePatternInBaseline(int sElapsed) {
 		baselineInterval = rand() % 30 + 15;
 		for (int i = 0; i < numAreas; i++)
 		{
-			for (int j = 0; j < allAreas[i].numPatches; j++)
-			{
-				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
-				allAreas[i].allPatches[j].updatePattern();
-			}
+			allAreas[i].reverseAllPatches();
 		}
 	}
 }

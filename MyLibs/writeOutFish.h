@@ -48,7 +48,7 @@ public:
 	{
 
 	}
-	bool initialize(std::string contentName, int width, int height, int frameRate);
+	bool initialize(std::string pathName, std::string contentName, int width, int height, int frameRate);
 
 	// template functions
 	/* Write out key value pairs */

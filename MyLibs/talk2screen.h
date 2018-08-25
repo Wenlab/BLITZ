@@ -134,13 +134,10 @@ public:
 	bool init_glad();
 	/* load txture from image */
 	bool loadTextureIntoBuffers(const char* filename);
-	
 	/* Update pattern for specific area */
 	void updatePattern(int cIdx);
 	/* Render designed pattern on the screen */
 	void renderTexture();
-
-	
 	/* Update pattern in test experiment */
 	void updatePatternInTest(int sElapsed);
 	/* Update pattern in baseline experiment */
@@ -163,7 +160,6 @@ public:
 		|		|		|
 	*/
 	std::vector<AreaData> allAreas;
-	
 	int numAreas;
 	int lastScreenPatternUpdate;
 	/* Interval for updating pattern in baseline session, which is a random number in range */

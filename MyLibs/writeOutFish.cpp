@@ -33,11 +33,8 @@
 using namespace std;
 using namespace cv;
 
-bool WriteOutData::initialize(string contentName, int width, int height, int frameRate)
+bool WriteOutData::initialize(string pathName,string contentName, int width, int height, int frameRate)
 {
-	// TODO: make the pathName into a input arg.
-	const string pathName = "F:/FishExpData/";
-	
 	string videoName = pathName + contentName + ".avi";
 	string yamlName = pathName + contentName + ".yaml";
 	FileStorage fObj(yamlName, FileStorage::WRITE);

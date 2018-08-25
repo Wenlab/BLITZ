@@ -83,8 +83,8 @@ public:
 
 	int lastBlackoutStart;
 	
-	int lastTimeUpdatePattern; // TODO: rename it or remove it
-	int lastTimeInCS; // Keep this
+	int lastTimeUpdatePattern;
+	int lastTimeInCS;
 	int lastShockTime;
 	int pauseFrames;
 	bool shockOn;

@@ -109,7 +109,7 @@ bool ExperimentData::initialize()
 			+ "dpf_" + expTask + "_" + CSstr;
 
 		/* Create yaml and video files to write in */
-		if (!writeOut.initialize(contentName, WIDTH, HEIGHT, FRAMERATE))
+		if (!writeOut.initialize(pathName,contentName, WIDTH, HEIGHT, FRAMERATE))
 			return false;
 
 		/* Write out general experiment context info */
