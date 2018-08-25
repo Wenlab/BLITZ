@@ -307,37 +307,7 @@ void ExperimentData::runOLexp()
 	cout << "Experiment ended. " << endl;
 }
 
-// TODO:divide this function into two parts, one deals with fishAnalysis, the other deals with talk2screen
-void ExperimentData::updatePatternInTraining(int fishIdx)
-{
-	int cIdx = cams.cIdx;
-	int pIdx = screen.allAreas[cIdx].allPatches[fishIdx].pIdx; // patternIdx
-	int delimY = allArenas[cIdx].allFish[fishIdx].yDiv;
-	int lastTimeInCS = allArenas[cIdx].allFish[fishIdx].lastTimeInCS;
-	/* Update visual pattern whenver fish stays longer than NCStimeThre in non-CS area */
-	int NCStimeThre = 48; // seconds
-	int lastBlackoutStart = allArenas[cIdx].allFish[fishIdx].lastBlackoutStart;
-	Point head = allArenas[cIdx].allFish[fishIdx].head;
 
-
-	/* code block 1 is for PatchData */
-	if (pIdx == 2)
-	{
-		if (sElapsed > lastBlackoutStart + ITI)
-		{
-			screen.allAreas[cIdx].allPatches[fishIdx].pIdx = rand() % 2;
-			screen.allAreas[cIdx].allPatches[fishIdx].updatePattern();
-		}
-	}
-	else {
-		if (sElapsed - lastTimeInCS > NCStimeThre) // if stays too long in non-CS area
-		{
-			screen.allAreas[cIdx].allPatches[fishIdx].pIdx = 2;
-			screen.allAreas[cIdx].allPatches[fishIdx].updatePattern();
-		}
-	}
-
-}
 
 void ExperimentData::giveFishShock(int fishIdx)
 {

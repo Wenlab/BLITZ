@@ -67,10 +67,6 @@ public:
 	void runUnpairedOLexp();
 	/* Run the entire operant learning procedure */
 	void runOLexp();
-	
-	/* Update visual pattern in the training session */
-	void updatePatternInTraining(int fishIdx);
-	
 	/* Give the fish a electric pulse */
 	void giveFishShock(int fishIdx);
 	/* Experiment during the training period */
