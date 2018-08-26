@@ -87,9 +87,15 @@ string get_CS_string(string CSpattern)
 		CSstr = "PB";
 	else
 	{
-		cout << "Unrecognized CS Pattern." << endl
-			<< "Experiment initialization failed." << endl;
-		exit(0);
+		CSstr = CSpattern;
+		cout << "The CS pattern is: " << endl
+			<< CSstr << endl
+			<< "Please make sure everything is correct." << endl 
+			<< endl;
+
+		//cout << "Unrecognized CS Pattern." << endl
+			//<< "Experiment initialization failed." << endl;
+		//exit(0);
 	}
 	return CSstr;
 }

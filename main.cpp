@@ -39,7 +39,7 @@ using namespace cv;
 
 int main()
 {
-	string CS_Pattern = "redBlackCheckerboard";
+	string CS_Pattern = "RGB96";
 	ExperimentData exp(CS_Pattern);
 
 	if (!exp.initialize())

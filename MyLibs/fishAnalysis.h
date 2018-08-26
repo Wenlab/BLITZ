@@ -96,7 +96,7 @@ public:
 };
 
 /* Define all infos including fish for a single arena */
-class ArenaData { 
+class ArenaData {
 
 private:
 	;// nothing for now
@@ -128,13 +128,13 @@ public:
 	2. Consize the recursive ifs
 	*/
 	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
-	bool findAllFish(); 
-	
-								   
+	bool findAllFish();
+
+
 	// properties
 
 	const int numFish;
-	int binThre; // in the future, this might be adjusted in the GUI 
+	int binThre; // in the future, this might be adjusted in the GUI
 	void prepareBgImg(int width, int height, int cIdx, uint8_t* buffer);
 
 	void BlackoutExp();
@@ -159,4 +159,3 @@ std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv
 
 
 #endif // !_GUARD_FISHANALYSIS_H
-
