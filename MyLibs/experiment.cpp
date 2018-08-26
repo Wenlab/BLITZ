@@ -129,18 +129,21 @@ bool ExperimentData::initialize()
 
 
 	}
-	expTimer.start();
+	//expTimer.start(); 
 	return true;
 }
 
 void ExperimentData::prepareBgImg(const int prepareTime)
 {
-	while (expTimer.getElapsedTimeInSec() < prepareTime)
+	int tempIdx = 0;
+	while (tempIdx < prepareTime * FRAMERATE * numCameras)//expTimer.getElapsedTimeInSec() < prepareTime)
 	{
+		tempIdx++;
+		int timeInSec = tempIdx / (FRAMERATE * numCameras);
 		cams.grabPylonImg();
-		int timeInSec = expTimer.getElapsedTimeInSec();
+		//int timeInSec = expTimer.getElapsedTimeInSec();
 		// Display progress message in the command window
-		cout << "Preparing... " << timeInSec << " in " << to_string(prepareTime) << " s" << endl;
+		cout << "Preparing... " << timeInSec << " in " << prepareTime << " s" << endl;
 
 		int cIdx = cams.cIdx;
 
@@ -150,7 +153,7 @@ void ExperimentData::prepareBgImg(const int prepareTime)
 
 		screen.renderTexture();
 	}
-	expTimer.start(); // reset timer to 0
+	
 }
 
 void ExperimentData::runUnpairedOLexp()
@@ -176,7 +179,7 @@ void ExperimentData::runUnpairedOLexp()
 	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
 
 	prepareBgImg(prepareTime);
-
+	expTimer.start(); // reset timer to 0
 	while (idxFrame < numCameras * expEndTime * FRAMERATE)// giant grabbing loop
 	{
 		cams.grabPylonImg();
@@ -240,22 +243,24 @@ void ExperimentData::runUnpairedOLexp()
 void ExperimentData::runOLexp()
 {
 	const int prepareTime = 1 * 60 / 10 ; // seconnds, default 1 min
-	const int baselineEndTime = 1 * 60 / 10; // seconds, default 10 mins
-	const int trainingEndTime = 2 * 60 / 10 ; // seconds, default 20 mins
-	const int blackoutEndTime = 3 * 60 / 10 ; // seconds, default 1 min
-	const int testEndTime = 4 * 60 / 10 ; // seconds, default 18 mins (including memory extinction period)
+	const int baselineEndTime = 1 ; // seconds, default 10 mins
+	const int trainingEndTime = 2 ;//* 60 / 10 ; // seconds, default 20 mins
+	const int blackoutEndTime = 4;// *60 / 10; // seconds, default 1 min
+	const int testEndTime = 5 * 60 / 10 ; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
 	prepareBgImg(prepareTime);
+	expTimer.start(); // reset timer to 0
+
+
 
 	while (idxFrame < numCameras * expEndTime * FRAMERATE )// giant grabbing loop
 	{
 		idxFrame++;
-
+		
 		cams.grabPylonImg();
 
 		int cIdx = cams.cIdx;
-
 		allArenas[cIdx].prepareBgImg(
 			cams.ptrGrabResult->GetWidth(), 
 			cams.ptrGrabResult->GetHeight(),
@@ -266,7 +271,7 @@ void ExperimentData::runOLexp()
 		getTime();
 		
 		if (!allArenas[cIdx].findAllFish())
-			cout << "Fish in arena " << cIdx << "not found."<< endl;
+			//cout << "Fish in arena " << cIdx << "not found."<< endl;
 		if (sElapsed < baselineEndTime)
 		{
 			expPhase = 0;             //baseline = 0, training = 1, blackout = 2, test = 3
@@ -280,6 +285,8 @@ void ExperimentData::runOLexp()
 		else if (sElapsed < blackoutEndTime)
 		{
 			expPhase = 2;
+			//cout << idxFrame << endl;
+			//cout << trainingEndTime * FRAMERATE * numCameras + cIdx << endl;
 			if (idxFrame == trainingEndTime * FRAMERATE * numCameras + cIdx)
 			{
 				allArenas[cIdx].resetShocksOn();
@@ -303,6 +310,7 @@ void ExperimentData::runOLexp()
 		displayFishImgs("Display");
 	}
 	cout << "Experiment ended. " << endl;
+	system("pause");
 }
 
 
@@ -436,7 +444,7 @@ void ExperimentData::annotateFishImgs()
 }
 
 void ExperimentData::getTime() {
-	sElapsed = expTimer.getElapsedTimeInSec();
+	sElapsed = idxFrame / (FRAMERATE * numCameras);//expTimer.getElapsedTimeInSec();
 	msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 	cout << "Time: " << sElapsed << " (s) " << endl;
 }
