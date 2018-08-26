@@ -50,7 +50,6 @@ int main()
 	else {
 	cout << "Experiment initialized." << endl;
 	}
-
 	exp.runOLexp();
 
 

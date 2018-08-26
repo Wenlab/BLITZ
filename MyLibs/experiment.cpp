@@ -285,14 +285,8 @@ void ExperimentData::runOLexp()
 		else if (sElapsed < blackoutEndTime)
 		{
 			expPhase = 2;
-			//cout << idxFrame << endl;
-			//cout << trainingEndTime * FRAMERATE * numCameras + cIdx << endl;
-			if (idxFrame == trainingEndTime * FRAMERATE * numCameras + cIdx)
-			{
-				allArenas[cIdx].resetShocksOn();
-				// make it an AreaData method
-				screen.updatePatternInBlackout();
-			}
+			allArenas[cIdx].resetShocksOn();
+			screen.updatePatternInBlackout();
 		}
 		else if (sElapsed <= testEndTime)
 		{
@@ -300,9 +294,8 @@ void ExperimentData::runOLexp()
 			screen.updatePatternInTest(sElapsed);
 		}
 		else
-		{   // experiment ends
-			//cout << "Experiment ended. " << endl;
-			//exit(0);
+		{   
+
 		}
 		screen.renderTexture();
 		writeOutFrame();
@@ -444,7 +437,7 @@ void ExperimentData::annotateFishImgs()
 }
 
 void ExperimentData::getTime() {
-	sElapsed = idxFrame / (FRAMERATE * numCameras);//expTimer.getElapsedTimeInSec();
+	sElapsed = idxFrame / (FRAMERATE * numCameras);
 	msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 	cout << "Time: " << sElapsed << " (s) " << endl;
 }
