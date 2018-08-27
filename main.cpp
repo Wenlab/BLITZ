@@ -39,19 +39,6 @@ using namespace cv;
 
 int main()
 {
-	const string pathName = "F:/FishExpData/";
-	string CS_Pattern = "redBlackCheckerboard";
-	ExperimentData exp(CS_Pattern,pathName);
-	if (!exp.initialize())
-	{
-	cout << "Experiment Initialization Failed." << endl;
-	exit(0);
-	}
-	else {
-	cout << "Experiment initialized." << endl;
-	}
-	exp.runOLexp();
-
 
 	/* Test serial port
 	string CS_Pattern = "redBlackCheckerboard";
@@ -76,18 +63,17 @@ int main()
 
 	
 	/* main function
+	const string pathName = "F:/FishExpData/";
 	string CS_Pattern = "redBlackCheckerboard";
-	ExperimentData exp(CS_Pattern);
-
+	ExperimentData exp(CS_Pattern,pathName);
 	if (!exp.initialize())
 	{
-		cout << "Experiment Initialization Failed." << endl;
-		exit(0);
+	cout << "Experiment Initialization Failed." << endl;
+	exit(0);
 	}
 	else {
-		cout << "Experiment initialized." << endl;
+	cout << "Experiment initialized." << endl;
 	}
-
 	exp.runOLexp();
 	*/
 

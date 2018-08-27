@@ -79,7 +79,7 @@ public:
 	/* Present fish images with annotations. The code is adapted from code in stackfow*/
 	void displayFishImgs(std::string title);
 	/* Get current time */
-	void getTime();
+	bool getTime();
 	// properties
 
 	// constant ones

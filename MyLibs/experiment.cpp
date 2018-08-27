@@ -268,7 +268,9 @@ void ExperimentData::runOLexp()
 			(uint8_t*)cams.pylonImg.GetBuffer());
 
 		
-		getTime();
+		if (!getTime()) {
+			break;
+		}
 		
 		if (!allArenas[cIdx].findAllFish())
 			//cout << "Fish in arena " << cIdx << "not found."<< endl;
@@ -436,8 +438,14 @@ void ExperimentData::annotateFishImgs()
 	}
 }
 
-void ExperimentData::getTime() {
+bool ExperimentData::getTime() {
 	sElapsed = idxFrame / (FRAMERATE * numCameras);
+	int systemTime = (int)expTimer.getElapsedTimeInSec();
+	if (fabs(sElapsed - systemTime) > 1) {
+		cout << "The FRAMERATE is not acceptable" << endl;
+		return false;
+	}
 	msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 	cout << "Time: " << sElapsed << " (s) " << endl;
+	return true;
 }
