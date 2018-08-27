@@ -65,9 +65,15 @@ bool ExperimentData::initialize()
 	string imgFolderPath = "Images/";
 
 	showWelcomeMsg();
-	string imgStr = imgFolderPath + CSpattern + ".jpg";
-	const char* imgName = imgStr.c_str();
-	string CSstr = get_CS_string(CSpattern);
+	vector<string> imgStrs;
+	vector<const char*> imgName(CSpatterns.size());
+	vector<string> CSstr(CSpatterns.size());
+	for (int i = 0; i < CSpatterns.size(); i++)
+	{
+		imgStrs.push_back(imgFolderPath + CSpatterns[i] + ".jpg");
+		imgName[i] = imgStrs[i].c_str();
+		CSstr[i] = get_CS_string(CSpatterns[i]);
+	}
 	string timeStr = get_current_date_time();
 	numCameras = enquireNumCams();
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
@@ -106,7 +112,7 @@ bool ExperimentData::initialize()
 		string strainName = get_strainName(fishIDs[0][0]);
 		string contentName = timeStr + "_" + "Arena" + to_string(i+1)
 			+ "_" + strainName + "_" + to_string(fishAge)
-			+ "dpf_" + expTask + "_" + CSstr;
+			+ "dpf_" + expTask + "_" + CSstr[i];
 
 		/* Create yaml and video files to write in */
 		if (!writeOut.initialize(pathName,contentName, WIDTH, HEIGHT, FRAMERATE))
@@ -252,8 +258,6 @@ void ExperimentData::runOLexp()
 	prepareBgImg(prepareTime);
 	expTimer.start(); // reset timer to 0
 
-
-
 	while (idxFrame < numCameras * expEndTime * FRAMERATE )// giant grabbing loop
 	{
 		idxFrame++;
@@ -267,11 +271,9 @@ void ExperimentData::runOLexp()
 			cIdx, 
 			(uint8_t*)cams.pylonImg.GetBuffer());
 
-		
 		if (!getTime()) {
 			break;
 		}
-		
 		if (!allArenas[cIdx].findAllFish())
 			//cout << "Fish in arena " << cIdx << "not found."<< endl;
 		if (sElapsed < baselineEndTime)

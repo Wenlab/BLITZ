@@ -39,6 +39,45 @@ using namespace cv;
 
 int main()
 {
+	vector<const char*>imgNames;
+	imgNames.push_back("Images/redBlackCheckerboard.jpg");
+	imgNames.push_back("Images/pureBlack.jpg");
+	imgNames.push_back("Images/fullRed.jpg");
+	const vector<vector<float>> allAreaPos =
+	{
+		{ 0.082f, 0.300f, 0.258f, 0.668f },
+		{ 0.840f, -0.810f, 0.258f, 0.73f },
+		{ -0.665f, -0.810f, 0.258f  , 0.73f }
+	};
+	vector<vector<int>> yPatternDivs =
+	{
+		{ 818, 818, 942, 942 },
+		{ 247, 247, 365, 365 },
+		{ 238, 238, 358, 358 }
+	};
+
+	Timer expTimer;
+	expTimer.start();
+	ScreenData screen;
+	screen.initialize(imgNames, 3);
+	screen.loadTextureIntoBuffers(imgNames);
+	for (int i = 0; i < screen.allAreas.size(); i++)
+	{
+		AreaData area1(allAreaPos[i], 4);
+		area1.initialize(yPatternDivs[i]);
+		screen.allAreas.push_back(area1);
+	}
+	int patchIdx = 0;
+	while (1)
+	{
+		int timeInSec = expTimer.getElapsedTimeInSec();
+		cout << "Time (s) : " << timeInSec << endl;
+		if (timeInSec % 10 == 0)
+			screen.allAreas[0].allPatches[patchIdx].pIdx = !screen.allAreas[0].allPatches[patchIdx].pIdx;
+		screen.allAreas[0].allPatches[patchIdx].updatePattern();
+		screen.renderTexture();
+	}
+
 
 	/* Test serial port
 	string CS_Pattern = "redBlackCheckerboard";
@@ -64,15 +103,18 @@ int main()
 	
 	/* main function
 	const string pathName = "F:/FishExpData/";
-	string CS_Pattern = "redBlackCheckerboard";
-	ExperimentData exp(CS_Pattern,pathName);
+	vector<string> CS_Patterns;
+	CS_Patterns.push_back("redBlackCheckerboard");
+	CS_Patterns.push_back("fullRed");
+	CS_Patterns.push_back("fullBlue");
+	ExperimentData exp(CS_Patterns, pathName);
 	if (!exp.initialize())
 	{
-	cout << "Experiment Initialization Failed." << endl;
-	exit(0);
+		cout << "Experiment Initialization Failed." << endl;
+		exit(0);
 	}
 	else {
-	cout << "Experiment initialized." << endl;
+		cout << "Experiment initialized." << endl;
 	}
 	exp.runOLexp();
 	*/

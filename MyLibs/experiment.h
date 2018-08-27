@@ -48,9 +48,7 @@ private:
 	;// nothing for now
 public:
 	// methods
-	ExperimentData(std::string texName, std::string pName)
-		: CSpattern(texName)
-		, pathName(pName)
+	ExperimentData(std::vector<std::string> texNames, std::string pName) : CSpatterns(texNames) , pathName(pName)
 	{
 		numCameras = 0;
 
@@ -83,7 +81,7 @@ public:
 	// properties
 
 	// constant ones
-	const std::string CSpattern;
+	const std::vector<std::string> CSpatterns;
 	const std::string pathName;
 	int numCameras;
 

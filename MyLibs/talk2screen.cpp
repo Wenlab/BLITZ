@@ -130,6 +130,43 @@ void AreaData::reverseAllPatches() {
 	}
 }
 
+bool AreaData::loadTextureIntoBuffers(const char* imgName) {
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// load image, create texture and generate mipmaps
+	int width, height, nrChannels;
+	//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
+	unsigned char *data = stbi_load(imgName, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+		return false;
+	}
+	stbi_image_free(data);
+	return true;
+}
+
+void AreaData::renderTexture() {
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	// render in shaders
+	for (int j = 0; j < numPatches; j++){
+		allPatches[j].shader.use();
+		glBindVertexArray(allPatches[j].VAO);
+		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
+	}
+}
+
 // TODO: degrade it to a member function of AreaData
 // This function is useless now, 
 // but I don't know whether it will be useful when the patterns in three areas are different  
@@ -183,19 +220,19 @@ void ScreenData::updatePatternInBlackout() {
 	}
 }
 
-bool ScreenData::initialize(const char* imgName, int nAreas)
+bool ScreenData::initialize(std::vector<const char*> imgNames, int nAreas)
 {
 	numAreas = nAreas;
 	allAreas.reserve(nAreas);
 	/* GLFW initialize and configure */
-	if (!init_glfw_window())
+	if (!init_glfw_window()) {
 		return false;
-
+	}
 	/* glad: load all OpenGL function pointers */
 	if (!init_glad())
 		return false;
 
-	if (!loadTextureIntoBuffers(imgName))
+	if (!loadTextureIntoBuffers(imgNames))
 		return false;
 	return true;
 }
@@ -240,32 +277,38 @@ bool ScreenData::init_glad()
 }
 
 /* Load one texture for the entire screen */
-bool ScreenData::loadTextureIntoBuffers(const char* imgName)
+bool ScreenData::loadTextureIntoBuffers(vector<const char*> imgNames)
 {
-	glGenTextures(1, &texture0);
-	glBindTexture(GL_TEXTURE_2D, texture0);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	// load image, create texture and generate mipmaps
-	int width, height, nrChannels;
-	//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
-	unsigned char *data = stbi_load(imgName, &width, &height, &nrChannels, 0);
-	if (data)
+	for (int i = 0; i < numAreas; i++)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		if (!allAreas[i].loadTextureIntoBuffers(imgNames[i]))
+			return false;
 	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-		return false;
-	}
-	stbi_image_free(data);
 	return true;
+	//glGenTextures(1, &texture0);
+	//glBindTexture(GL_TEXTURE_2D, texture0);
+	//// set the texture wrapping parameters
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	//// set texture filtering parameters
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//// load image, create texture and generate mipmaps
+	//int width, height, nrChannels;
+	////stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
+	//unsigned char *data = stbi_load(imgName, &width, &height, &nrChannels, 0);
+	//if (data)
+	//{
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	//	glGenerateMipmap(GL_TEXTURE_2D);
+	//}
+	//else
+	//{
+	//	std::cout << "Failed to load texture" << std::endl;
+	//	return false;
+	//}
+	//stbi_image_free(data);
+	//return true;
 }
 
 /* Render designed pattern on the screen */
@@ -276,19 +319,12 @@ void ScreenData::renderTexture()
 
 	// bind textures on corresponding texture units
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture0);
 
 	// render in shaders
 	for (int i = 0; i < allAreas.size(); i++)
 	{
-		for (int j = 0; j < allAreas[i].numPatches; j++)
-		{
-			allAreas[i].allPatches[j].shader.use();
-			glBindVertexArray(allAreas[i].allPatches[j].VAO);
-			glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
-		}
+		allAreas[i].renderTexture();
 	}
-
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move 

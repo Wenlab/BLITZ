@@ -94,7 +94,7 @@ public:
 class AreaData 
 {
 private:
-	; // nothing for now
+	unsigned int texture1; // nothing for now
 public:
 	// methods
 	/* Enquire the number of patches in an arena */
@@ -107,6 +107,11 @@ public:
 	bool initialize(std::vector<int> yDivideVec);
 	/* reverse all patch pattern */
 	void reverseAllPatches();
+
+	void renderTexture();
+
+	bool loadTextureIntoBuffers(const char* filename);
+
 	// properties
 	std::vector<PatchData> allPatches;
 	const int numPatches;
@@ -127,13 +132,13 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(const char* filename, int nAreas);
+	bool initialize(std::vector<const char*> filenames, int nAreas);
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */
 	bool init_glad();
 	/* load txture from image */
-	bool loadTextureIntoBuffers(const char* filename);
+	bool loadTextureIntoBuffers(std::vector<const char*> filenames);
 	/* Update pattern for specific area */
 	void updatePattern(int cIdx);
 	/* Render designed pattern on the screen */
