@@ -249,10 +249,10 @@ bool ScreenData::init_glfw_window()
 	glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 	int count;
 	monitors = glfwGetMonitors(&count);
-	mode = glfwGetVideoMode(monitors[1]);
+	mode = glfwGetVideoMode(monitors[0]);
 	// glfw window creation
 	// --------------------
-	window = glfwCreateWindow(mode->width, mode->height, "VR", monitors[1], NULL);
+	window = glfwCreateWindow(mode->width, mode->height, "VR", monitors[0], NULL);
 	cout << "Screen width: " << mode->width << endl;
 	cout << "Screen height: " << mode->height << endl;
 	if (window == NULL)

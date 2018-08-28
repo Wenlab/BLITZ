@@ -73,18 +73,8 @@ string get_CS_string(string CSpattern)
 	else
 	{
 		CSstr = CSpattern;
-<<<<<<< HEAD
-		cout << "The CS pattern is: " << endl
-			<< CSstr << endl
-			<< "Please make sure everything is correct." << endl 
-			<< endl;
-
-		//cout << "Unrecognized CS Pattern." << endl
-			//<< "Experiment initialization failed." << endl;
-		//exit(0);
-=======
 		cout << "CS pattern is: " << CSstr << endl;
->>>>>>> 2fa446d2a124c21d1a1299b39a0d9d842e53fa4e
+
 	}
 	return CSstr;
 }

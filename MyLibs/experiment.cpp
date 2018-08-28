@@ -248,19 +248,11 @@ void ExperimentData::runUnpairedOLexp()
 
 void ExperimentData::runOLexp()
 {
-<<<<<<< HEAD
-	const int prepareTime = 1 * 60 ; // seconnds, default 1 min   
-	const int baselineEndTime = 10 * 60 ; // seconds, default 10 mins
-	const int trainingEndTime = 30 * 60 ; // seconds, default 20 mins
-	const int blackoutEndTime = 31 * 60 ; // seconds, default 1 min
-	const int testEndTime = 49 * 60 ; // seconds, default 18 mins (including memory extinction period)
-=======
 	const int prepareTime = 1 * 60 / 10 ; // seconnds, default 1 min
 	const int baselineEndTime = 1 ; // seconds, default 10 mins
 	const int trainingEndTime = 2 ;//* 60 / 10 ; // seconds, default 20 mins
 	const int blackoutEndTime = 4;// *60 / 10; // seconds, default 1 min
 	const int testEndTime = 5 * 60 / 10 ; // seconds, default 18 mins (including memory extinction period)
->>>>>>> 2fa446d2a124c21d1a1299b39a0d9d842e53fa4e
 	const int expEndTime = testEndTime;
 
 	prepareBgImg(prepareTime);
