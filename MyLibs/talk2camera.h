@@ -58,17 +58,14 @@ public:
 	bool initialize(int nCams, int frameWidth, int frameHeight, int frameRate);
 	/* Grab Pylon image from cameras */
 	bool grabPylonImg();
+
 	// properties
-	
 	Pylon::CDeviceInfo di[MAX_CAMERAS];
 	Pylon::CBaslerUsbInstantCameraArray cameras;
-
 	Pylon::CGrabResultPtr  ptrGrabResult;
 	Pylon::CPylonImage pylonImg;
 	Pylon::CImageFormatConverter formatConverter;
 	intptr_t cIdx;// index of camera where the frame is grabbed from 
-	
-	
 };
 
 

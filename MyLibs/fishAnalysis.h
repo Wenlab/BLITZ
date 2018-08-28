@@ -52,10 +52,8 @@ public:
 		, yDiv(yDivide)
 	{
 		lastBlackoutStart = -1;
-		lastFishPatternUpdate = -1;
-		patternIndex = -1;
+		lastTimeUpdatePattern = -1;
 		lastTimeInCS = -1;
-		lastTimeInNCS = -1;
 		lastShockTime = -1;
 		pauseFrames = -1;
 		shockOn = false;
@@ -74,6 +72,8 @@ public:
 
 	bool ifGiveShock(int pIdx, int sElapsed);
 
+	int updatePatternInTraining(int sElapsed, int pIdx, int ITI);
+
 	// properties
 	// const properties
 	const std::string ID;
@@ -82,10 +82,9 @@ public:
 	int yDiv; // the division pos between CS and NCS pattern
 
 	int lastBlackoutStart;
-	int lastFishPatternUpdate;
-	int patternIndex;
+	
+	int lastTimeUpdatePattern;
 	int lastTimeInCS;
-	int lastTimeInNCS;
 	int lastShockTime;
 	int pauseFrames;
 	bool shockOn;
@@ -109,6 +108,8 @@ public:
 		allFish.reserve(numFish); // allocate memory
 	}
 
+	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
+	
 	/* find all fish contours in the arena at the same time
 	by finding the largest #fish contours in all contours.
 	Involved parameters:
@@ -122,23 +123,33 @@ public:
 	|		|		|
 	|	2	|	3	|
 	|		|		|
-
-	TODO:
-	1. Abolish fishFlag?
-	2. Consize the recursive ifs
 	*/
+<<<<<<< HEAD
 	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
 	bool findAllFish();
 
 
-	// properties
+=======
+	bool findAllFish(); 
+	
+	void prepareBgImg(int width, int height, int cIdx, uint8_t* buffer);
 
+	void annotateFish();
+	
+	void resetShocksOn();
+								   
+>>>>>>> 2fa446d2a124c21d1a1299b39a0d9d842e53fa4e
+	// properties
 	const int numFish;
+<<<<<<< HEAD
 	int binThre; // in the future, this might be adjusted in the GUI
 	void prepareBgImg(int width, int height, int cIdx, uint8_t* buffer);
 
 	void BlackoutExp();
 
+=======
+	int binThre; // in the future, this might be adjusted in the GUI 
+>>>>>>> 2fa446d2a124c21d1a1299b39a0d9d842e53fa4e
 	cv::Ptr<cv::BackgroundSubtractor> pMOG; // one pMOG for one arena
 	cv::Mat opencvImg, HUDSimg, subImg;
 	std::vector<FishData> allFish;

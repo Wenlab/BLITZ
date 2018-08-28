@@ -94,7 +94,7 @@ public:
 class AreaData 
 {
 private:
-	; // nothing for now
+	unsigned int texture1; // nothing for now
 public:
 	// methods
 	/* Enquire the number of patches in an arena */
@@ -105,6 +105,13 @@ public:
 		
 	}
 	bool initialize(std::vector<int> yDivideVec);
+	/* reverse all patch pattern */
+	void reverseAllPatches();
+
+	void renderTexture();
+
+	bool loadTextureIntoBuffers(const char* filename);
+
 	// properties
 	std::vector<PatchData> allPatches;
 	const int numPatches;
@@ -114,11 +121,10 @@ public:
 class ScreenData 
 {
 private: // only used within class
-	GLFWmonitor * * monitors;
-	
+	GLFWmonitor * * monitors;	
 	GLFWwindow* window;
 	// buffer idx to store texture
-	unsigned int texture0;
+	unsigned int texture0; // TODO: put this variable into AreaData to make 3 different CS patterns
 public:
 	// methods
 	ScreenData() // constructor
@@ -126,28 +132,23 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(const char* filename, int nAreas);
+	bool initialize(std::vector<const char*> filenames, int nAreas);
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */
 	bool init_glad();
 	/* load txture from image */
-	bool loadTextureIntoBuffers(const char* filename);
-	
+	bool loadTextureIntoBuffers(std::vector<const char*> filenames);
 	/* Update pattern for specific area */
 	void updatePattern(int cIdx);
-	/* Update patternIdx for all shaders in the screen */
-	void updatePattern();
 	/* Render designed pattern on the screen */
 	void renderTexture();
-
-	
 	/* Update pattern in test experiment */
 	void updatePatternInTest(int sElapsed);
 	/* Update pattern in baseline experiment */
 	void updatePatternInBaseline(int sElapsed);
-	/* Update pattern in the blackout experiment */
-	void BlackoutExp();
+	/* Update pattern in blackout experiment */
+	void updatePatternInBlackout();
 
 
 	// properties
@@ -164,7 +165,6 @@ public:
 		|		|		|
 	*/
 	std::vector<AreaData> allAreas;
-	
 	int numAreas;
 	int lastScreenPatternUpdate;
 	/* Interval for updating pattern in baseline session, which is a random number in range */

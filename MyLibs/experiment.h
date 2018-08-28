@@ -48,8 +48,7 @@ private:
 	;// nothing for now
 public:
 	// methods
-	ExperimentData(std::string texName)
-		: CSpattern(texName)
+	ExperimentData(std::vector<std::string> texNames, std::string pName) : CSpatterns(texNames) , pathName(pName)
 	{
 		numCameras = 0;
 
@@ -67,29 +66,24 @@ public:
 	void runUnpairedOLexp();
 	/* Run the entire operant learning procedure */
 	void runOLexp();
-	
-	/* Update visual pattern in the training session */
-	void updatePatternInTraining(int fishIdx);
-	
-	
 	/* Give the fish a electric pulse */
-	void giveFishShock(int fishIdx, int flag);
+	void giveFishShock(int fishIdx);
 	/* Experiment during the training period */
-	void TrainingExp(int cIdx);
+	void trainFish(int cIdx);
 	/* Write out info of a frame to disk */
 	void writeOutFrame();
 	/* Decorate images with fish's heads, tails and visual pattern's info */
 	void annotateFishImgs();
 	/* Present fish images with annotations. The code is adapted from code in stackfow*/
 	void displayFishImgs(std::string title);
-	
-
+	/* Get current time */
+	bool getTime();
 	// properties
 
 	// constant ones
-	const std::string CSpattern;
+	const std::vector<std::string> CSpatterns;
+	const std::string pathName;
 	int numCameras;
-	
 
 	int idxFrame;
 	int sElapsed;
@@ -105,7 +99,6 @@ public:
 	ScreenData screen;
 	PortData thePort;
 	WriteOutData writeOut;
-
 };
 
 
