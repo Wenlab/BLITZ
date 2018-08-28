@@ -132,13 +132,13 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<const char*> filenames, int nAreas);
+	bool initialize(const char* filenames, int nAreas);
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */
 	bool init_glad();
 	/* load txture from image */
-	bool loadTextureIntoBuffers(std::vector<const char*> filenames);
+	bool loadTextureIntoBuffers(const char* filenames);
 	/* Update pattern for specific area */
 	void updatePattern(int cIdx);
 	/* Render designed pattern on the screen */

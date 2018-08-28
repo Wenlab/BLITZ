@@ -220,7 +220,7 @@ void ScreenData::updatePatternInBlackout() {
 	}
 }
 
-bool ScreenData::initialize(std::vector<const char*> imgNames, int nAreas)
+bool ScreenData::initialize(const char* imgNames, int nAreas)
 {
 	numAreas = nAreas;
 	allAreas.reserve(nAreas);
@@ -249,10 +249,10 @@ bool ScreenData::init_glfw_window()
 	glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 	int count;
 	monitors = glfwGetMonitors(&count);
-	mode = glfwGetVideoMode(monitors[0]);
+	mode = glfwGetVideoMode(monitors[1]);
 	// glfw window creation
 	// --------------------
-	window = glfwCreateWindow(mode->width, mode->height, "VR", monitors[0], NULL);
+	window = glfwCreateWindow(mode->width , mode->height , "VR", monitors[1], NULL);
 	cout << "Screen width: " << mode->width << endl;
 	cout << "Screen height: " << mode->height << endl;
 	if (window == NULL)
@@ -277,13 +277,31 @@ bool ScreenData::init_glad()
 }
 
 /* Load one texture for the entire screen */
-bool ScreenData::loadTextureIntoBuffers(vector<const char*> imgNames)
+bool ScreenData::loadTextureIntoBuffers(const char* imgNames)
 {
-	for (int i = 0; i < numAreas; i++)
+	glGenTextures(1, &texture0);
+	glBindTexture(GL_TEXTURE_2D, texture0);
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// load image, create texture and generate mipmaps
+	int width, height, nrChannels;
+	//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
+	unsigned char *data = stbi_load(imgNames, &width, &height, &nrChannels, 0);
+	if (data)
 	{
-		if (!allAreas[i].loadTextureIntoBuffers(imgNames[i]))
-			return false;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+		return false;
+	}
+	stbi_image_free(data);
 	return true;
 	//glGenTextures(1, &texture0);
 	//glBindTexture(GL_TEXTURE_2D, texture0);
@@ -319,16 +337,22 @@ void ScreenData::renderTexture()
 
 	// bind textures on corresponding texture units
 	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture0);
 
 	// render in shaders
 	for (int i = 0; i < allAreas.size(); i++)
 	{
-		allAreas[i].renderTexture();
+		for (int j = 0; j < allAreas[i].numPatches; j++)
+		{
+			allAreas[i].allPatches[j].shader.use();
+			glBindVertexArray(allAreas[i].allPatches[j].VAO);
+			glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
+		}
 	}
+
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move 
-
 }
 
 

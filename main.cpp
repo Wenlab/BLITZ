@@ -58,8 +58,8 @@ int main()
 	Timer expTimer;
 	expTimer.start();
 	ScreenData screen;
-	screen.initialize(imgNames, 3);
-	screen.loadTextureIntoBuffers(imgNames);
+	screen.initialize(imgNames[0], 1);
+	screen.loadTextureIntoBuffers(imgNames[0]);
 	for (int i = 0; i < screen.allAreas.size(); i++)
 	{
 		AreaData area1(allAreaPos[i], 4);

@@ -81,7 +81,7 @@ bool ExperimentData::initialize()
 	cout << endl; // separated with an empty line
 
 	cout << "Initializing the projector screen .. " << endl;
-	if (!screen.initialize(imgName, numCameras))
+	if (!screen.initialize(imgName[0], numCameras))
 		return false;
 	cout << endl; // separated with an empty line
 
