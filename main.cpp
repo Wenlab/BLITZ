@@ -39,10 +39,6 @@ using namespace cv;
 
 int main()
 {
-<<<<<<< HEAD
-	string CS_Pattern = "RGB96";
-	ExperimentData exp(CS_Pattern);
-=======
 	vector<const char*>imgNames;
 	imgNames.push_back("Images/redBlackCheckerboard.jpg");
 	imgNames.push_back("Images/pureBlack.jpg");
@@ -59,8 +55,6 @@ int main()
 		{ 247, 247, 365, 365 },
 		{ 238, 238, 358, 358 }
 	};
->>>>>>> 2fa446d2a124c21d1a1299b39a0d9d842e53fa4e
-
 	Timer expTimer;
 	expTimer.start();
 	ScreenData screen;
