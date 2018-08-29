@@ -17,6 +17,8 @@ Authors
 
 BLITZ is written by Wenbin Yang. It is originally a  product of the [Wen Lab][3] in the [Department of Life Science](http://biox.ustc.edu.cn/) and the [HEFEI NATIONAL LABORATORY FOR PHYSICAL SCIENCES AT THE MICROSCALE](http://en.hfnl.ustc.edu.cn/) at [University of Science and Technology of China](http://en.ustc.edu.cn/). 
 
+Wanzhuo Shi is now helping to improve the readability and the code quality.
+
   [1]:http://github.com/samuellab/mindcontrol
   [2]:https://github.com/Wenlab/ABLIZTER
   [3]:http://www.wenlab.org/
