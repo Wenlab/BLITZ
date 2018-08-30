@@ -46,6 +46,38 @@ int main()
 	4. reduce unnecessary data-type conversions
 	5. remove unnecessary code
 	*/
+
+	
+	Timer expTimer;
+	ScreenData myScreen;
+	vector<const char*> CS_Patterns;
+	CS_Patterns.push_back("Images/redBlackCheckerboard.jpg");
+	CS_Patterns.push_back("Images/whiteBlackCheckerboard.jpg");
+	CS_Patterns.push_back("Images/fullBlue.jpg");
+
+	myScreen.initialize(CS_Patterns, 3);
+
+	expTimer.start();
+	while (1)
+	{
+	int timeInSec = expTimer.getElapsedTimeInSec();
+	cout << "Time (s) : " << timeInSec << endl;
+	int areaIdx = rand() % 3;
+	if (timeInSec % 10 == 0)
+		myScreen.allAreas[areaIdx].allPatches[0].pIdx = !myScreen.allAreas[areaIdx].allPatches[0].pIdx;
+	myScreen.allAreas[areaIdx].allPatches[0].updatePattern();
+	myScreen.renderTexture();
+	}
+	
+
+
+
+
+
+
+
+
+	/* The block for the real experiment 
 	string pathName = "F:/FishExpData/";
 	vector<string> CS_Patterns;
 	CS_Patterns.push_back("redBlackCheckerboard");
@@ -64,6 +96,7 @@ int main()
 	}
 
 	exp.runOLexp();
+	*/
 	/* 
 	string CS_Pattern = "RGB96";
 	ExperimentData exp(CS_Pattern);

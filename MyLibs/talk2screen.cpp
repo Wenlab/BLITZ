@@ -230,7 +230,7 @@ void ScreenData::updatePatternInBlackout() {
 bool ScreenData::initialize(
 	std::vector<const char*> imgNames, // image file names
 	int nAreas, 
-	vector<int> patchesOfAreas = { 4,4,4 }
+	vector<int> patchesOfAreas
 	)
 {
 	const vector<vector<float>> allAreaPos =
@@ -308,52 +308,17 @@ bool ScreenData::init_glad()
 	return true;
 }
 
-/* Load one texture for the entire screen */
-bool ScreenData::loadTextureIntoBuffers(std::vector<const char*> imgName, int texIdx)
-{
-	std::vector<unsigned char*> data;
-	for (int i = 0; i < texIdx; i++)
-	{
-		glGenTextures(1, &texture0[i]);
-		glBindTexture(GL_TEXTURE_2D, texture0[i]);
-		// set the texture wrapping parameters
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		// set texture filtering parameters
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		// load image, create texture and generate mipmaps
-		int width, height, nrChannels;
-		//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
-		unsigned char *data0 = stbi_load(imgName[i], &width, &height, &nrChannels, 0);
-		data.push_back(data0);
-		if (data[i])
-		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data[i]);
-			glGenerateMipmap(GL_TEXTURE_2D);
-		}
-		else
-		{
-			std::cout << "Failed to load texture" << std::endl;
-			return false;
-		}
-		stbi_image_free(data[i]);
-	}
-	return true;
-}
-
 /* Render designed pattern on the screen */
 void ScreenData::renderTexture()
-{
+{// TODO: use functions to replace loops
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	int texIdx = 0;
 	for (int  i = 0; i < allAreas.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, texture0[i]);
-		texIdx = texture0[i];
+		glBindTexture(GL_TEXTURE_2D, allAreas[i].texture0);
+		
 		for (int j = 0; j < allAreas[i].numPatches; j++)
 		{
 			allAreas[i].allPatches[j].shader.use();

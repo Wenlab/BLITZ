@@ -117,12 +117,8 @@ class ScreenData
 {
 private: // only used within class
 	GLFWmonitor * * monitors;
-	
 	GLFWwindow* window;
-	// buffer idx to store texture
 
-	//unsigned int texture0, texture1, texture2;
-	unsigned int texture0[3];
 public:
 	// methods
 	ScreenData() // constructor
@@ -135,19 +131,12 @@ public:
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */
 	bool init_glad();
-	/* load txture from image */
-	bool loadTextureIntoBuffers(std::vector<const char*> filename, int texIdx);
-	
 	/* Update pattern for specific area */
 	void updatePattern(int cIdx);
-
-	
 	/* Update patternIdx for all shaders in the screen */
 	void updatePattern();
 	/* Render designed pattern on the screen */
 	void renderTexture();
-
-	
 	/* Update pattern in test experiment */
 	void updatePatternInTest(int sElapsed);
 	/* Update pattern in baseline experiment */
