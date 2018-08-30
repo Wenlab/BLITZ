@@ -81,7 +81,7 @@ bool ExperimentData::initialize()
 	cout << endl; // separated with an empty line
 
 	cout << "Initializing the projector screen .. " << endl;
-	if (!screen.initialize(imgName[0], numCameras))
+	if (!screen.initialize(imgName, numCameras))
 		return false;
 	cout << endl; // separated with an empty line
 
@@ -105,7 +105,7 @@ bool ExperimentData::initialize()
 		// create AreaData and push it into screen.allAreas
 		// the screen coordinates are (-1,1)
 		AreaData area(allAreaPos[i], arena.numFish);
-		area.initialize(yPatternDivs[i]);
+		area.initialize(yPatternDivs[i],i);
 		screen.allAreas.push_back(area);
 
 		// Append strain info to contentName

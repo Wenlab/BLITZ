@@ -40,9 +40,13 @@ using namespace cv;
 int main()
 {
 	vector<const char*>imgNames;
-	imgNames.push_back("Images/redBlackCheckerboard.jpg");
-	imgNames.push_back("Images/pureBlack.jpg");
+	/*imgNames.push_back("Images/RGB32.jpg");
+	imgNames.push_back("Images/RGB64.jpg");
+	imgNames.push_back("Images/RGB96.jpg");*/
+	imgNames.push_back("Images/fullBlue.jpg");
 	imgNames.push_back("Images/fullRed.jpg");
+	imgNames.push_back("Images/whiteBlackCheckerboard.jpg");
+	
 	const vector<vector<float>> allAreaPos =
 	{
 		{ 0.082f, 0.300f, 0.258f, 0.668f },
@@ -58,22 +62,31 @@ int main()
 	Timer expTimer;
 	expTimer.start();
 	ScreenData screen;
-	screen.initialize(imgNames[0], 1);
-	screen.loadTextureIntoBuffers(imgNames[0]);
-	for (int i = 0; i < screen.allAreas.size(); i++)
+	screen.initialize(imgNames, 3);
+	
+	for (int i = 0; i < screen.numAreas; i++)
 	{
 		AreaData area1(allAreaPos[i], 4);
-		area1.initialize(yPatternDivs[i]);
+		area1.initialize(yPatternDivs[i],i);
 		screen.allAreas.push_back(area1);
 	}
 	int patchIdx = 0;
 	while (1)
 	{
 		int timeInSec = expTimer.getElapsedTimeInSec();
-		cout << "Time (s) : " << timeInSec << endl;
-		if (timeInSec % 10 == 0)
-			screen.allAreas[0].allPatches[patchIdx].pIdx = !screen.allAreas[0].allPatches[patchIdx].pIdx;
-		screen.allAreas[0].allPatches[patchIdx].updatePattern();
+		if (timeInSec % 3 == 0) 
+		{
+			screen.allAreas[2].allPatches[patchIdx].pIdx = !screen.allAreas[2].allPatches[patchIdx].pIdx;
+			//cout << "update" << endl;
+	    }
+		for (int i = 0; i < screen.numAreas; i++)
+		{
+			for (int j = 0; j < screen.allAreas[i].numPatches; j++)
+			{
+				screen.allAreas[i].allPatches[j].cIdx = i;
+				screen.allAreas[i].allPatches[j].updatePattern();
+			}
+		}
 		screen.renderTexture();
 	}
 
@@ -178,7 +191,7 @@ int main()
 	*/
 
 
-	/*
+	/*  Test writeout
 	
 	int testVar = 10;
 	vector<int> headVec(4, 0);
