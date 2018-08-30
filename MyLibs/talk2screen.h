@@ -86,7 +86,6 @@ public:
 	
 	Shader shader;
 	unsigned int VAO, VBO, EBO;
-	unsigned int texture;
 };
 /* represent pattern changes of an entire local area,
  which consists of many patches
@@ -104,10 +103,12 @@ public:
 	{
 		
 	}
-	bool initialize(std::vector<int> yDivideVec);
+	bool initialize(std::vector<int> yDivideVec, const char* imgName);
+	bool loadTextureIntoBuffers(const char* imgName);
 	void reverseAllPatches();
 	// properties
 	std::vector<PatchData> allPatches;
+	unsigned int texture0; // texture ID 
 	const int numPatches;
 	const std::vector<float> rect; // upper-left corner (x, y, width, height)
 };
@@ -129,7 +130,7 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<const char*> filename, int nAreas);
+	bool initialize(std::vector<const char*> filename, int nAreas, std::vector<int> patchesOfAreas = {4,4,4});
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */
