@@ -153,6 +153,7 @@ void AreaData::reverseAllPatches() {
 	}
 }
 
+//TODO: update the pattern first.
 void ScreenData::updatePatternInTest(int sElapsed) {
 	int testInterval = 30; // seconds, the interval in test is fixed
 	if (sElapsed > lastScreenPatternUpdate + testInterval)
@@ -161,10 +162,7 @@ void ScreenData::updatePatternInTest(int sElapsed) {
 		lastScreenPatternUpdate = sElapsed;
 		for (int i = 0; i < numAreas; i++)
 		{
-			for (int j = 0; j < allAreas[i].numPatches; j++)
-			{
-				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
-			}
+			allAreas[i].reverseAllPatches();
 		}
 	}
 }
@@ -284,42 +282,6 @@ bool ScreenData::loadTextureIntoBuffers(std::vector<const char*> imgName, int te
 		}
 		stbi_image_free(data[i]);
 	}
-	//if (texIdx == 0)
-	//{
-	//	glGenTextures(1, &texture0);
-	//	glBindTexture(GL_TEXTURE_2D, texture0);
-	//}	
-	//else if (texIdx == 1)
-	//{
-	//	glGenTextures(1, &texture1);
-	//	glBindTexture(GL_TEXTURE_2D, texture1);
-	//}
-	//else if (texIdx == 2)
-	//{
-	//	glGenTextures(1, &texture2);
-	//	glBindTexture(GL_TEXTURE_2D, texture2);
-	//}
-	//// set the texture wrapping parameters
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	//// set texture filtering parameters
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//// load image, create texture and generate mipmaps
-	//int width, height, nrChannels;
-	////stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
-	//unsigned char *data = stbi_load(imgName, &width, &height, &nrChannels, 0);
-	//if (data)
-	//{
-	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	//	glGenerateMipmap(GL_TEXTURE_2D);
-	//}
-	//else
-	//{
-	//	std::cout << "Failed to load texture" << std::endl;
-	//	return false;
-	//}
-	//stbi_image_free(data);
 	return true;
 }
 
@@ -343,39 +305,6 @@ void ScreenData::renderTexture()
 			glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
 		}
 	}
-	//// render in shaders
-	//for (int i = 0; i < allAreas.size(); i++)
-	//{
-	//	if (i == 0)
-	//	{
-	//		// bind textures on corresponding texture units
-	//		glActiveTexture(GL_TEXTURE0);
-	//		glBindTexture(GL_TEXTURE_2D, texture0);
-	//		texIdx = texture0;
-	//	}
-	//	else if (i == 1)
-	//	{
-	//		// bind textures on corresponding texture units
-	//		glActiveTexture(GL_TEXTURE1);
-	//		glBindTexture(GL_TEXTURE_2D, texture1);
-	//		texIdx = texture1;
-	//	}
-	//	else if (i == 2)
-	//	{
-	//		// bind textures on corresponding texture units
-	//		glActiveTexture(GL_TEXTURE2);
-	//		glBindTexture(GL_TEXTURE_2D, texture2);
-	//		texIdx = texture2;
-	//	}
-
-	//	for (int j = 0; j < allAreas[i].numPatches; j++)
-	//	{
-	//		allAreas[i].allPatches[j].shader.use();
-	//		glUniform1i(glGetUniformLocation(allAreas[i].allPatches[j].shader.ID, "texture0"), i);
-	//		glBindVertexArray(allAreas[i].allPatches[j].VAO);
-	//		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
-	//	}
-	//}
 
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
