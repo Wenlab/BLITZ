@@ -145,6 +145,15 @@ void ScreenData::updatePattern(int cIdx)
 
 }
 
+void AreaData::reverseAllPatches() {
+	for (int j = 0; j < numPatches; j++)
+	{
+		allPatches[j].pIdx = !allPatches[j].pIdx;
+		allPatches[j].updatePattern();
+	}
+}
+
+//TODO: update the pattern first.
 void ScreenData::updatePatternInTest(int sElapsed) {
 	int testInterval = 30; // seconds, the interval in test is fixed
 	if (sElapsed > lastScreenPatternUpdate + testInterval)
@@ -153,10 +162,7 @@ void ScreenData::updatePatternInTest(int sElapsed) {
 		lastScreenPatternUpdate = sElapsed;
 		for (int i = 0; i < numAreas; i++)
 		{
-			for (int j = 0; j < allAreas[i].numPatches; j++)
-			{
-				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
-			}
+			allAreas[i].reverseAllPatches();
 		}
 	}
 }
@@ -178,17 +184,18 @@ void ScreenData::updatePatternInBaseline(int sElapsed) {
 	}
 }
 
-void ScreenData::BlackoutExp() {
+void ScreenData::updatePatternInBlackout() {
 	for (int i = 0; i < numAreas; i++)
 	{
 		for (int j = 0; j < allAreas[i].numPatches; j++)
 		{
 			allAreas[i].allPatches[j].pIdx = 2;
+			allAreas[i].allPatches[j].updatePattern();
 		}
 	}
 }
 
-bool ScreenData::initialize(const char* imgName, int nAreas)
+bool ScreenData::initialize(std::vector<const char*> imgName, int nAreas)
 {
 	numAreas = nAreas;
 	allAreas.reserve(nAreas);
@@ -200,7 +207,7 @@ bool ScreenData::initialize(const char* imgName, int nAreas)
 	if (!init_glad())
 		return false;
 
-	if (!loadTextureIntoBuffers(imgName))
+	if (!loadTextureIntoBuffers(imgName,numAreas))
 		return false;
 	return true;
 }
@@ -245,31 +252,36 @@ bool ScreenData::init_glad()
 }
 
 /* Load one texture for the entire screen */
-bool ScreenData::loadTextureIntoBuffers(const char* imgName)
+bool ScreenData::loadTextureIntoBuffers(std::vector<const char*> imgName, int texIdx)
 {
-	glGenTextures(1, &texture0);
-	glBindTexture(GL_TEXTURE_2D, texture0);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	// load image, create texture and generate mipmaps
-	int width, height, nrChannels;
-	//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
-	unsigned char *data = stbi_load(imgName, &width, &height, &nrChannels, 0);
-	if (data)
+	std::vector<unsigned char*> data;
+	for (int i = 0; i < texIdx; i++)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenTextures(1, &texture0[i]);
+		glBindTexture(GL_TEXTURE_2D, texture0[i]);
+		// set the texture wrapping parameters
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		// set texture filtering parameters
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		// load image, create texture and generate mipmaps
+		int width, height, nrChannels;
+		//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
+		unsigned char *data0 = stbi_load(imgName[i], &width, &height, &nrChannels, 0);
+		data.push_back(data0);
+		if (data[i])
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data[i]);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else
+		{
+			std::cout << "Failed to load texture" << std::endl;
+			return false;
+		}
+		stbi_image_free(data[i]);
 	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-		return false;
-	}
-	stbi_image_free(data);
 	return true;
 }
 
@@ -279,16 +291,16 @@ void ScreenData::renderTexture()
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// bind textures on corresponding texture units
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture0);
-
-	// render in shaders
-	for (int i = 0; i < allAreas.size(); i++)
+	int texIdx = 0;
+	for (int  i = 0; i < allAreas.size(); i++)
 	{
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, texture0[i]);
+		texIdx = texture0[i];
 		for (int j = 0; j < allAreas[i].numPatches; j++)
 		{
 			allAreas[i].allPatches[j].shader.use();
+			glUniform1i(glGetUniformLocation(allAreas[i].allPatches[j].shader.ID, "texture0"), i);
 			glBindVertexArray(allAreas[i].allPatches[j].VAO);
 			glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
 		}

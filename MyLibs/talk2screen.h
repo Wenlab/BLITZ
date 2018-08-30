@@ -105,6 +105,7 @@ public:
 		
 	}
 	bool initialize(std::vector<int> yDivideVec);
+	void reverseAllPatches();
 	// properties
 	std::vector<PatchData> allPatches;
 	const int numPatches;
@@ -118,7 +119,9 @@ private: // only used within class
 	
 	GLFWwindow* window;
 	// buffer idx to store texture
-	unsigned int texture0;
+
+	//unsigned int texture0, texture1, texture2;
+	unsigned int texture0[3];
 public:
 	// methods
 	ScreenData() // constructor
@@ -126,16 +129,18 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(const char* filename, int nAreas);
+	bool initialize(std::vector<const char*> filename, int nAreas);
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */
 	bool init_glad();
 	/* load txture from image */
-	bool loadTextureIntoBuffers(const char* filename);
+	bool loadTextureIntoBuffers(std::vector<const char*> filename, int texIdx);
 	
 	/* Update pattern for specific area */
 	void updatePattern(int cIdx);
+
+	
 	/* Update patternIdx for all shaders in the screen */
 	void updatePattern();
 	/* Render designed pattern on the screen */
@@ -147,7 +152,7 @@ public:
 	/* Update pattern in baseline experiment */
 	void updatePatternInBaseline(int sElapsed);
 	/* Update pattern in the blackout experiment */
-	void BlackoutExp();
+	void updatePatternInBlackout();
 
 
 	// properties

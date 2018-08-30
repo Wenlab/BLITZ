@@ -39,6 +39,25 @@ using namespace cv;
 
 int main()
 {
+	string pathName = "F:/FishExpData/";
+	vector<string> CS_Patterns;
+	CS_Patterns.push_back("redBlackCheckerboard");
+	CS_Patterns.push_back("whiteBlackCheckerboard");
+	CS_Patterns.push_back("fullBlue");
+	//string CS_Pattern = "redBlackCheckerboard";
+	ExperimentData exp(CS_Patterns,pathName);
+
+	if (!exp.initialize())
+	{
+		cout << "Experiment Initialization Failed." << endl;
+		exit(0);
+	}
+	else {
+		cout << "Experiment initialized." << endl;
+	}
+
+	exp.runOLexp();
+	/* 
 	string CS_Pattern = "RGB96";
 	ExperimentData exp(CS_Pattern);
 
@@ -52,7 +71,7 @@ int main()
 	}
 
 	exp.runOLexp();
-
+	The real main function */
 
 	/* Test serial port
 	string CS_Pattern = "redBlackCheckerboard";
@@ -75,7 +94,7 @@ int main()
 	}
 	*/
 
-	
+
 	/* main function
 	string CS_Pattern = "redBlackCheckerboard";
 	ExperimentData exp(CS_Pattern);
@@ -93,50 +112,59 @@ int main()
 	*/
 
 
-	
-	
+
+
 	/* Test screen function
-	
-	const char imgName[] = "Images/redBlackCheckerboard.jpg";
+	Timer expTimer;
+
 	const vector<vector<float>> allAreaPos =
 	{
-		{ 0.082f, 0.300f, 0.258f, 0.668f },
-		{ 0.840f, -0.810f, 0.258f, 0.73f },
-		{  -0.665f, -0.810f, 0.258f  , 0.73f }
-	};
-	vector<vector<int>> yPatternDivs =
-	{
-		{ 818, 818, 942, 942 },
-		{ 247, 247, 365, 365 },
-		{ 238, 238, 358, 358 }
+	{ 0.082f, 0.300f, 0.258f, 0.668f },
+	{ 0.840f, -0.810f, 0.258f, 0.73f },
+	{ -0.665f, -0.810f, 0.258f, 0.73f }
 	};
 
-	Timer expTimer;
+	vector<vector<int>> yPatternDivs =
+	{
+	{ 818, 818, 942, 942 },
+	{ 247, 247, 365, 365 },
+	{ 238, 238, 358, 358 }
+	};
+
+	ScreenData myScreen;
+	vector<const char*> imgs;
+	imgs.push_back("Images/redBlackCheckerboard.jpg");
+	imgs.push_back("Images/whiteBlackCheckerboard.jpg");
+	imgs.push_back("Images/fullBlue.jpg");
+
+	myScreen.initialize(imgs, 3);
+	// Initialize all areas
+	for (int i = 0; i < 3; i++)
+	{
+	AreaData area(allAreaPos[i], 4);
+	area.initialize(yPatternDivs[i]);
+	myScreen.allAreas.push_back(area);
+	}
+
 	expTimer.start();
-	ScreenData screen;
-	screen.initialize(imgName,1);
-	screen.loadTextureIntoBuffers(imgName);
-	AreaData area1(allAreaPos[2], 4);
-	area1.initialize(yPatternDivs[2]);
-	screen.allAreas.push_back(area1);
-	int patchIdx = 0;
 	while (1)
 	{
-		int timeInSec = expTimer.getElapsedTimeInSec();
-		cout << "Time (s) : " << timeInSec << endl;
-		if (timeInSec % 10 == 0)
-			screen.allAreas[0].allPatches[patchIdx].pIdx = !screen.allAreas[0].allPatches[patchIdx].pIdx;
-		screen.allAreas[0].allPatches[patchIdx].updatePattern();
-		screen.renderTexture();
+	int timeInSec = expTimer.getElapsedTimeInSec();
+	cout << "Time (s) : " << timeInSec << endl;
+	int areaIdx = rand() % 3;
+	if (timeInSec % 10 == 0)
+	myScreen.allAreas[areaIdx].allPatches[0].pIdx = !myScreen.allAreas[areaIdx].allPatches[0].pIdx;
+	myScreen.allAreas[areaIdx].allPatches[0].updatePattern();
+	myScreen.renderTexture();
 	}
 	*/
 
 
 
 
-	/* Test OL Procedure 
+	/* Test OL Procedure
 	ExperimentData exp;
-	
+
 	const char imgName[] = "Images/redCheckerBoard.jpg";
 	try {
 		exp.initialize(imgName);
@@ -153,7 +181,7 @@ int main()
 
 
 	/*
-	
+
 	int testVar = 10;
 	vector<int> headVec(4, 0);
 	headVec[1] = 1;
@@ -170,8 +198,8 @@ int main()
 	*/
 	//yaml << "Frames" << "[";
 	//writeOutVarInline<int>(fs, testVar, "testVar");
-	
-	/* Timer.start can be used as reset 
+
+	/* Timer.start can be used as reset
 	Timer expTimer;
 	expTimer.start();
 	while (1)
@@ -183,8 +211,8 @@ int main()
 	}
 	*/
 
-	/* Test camera function 
-	
+	/* Test camera function
+
 	Timer expTimer;
 	expTimer.start();
 	CameraData cams;
@@ -200,7 +228,7 @@ int main()
 	*/
 
 
-	
+
 
 
 
@@ -213,8 +241,8 @@ int main()
 		ExperimentData myExp;
 		myExp.initialize();
 		myExp.prepareBgImg();
-		myExp.runOLexp(); // run operant learning experiment		
-	}	
+		myExp.runOLexp(); // run operant learning experiment
+	}
 	catch (const GenericException &e)
 	{
 		// Error handling

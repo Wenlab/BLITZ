@@ -33,14 +33,10 @@
 using namespace std;
 using namespace cv;
 
-bool WriteOutData::initialize(string contentName, int width, int height, int frameRate)
+bool WriteOutData::initialize(string pathName,string contentName, int width, int height, int frameRate)
 {
-	const string pathName = "F:/FishExpData/";
-	
-	string videoName, yamlName;
-	
-	videoName = pathName + contentName + ".avi";
-	yamlName = pathName + contentName + ".yaml";
+	string videoName = pathName + contentName + ".avi";
+	string yamlName = pathName + contentName + ".yaml";
 	FileStorage fObj(yamlName, FileStorage::WRITE);
 	if (!fObj.isOpened())
 		return false;
@@ -51,17 +47,6 @@ bool WriteOutData::initialize(string contentName, int width, int height, int fra
 	videoVec.push_back(vObj);
 	return true;
 	
-	
-}
-
-/* Write out the context information for the experiment, only once */
-void WriteOutData::writeExpContext(int numCameras)
-{
-	for (int i = 0; i < numCameras; i++)
-	{
-		
-
-	}
 }
 
 /* Get strain name of fish */
@@ -88,14 +73,8 @@ string get_CS_string(string CSpattern)
 	else
 	{
 		CSstr = CSpattern;
-		cout << "The CS pattern is: " << endl
-			<< CSstr << endl
-			<< "Please make sure everything is correct." << endl 
-			<< endl;
+		cout << "CS pattern is: " << CSstr << endl;
 
-		//cout << "Unrecognized CS Pattern." << endl
-			//<< "Experiment initialization failed." << endl;
-		//exit(0);
 	}
 	return CSstr;
 }
@@ -103,6 +82,7 @@ string get_CS_string(string CSpattern)
 /* Get current date and time string from chrono system clock */
 string get_current_date_time()
 {
+	// TODO: use a more elegant way to get the date and time (precise to seconds)
 	// Get system time
 	chrono::system_clock::time_point p = chrono::system_clock::now();
 	time_t t = chrono::system_clock::to_time_t(p);
@@ -170,31 +150,6 @@ void showWelcomeMsg()
 
 }
 
-/* Diagram of Arenas Positions
-|-------------|-------------|-------------|
-|	Arena 2   |				|	Arena 3   |
-|-------------|-------------|-------------|
-|			  |	  Arena 1   |			  |
-|-------------|-------------|-------------|
-*/
-void showArenaPosDiagram()
-{
-	// show the arena index diagram
-	const int numSpaces = 3;
-	const string spaces(numSpaces, ' ');
-	const string spacesL(4 * numSpaces + 1, ' ');
-
-	const string cutLine(2 * numSpaces + 7, '_');
-	cout << "Diagram of arena indices: " << endl;
-	cout << " " << cutLine << " " << cutLine << " " << cutLine << " " << endl;
-	cout << "|" << spaces << "Arena 2" << spaces << "|" << spacesL << "|"
-		<< spaces << "Arena 3" << spaces << "|" << endl;
-	cout << "|" << cutLine << "|" << cutLine << "|" << cutLine << "|" << endl;
-	cout << "|" << spacesL << "|" << spaces << "Arena 1" << spaces << "|"
-		<< spacesL << "|" << endl;
-	cout << "|" << cutLine << "|" << cutLine << "|" << cutLine << "|" << endl;
-	cout << endl; // separated with an empty line
-}
 /*
 Diagram of fish positions in arena
 |		|		|
@@ -230,7 +185,6 @@ int enquireNumCams()
 	cin >> nCams;
 	cout << endl; // separated with an empty line
 
-				  // add str to contentName
 	return nCams;
 }
 
@@ -240,7 +194,6 @@ vector<string> enquireFishIDs(int arenaIdx)
 	showFishPosDiagram();
 	cout << "Enter fishIDs used in the Arena " << arenaIdx + 1 << endl;
 	cout << "Enter all fishIDs with ',' as separator. (e.g. G11,G14)" << endl;
-
 
 	string inputStr;
 	getline(cin, inputStr);
@@ -257,11 +210,8 @@ vector<string> enquireFishIDs(int arenaIdx)
 		fishIDs.push_back(subStr);
 	}
 
-	
-
 	return fishIDs;
 }
-
 
 int enquireFishAge()
 {

@@ -57,7 +57,11 @@ TODO:
 2. Consize the recursive ifs
 */
 
-void ArenaData::initialize(vector<string> fishIDs, int fishAge, vector<int> yDivs)
+void ArenaData::initialize(
+	vector<string> fishIDs, // unique fish IDs
+	int fishAge, 
+	vector<int> yDivs
+	)
 {
 	const int historyLen = 2000; // used in MOG subtractor
 	pMOG = cv::createBackgroundSubtractorMOG2(historyLen, binThre, false);
@@ -127,7 +131,6 @@ bool ArenaData::findAllFish()
 		if (maxContours[1][i] == -1)
 		{
 			allFish[i].pauseFrames++;
-			cout << "Fish: " << i << " not found! " << endl;
 			fishFlag = false;
 		}
 		else
@@ -219,7 +222,7 @@ bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 
 	if (pIdx == 2) // blackout 
 		return false;
-	if (sElapsed < lastFishPatternUpdate + thinkingTime)
+	if (sElapsed < lastTimeUpdatePattern + thinkingTime)
 		return false;
 	if (sElapsed < lastShockTime + shockCD)
 		return false;
@@ -257,6 +260,38 @@ bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 	}
 }
 
+int FishData::updatePatternInTraining(int sElapsed,int pIdx, int ITI) {
+	int NCStimeThre = 48; // seconds
+	if (pIdx == 2)
+	{
+		if (sElapsed > lastBlackoutStart + ITI)
+		{
+			pIdx = rand() % 2;
+		    lastTimeUpdatePattern = sElapsed;
+			lastTimeInCS = sElapsed;
+		}
+	}
+	else {
+		// update lastTimeInCS and lastTimeInNCS of fish
+		if (pIdx) // patternIdx == 1, since patternIdx == 2 is excluded
+		{
+			if (head.y > yDiv)
+				lastTimeInCS = sElapsed;
+		}
+		else {
+			if (head.y < yDiv) // In non-CS area
+				lastTimeInCS = sElapsed;
+		}
+
+		if (sElapsed - lastTimeInCS > NCStimeThre) // if stays too long in non-CS area
+		{
+			pIdx = 2;
+			lastBlackoutStart = sElapsed;
+		}
+	}
+	return pIdx;
+}
+
 void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
 	Mat rawImg = Mat(width, height,CV_8UC1, buffer);
 	rawImg.copyTo(opencvImg);
@@ -266,7 +301,26 @@ void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
 	pMOG->apply(opencvImg, subImg);
 }
 
-void ArenaData::BlackoutExp() {
+// TODO: check whether this for loop necessary 
+// I think it is necessary, but I can not confirm now
+void ArenaData::annotateFish() {
+	for (int j = 0; j < numFish; j++)
+	{
+		/*
+		int pIdx = screen.allAreas[i].allPatches[j].pIdx;
+		if (pIdx == 0)
+		putText(allArenas[i].opencvImg, "CS TOP", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
+		else if (pIdx == 1)
+		putText(allArenas[i].opencvImg, "CS BOTTOM", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
+		*/
+		if (allFish[j].head.x == -1) // invalid fish analysis data
+			continue;
+		circle(opencvImg, allFish[j].head, 5, Scalar(255), 2);
+		circle(opencvImg, allFish[j].tail, 3, Scalar(255), 2);
+	}
+}
+
+void ArenaData::resetShocksOn() {
 	for (int i = 0; i < numFish; i++)
 	{
 	    allFish[i].shockOn = 0;

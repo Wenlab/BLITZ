@@ -48,12 +48,7 @@ public:
 	{
 
 	}
-	bool initialize(std::string contentName, int width, int height, int frameRate);
-	
-	
-	/* Write out the context information for the experiment, only once */
-	void writeExpContext(int numFiles);
-
+	bool initialize(std::string pathName, std::string contentName, int width, int height, int frameRate);
 
 	// template functions
 	/* Write out key value pairs */
@@ -68,14 +63,8 @@ public:
 	{
 		yamlVec[idxFile] << "{:" << vName << var << "}";
 	};
-
 	
 	// properties
- 
-
-	std::string expTask;
-
-
 	std::vector<cv::FileStorage> yamlVec;
 	std::vector<cv::VideoWriter> videoVec;
 };
@@ -95,6 +84,7 @@ std::string get_current_date_time();
 int enquireNumCams();
 
 int enquireFishAge();
+
 std::string enquireExpTask();
 
 /* Ask for fish IDs in the arena */
@@ -102,7 +92,6 @@ std::vector<std::string> enquireFishIDs(int arenaIdx);
 
 /* convert string vector to int-vector like formatted output */
 std::string strVec2str(std::vector<std::string> strVec);
-
 
 /* Case insensitive comparasion 
 Adapted from Timmmm, https://stackoverflow.com/a/4119881
