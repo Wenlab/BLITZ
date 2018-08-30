@@ -39,6 +39,13 @@ using namespace cv;
 
 int main()
 {
+	/*TODO:
+	1. degrade load_image_to_buffers to a method of AreaData
+	2. put all positions and patterns coordinates into ScreenData
+	3. do a similar update to the FishData class.
+	4. reduce unnecessary data-type conversions
+	5. remove unnecessary code
+	*/
 	string pathName = "F:/FishExpData/";
 	vector<string> CS_Patterns;
 	CS_Patterns.push_back("redBlackCheckerboard");
