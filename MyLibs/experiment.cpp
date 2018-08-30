@@ -39,7 +39,7 @@ using namespace cv;
 
 bool ExperimentData::initialize()
 {
-	
+
 	const vector<vector<float>> allAreaPos =
 	{
 		{ 0.082f, 0.300f, 0.258f, 0.668f },
@@ -53,7 +53,7 @@ bool ExperimentData::initialize()
 		{ 223, 223, 588, 588 },
 		{ 214, 214, 588, 588 }
 	};
-
+	//y division pos for all patch
 	vector<vector<int>> yPatternDivs =
 	{
 		{ 818, 818, 942, 942 },
@@ -65,9 +65,15 @@ bool ExperimentData::initialize()
 	string imgFolderPath = "Images/";
 
 	showWelcomeMsg();
-	string imgStr = imgFolderPath + CSpattern + ".jpg";
-	const char* imgName = imgStr.c_str();
-	string CSstr = get_CS_string(CSpattern);
+	vector<string> imgStrs;
+	vector<const char*> imgName(CSpatterns.size());
+	vector<string> CSstr(CSpatterns.size());
+	for (int i = 0; i < CSpatterns.size(); i++)
+	{
+		imgStrs.push_back(imgFolderPath + CSpatterns[i] + ".jpg");
+		imgName[i] = imgStrs[i].c_str();
+		CSstr[i] = get_CS_string(CSpatterns[i]);
+	}
 	string timeStr = get_current_date_time();
 	numCameras = enquireNumCams();
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
@@ -86,35 +92,34 @@ bool ExperimentData::initialize()
 
 	int fishAge = enquireFishAge();
 	string expTask = enquireExpTask();
-	
+
 	for (int i = 0; i < numCameras; i++)
 	{
 		// create ArenaData and push it into exp.allArenas
 		vector<string> fishIDs = enquireFishIDs(i);
 
 		ArenaData arena(binThreList[i], fishIDs.size());
-
 		arena.initialize(fishIDs, fishAge, yDivs[i]);
 		allArenas.push_back(arena);
 
 		// create AreaData and push it into screen.allAreas
 		// the screen coordinates are (-1,1)
-		AreaData area(allAreaPos[i], arena.numFish); 
-		area.initialize(yPatternDivs[i]);
+		AreaData area(allAreaPos[i], arena.numFish);
+		area.initialize(yPatternDivs[i],i);
 		screen.allAreas.push_back(area);
 
 		// Append strain info to contentName
 		string strainName = get_strainName(fishIDs[0][0]);
-		string contentName = timeStr + "_" + "Arena" + to_string(i+1) 
+		string contentName = timeStr + "_" + "Arena" + to_string(i+1)
 			+ "_" + strainName + "_" + to_string(fishAge)
-			+ "dpf_" + expTask + "_" + CSstr;
+			+ "dpf_" + expTask + "_" + CSstr[i];
 
 		/* Create yaml and video files to write in */
-		if (!writeOut.initialize(contentName, WIDTH, HEIGHT, FRAMERATE))
+		if (!writeOut.initialize(pathName,contentName, WIDTH, HEIGHT, FRAMERATE))
 			return false;
 
 		/* Write out general experiment context info */
-			
+
 		writeOut.writeKeyValuePair("FishIDs", strVec2str(fishIDs), i);
 		writeOut.writeKeyValuePair("FishAge", fishAge, i);
 		writeOut.writeKeyValuePair("FishStrain", strainName, i);
@@ -130,29 +135,33 @@ bool ExperimentData::initialize()
 
 
 	}
-	expTimer.start();
+	//expTimer.start(); 
 	return true;
 }
 
 void ExperimentData::prepareBgImg(const int prepareTime)
 {
-	while (expTimer.getElapsedTimeInSec() < prepareTime)
+	int tempIdx = 0;
+	while (tempIdx < prepareTime * FRAMERATE * numCameras)//expTimer.getElapsedTimeInSec() < prepareTime)
 	{
+		tempIdx++;
+		int timeInSec = tempIdx / (FRAMERATE * numCameras);
 		cams.grabPylonImg();
-		int timeInSec = expTimer.getElapsedTimeInSec();       
-		// Display progress message in the command window                                                          
-		cout << "Preparing... " << timeInSec << " in " << to_string(prepareTime) << " s" << endl;
+		//int timeInSec = expTimer.getElapsedTimeInSec();
+		// Display progress message in the command window
+		cout << "Preparing... " << timeInSec << " in " << prepareTime << " s" << endl;
 
 		int cIdx = cams.cIdx;
 
 		/* Convert Pylon image to opencvImg */
 		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
 			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
-		
+
 		screen.renderTexture();
 	}
-	expTimer.start(); // reset timer to 0
+	
 }
+
 void ExperimentData::runUnpairedOLexp()
 {
 	const int prepareTime = 1 * 60; // seconnds, default 1 min
@@ -163,32 +172,28 @@ void ExperimentData::runUnpairedOLexp()
 	const int expEndTime = testEndTime;
 
 	const int numShocks = 20; // comparable to shocks fish received in the normal OLexp group
-	
+
 	vector<int> vec;
 	for (int i = baselineEndTime * FRAMERATE; i < trainingEndTime*FRAMERATE; i++)
 		vec.push_back(i);
-	
-	// First create an instance of an engine.
-	random_device rnd_device;   
-	// Specify the engine and distribution.
-	mt19937 g(rnd_device());      
-	shuffle(vec.begin(), vec.end(), g);  
-	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
-	
-	prepareBgImg(prepareTime);
 
+	// First create an instance of an engine.
+	random_device rnd_device;
+	// Specify the engine and distribution.
+	mt19937 g(rnd_device());
+	shuffle(vec.begin(), vec.end(), g);
+	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
+
+	prepareBgImg(prepareTime);
+	expTimer.start(); // reset timer to 0
 	while (idxFrame < numCameras * expEndTime * FRAMERATE)// giant grabbing loop
 	{
 		cams.grabPylonImg();
 		idxFrame++;
 		int cIdx = cams.cIdx;
-		// TODO: make the following block into function
-		/* Convert Pylon image to opencvImg */
 		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
 			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
-		sElapsed = expTimer.getElapsedTimeInSec();
-		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
-		cout << "Time: " << sElapsed << " (s) " << endl;
+		getTime();
 		if (!allArenas[cIdx].findAllFish())
 			cout << "in arena: " << cIdx << endl;
 		if (sElapsed < baselineEndTime)
@@ -203,19 +208,24 @@ void ExperimentData::runUnpairedOLexp()
 			{	// find certain element in the vector
 				int target = (idxFrame - cIdx) / numCameras;
 				if (find(rndVec.begin(), rndVec.end(), target) != rndVec.end())
-					giveFishShock(i,1);
+					giveFishShock(i);
 				else
 					allArenas[cIdx].allFish[i].shockOn = 0;
-				updatePatternInTraining(i);
+				int pIdx = screen.allAreas[cIdx].allPatches[i].pIdx;
+				screen.allAreas[cIdx].allPatches[i].pIdx
+					= allArenas[cIdx].allFish[i].updatePatternInTraining(sElapsed, pIdx, ITI);
+				screen.allAreas[cIdx].allPatches[i].updatePattern();
 			}
 		}
 		else if (sElapsed < blackoutEndTime)
 		{
 			expPhase = 2;
-			/* TODO: The following code should be done only once */
-			allArenas[cIdx].BlackoutExp();
-			screen.BlackoutExp();
-			/* The problem is I change pIdx of allArenas but pIdx of area is the useful one*/
+			if (idxFrame == trainingEndTime * FRAMERATE * numCameras + cIdx)
+			{
+				allArenas[cIdx].resetShocksOn();
+				// make it an AreaData method
+				screen.updatePatternInBlackout();
+			}
 		}
 		else if (sElapsed <= testEndTime)
 		{
@@ -227,7 +237,6 @@ void ExperimentData::runUnpairedOLexp()
 		  //cout << "Experiment ended. " << endl;
 		  //exit(0);
 		}
-		screen.updatePattern();
 		screen.renderTexture();
 		writeOutFrame();
 		annotateFishImgs();
@@ -237,50 +246,51 @@ void ExperimentData::runUnpairedOLexp()
 	cout << "Experiment ended. " << endl;
 }
 
-
 void ExperimentData::runOLexp()
 {
-	const int prepareTime = 1 * 60 ; // seconnds, default 1 min   
-	const int baselineEndTime = 10 * 60 ; // seconds, default 10 mins
-	const int trainingEndTime = 30 * 60 ; // seconds, default 20 mins
-	const int blackoutEndTime = 31 * 60 ; // seconds, default 1 min
-	const int testEndTime = 49 * 60 ; // seconds, default 18 mins (including memory extinction period)
+	const int prepareTime = 1 * 60 / 10 ; // seconnds, default 1 min
+	const int baselineEndTime = 1 ; // seconds, default 10 mins
+	const int trainingEndTime = 2 ;//* 60 / 10 ; // seconds, default 20 mins
+	const int blackoutEndTime = 4;// *60 / 10; // seconds, default 1 min
+	const int testEndTime = 5 * 60 / 10 ; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
 	prepareBgImg(prepareTime);
-	
+	expTimer.start(); // reset timer to 0
+
 	while (idxFrame < numCameras * expEndTime * FRAMERATE )// giant grabbing loop
 	{
-		cams.grabPylonImg();
-		
 		idxFrame++;
 		
-		int cIdx = cams.cIdx;      
+		cams.grabPylonImg();
 
-		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
-			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
+		int cIdx = cams.cIdx;
+		allArenas[cIdx].prepareBgImg(
+			cams.ptrGrabResult->GetWidth(), 
+			cams.ptrGrabResult->GetHeight(),
+			cIdx, 
+			(uint8_t*)cams.pylonImg.GetBuffer());
 
-		sElapsed = expTimer.getElapsedTimeInSec();     
-		msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000; 
-		cout << "Time: " << sElapsed << " (s) " << endl;
-
+		if (!getTime()) {
+			break;
+		}
 		if (!allArenas[cIdx].findAllFish())
-			cout << "in arena: " << cIdx << endl;
+			//cout << "Fish in arena " << cIdx << "not found."<< endl;
 		if (sElapsed < baselineEndTime)
 		{
 			expPhase = 0;             //baseline = 0, training = 1, blackout = 2, test = 3
-			screen.updatePatternInBaseline(sElapsed);                
+			screen.updatePatternInBaseline(sElapsed);
 		}
 		else if (sElapsed < trainingEndTime)
 		{
 			expPhase = 1;
-			TrainingExp(cIdx);
+			trainFish(cIdx);
 		}
 		else if (sElapsed < blackoutEndTime)
 		{
 			expPhase = 2;
-			screen.BlackoutExp();
-			allArenas[cIdx].BlackoutExp();
+			allArenas[cIdx].resetShocksOn();
+			screen.updatePatternInBlackout();
 		}
 		else if (sElapsed <= testEndTime)
 		{
@@ -288,92 +298,39 @@ void ExperimentData::runOLexp()
 			screen.updatePatternInTest(sElapsed);
 		}
 		else
-		{   // experiment ends
-			//cout << "Experiment ended. " << endl;
-			//exit(0);
+		{   
+
 		}
-		screen.updatePattern();         
 		screen.renderTexture();
 		writeOutFrame();
 		annotateFishImgs();
 		displayFishImgs("Display");
 	}
 	cout << "Experiment ended. " << endl;
+	system("pause");
 }
 
 
 
-void ExperimentData::updatePatternInTraining(int fishIdx)
+void ExperimentData::giveFishShock(int fishIdx)
 {
 	int cIdx = cams.cIdx;
-	FishData fish = allArenas[cIdx].allFish[fishIdx];
-	PatchData patch = screen.allAreas[cIdx].allPatches[fishIdx];
-	int pIdx = patch.pIdx; // patternIdx
-	int delimY = patch.yDivide;
-	int lastTimeInCS = fish.lastTimeInCS;
-	/* Update visual pattern whenver fish stays longer than NCStimeThre in non-CS area */
-	int NCStimeThre = 48; // seconds
-	int lastBlackoutStart = fish.lastBlackoutStart;
-	int trialStart = fish.lastFishPatternUpdate;
-	Point head = fish.head;
-
-	if (pIdx == 2)
-	{
-		if (sElapsed > lastBlackoutStart + ITI)
-		{
-			/* Randomly choose a pattern for the patch */
-			//allArenas[cIdx].allFish[fishIdx].patternIndex = rand() % 2;
-			screen.allAreas[cIdx].allPatches[fishIdx].pIdx = rand() % 2;
-			allArenas[cIdx].allFish[fishIdx].lastFishPatternUpdate = sElapsed;
-			// restart a trial
-			allArenas[cIdx].allFish[fishIdx].lastTimeInCS = sElapsed;
-			allArenas[cIdx].allFish[fishIdx].lastTimeInNCS = sElapsed;
-		}
-	}
-	else {
-		// update lastTimeInCS and lastTimeInNCS of fish
-		if (pIdx) // patternIdx == 1, since patternIdx == 2 is excluded
-		{
-			if (head.y < delimY) // In non-CS area
-				allArenas[cIdx].allFish[fishIdx].lastTimeInNCS = sElapsed;
-			else
-				allArenas[cIdx].allFish[fishIdx].lastTimeInCS = sElapsed;
-
-		}
-		else {
-			if (head.y > delimY) // In non-CS area
-				allArenas[cIdx].allFish[fishIdx].lastTimeInNCS = sElapsed;
-			else
-				allArenas[cIdx].allFish[fishIdx].lastTimeInCS = sElapsed;
-		}
-
-		if (sElapsed - lastTimeInCS > NCStimeThre) // if stays too long in non-CS area
-		{
-			screen.allAreas[cIdx].allPatches[fishIdx].pIdx = 2;
-			allArenas[cIdx].allFish[fishIdx].lastBlackoutStart = sElapsed;
-		}
-	}
-}
-
-
-void ExperimentData::giveFishShock(int fishIdx, int flag)
-{
-	int cIdx = cams.cIdx;
-	allArenas[cIdx].allFish[fishIdx].shockOn = flag;
-	if (!flag)
-		return;
+	allArenas[cIdx].allFish[fishIdx].shockOn = 1;
 	// give a electric pulse
 	thePort.givePulse(4*cIdx + fishIdx);
 	allArenas[cIdx].allFish[fishIdx].lastShockTime = sElapsed;
 }
 
-void ExperimentData::TrainingExp(int cIdx) {
+void ExperimentData::trainFish(int cIdx) {
 	for (int i = 0; i < allArenas[cIdx].numFish; i++)
 	{
 		int pIdx = screen.allAreas[cIdx].allPatches[i].pIdx;
-		int flag = allArenas[cIdx].allFish[i].ifGiveShock(pIdx, sElapsed);
-		giveFishShock(i, flag);
-		updatePatternInTraining(i);
+		if (allArenas[cIdx].allFish[i].ifGiveShock(pIdx, sElapsed)) {
+			giveFishShock(i);
+		}
+		screen.allAreas[cIdx].allPatches[i].pIdx 
+			= allArenas[cIdx].allFish[i].updatePatternInTraining(sElapsed,pIdx,ITI);
+		screen.allAreas[cIdx].allPatches[i].updatePattern();
 	}
 }
 
@@ -384,9 +341,9 @@ void ExperimentData::writeOutFrame()
 
 	// write the custom class to disk
 	writeOut.yamlVec[cIdx] << "Frames" << "[";
-	// Python-like inline compact form 
+	// Python-like inline compact form
 	// general experimental info
-	writeOut.writeKeyValueInline("FrameNum", idxFrame, cIdx);
+	writeOut.writeKeyValueInline("FrameNum", idxFrame / numCameras, cIdx);
 	writeOut.writeKeyValueInline("ExpPhase", expPhase, cIdx);
 	writeOut.writeKeyValueInline("sElapsed", sElapsed, cIdx);
 	writeOut.writeKeyValueInline("msRemElapsed", msRemElapsed, cIdx);
@@ -430,13 +387,10 @@ void ExperimentData::displayFishImgs(string title) {
 		printf("Number of arguments too small....\n");
 		return;
 	}
-	else if (numCameras > 14) {
+	else if (numCameras > 3) {
 		printf("Number of arguments too large, can only handle maximally 12 images at a time ...\n");
 		return;
 	}
-	// Determine the size of the image,
-	// and the number of rows/cols
-	// from number of arguments
 	else if (numCameras == 1) {
 		w = h = 1;
 		size = 300;
@@ -445,55 +399,30 @@ void ExperimentData::displayFishImgs(string title) {
 		w = 2; h = 1;
 		size = 300;
 	}
-	else if (numCameras == 3 || numCameras == 4) {
+	else if (numCameras == 3) {
 		w = 2; h = 2;
 		size = 300;
 	}
-	else if (numCameras == 5 || numCameras == 6) {
-		w = 3; h = 2;
-		size = 200;
-	}
-	else if (numCameras == 7 || numCameras == 8) {
-		w = 4; h = 2;
-		size = 200;
-	}
-	else {
-		w = 4; h = 3;
-		size = 150;
-	}
-
 	// Create a new 1 channel image
 	Mat DispImage = Mat::zeros(Size(100 + size * w, 60 + size * h), CV_8UC1);
-
 	// Loop for cams.numCameras number of arguments
 	for (i = 0, m = 20, n = 20; i < numCameras; i++, m += (20 + size)) {
 		// Get the Pointer to the IplImage
 		Mat img = allArenas[i].opencvImg;
-		// Check whether it is NULL or not
-		// If it is NULL, release the image, and return
 		if (img.empty()) {
-			printf("Invalid arguments");
+			std::cout << "Invalid arguments" << std::endl;
 			return;
 		}
-
-		// Find the width and height of the image
 		x = img.cols;
 		y = img.rows;
-
 		// Find whether height or width is greater in order to resize the image
 		max = (x > y) ? x : y;
-
 		// Find the scaling factor to resize the image
 		scale = (float)((float)max / size);
-
-		// Used to Align the images
 		if (i % w == 0 && m != 20) {
 			m = 20;
 			n += 20 + size;
 		}
-
-		// Set the image ROI to display the current image
-		// Resize the input image and copy the it to the Single Big Image
 		Rect ROI(m, n, (int)(x / scale), (int)(y / scale));
 		Mat temp; resize(img, temp, Size(ROI.width, ROI.height));
 		temp.copyTo(DispImage(ROI));
@@ -507,23 +436,18 @@ void ExperimentData::annotateFishImgs()
 {
 	for (int i = 0; i < numCameras; i++)
 	{
-		ArenaData arena = allArenas[i];
-		for (int j = 0; j < allArenas[i].numFish; j++)
-		{
-			int pIdx = screen.allAreas[i].allPatches[j].pIdx;
-			// Put text on each image respectively
-			/*if (pIdx == 0)
-				putText(allArenas[i].opencvImg, "CS TOP", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
-			else if (pIdx == 1)
-				putText(allArenas[i].opencvImg, "CS BOTTOM", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);*/
-
-			Point head = allArenas[i].allFish[j].head;
-			if (head.x == -1) // invalid fish analysis data
-				continue;
-			circle(allArenas[i].opencvImg, head, 5, Scalar(255), 2);
-			circle(allArenas[i].opencvImg, allArenas[i].allFish[j].tail, 3, Scalar(255), 2);
-
-		}
+		allArenas[i].annotateFish();
 	}
 }
 
+bool ExperimentData::getTime() {
+	sElapsed = idxFrame / (FRAMERATE * numCameras);
+	int systemTime = (int)expTimer.getElapsedTimeInSec();
+	if (fabs(sElapsed - systemTime) > 1) {
+		cout << "The FRAMERATE is not acceptable" << endl;
+		return false;
+	}
+	msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
+	cout << "Time: " << sElapsed << " (s) " << endl;
+	return true;
+}

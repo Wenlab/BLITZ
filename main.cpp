@@ -39,19 +39,56 @@ using namespace cv;
 
 int main()
 {
-	string CS_Pattern = "RGB96";
-	ExperimentData exp(CS_Pattern);
-
-	if (!exp.initialize())
+	vector<const char*>imgNames;
+	/*imgNames.push_back("Images/RGB32.jpg");
+	imgNames.push_back("Images/RGB64.jpg");
+	imgNames.push_back("Images/RGB96.jpg");*/
+	imgNames.push_back("Images/fullBlue.jpg");
+	imgNames.push_back("Images/fullRed.jpg");
+	imgNames.push_back("Images/whiteBlackCheckerboard.jpg");
+	
+	const vector<vector<float>> allAreaPos =
 	{
-	cout << "Experiment Initialization Failed." << endl;
-	exit(0);
+		{ 0.082f, 0.300f, 0.258f, 0.668f },
+		{ 0.840f, -0.810f, 0.258f, 0.73f },
+		{ -0.665f, -0.810f, 0.258f, 0.73f }
+	};
+	vector<vector<int>> yPatternDivs =
+	{
+		{ 818, 818, 942, 942 },
+		{ 247, 247, 365, 365 },
+		{ 238, 238, 358, 358 }
+	};
+	Timer expTimer;
+	expTimer.start();
+	ScreenData screen;
+	screen.initialize(imgNames, 3);
+	
+	for (int i = 0; i < screen.numAreas; i++)
+	{
+		AreaData area1(allAreaPos[i], 4);
+		area1.initialize(yPatternDivs[i],i);
+		screen.allAreas.push_back(area1);
 	}
-	else {
-	cout << "Experiment initialized." << endl;
+	int patchIdx = 0;
+	while (1)
+	{
+		int timeInSec = expTimer.getElapsedTimeInSec();
+		if (timeInSec % 3 == 0) 
+		{
+			screen.allAreas[2].allPatches[patchIdx].pIdx = !screen.allAreas[2].allPatches[patchIdx].pIdx;
+			//cout << "update" << endl;
+	    }
+		for (int i = 0; i < screen.numAreas; i++)
+		{
+			for (int j = 0; j < screen.allAreas[i].numPatches; j++)
+			{
+				screen.allAreas[i].allPatches[j].cIdx = i;
+				screen.allAreas[i].allPatches[j].updatePattern();
+			}
+		}
+		screen.renderTexture();
 	}
-
-	exp.runOLexp();
 
 
 	/* Test serial port
@@ -77,9 +114,12 @@ int main()
 
 	
 	/* main function
-	string CS_Pattern = "redBlackCheckerboard";
-	ExperimentData exp(CS_Pattern);
-
+	const string pathName = "F:/FishExpData/";
+	vector<string> CS_Patterns;
+	CS_Patterns.push_back("redBlackCheckerboard");
+	CS_Patterns.push_back("fullRed");
+	CS_Patterns.push_back("fullBlue");
+	ExperimentData exp(CS_Patterns, pathName);
 	if (!exp.initialize())
 	{
 		cout << "Experiment Initialization Failed." << endl;
@@ -88,7 +128,6 @@ int main()
 	else {
 		cout << "Experiment initialized." << endl;
 	}
-
 	exp.runOLexp();
 	*/
 
@@ -152,7 +191,7 @@ int main()
 	*/
 
 
-	/*
+	/*  Test writeout
 	
 	int testVar = 10;
 	vector<int> headVec(4, 0);
