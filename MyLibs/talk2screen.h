@@ -57,33 +57,18 @@ private:
 	; // nothing for now
 public:
 	// methods
-	PatchData(std::vector<float> patchRect, const int patchYdivide
-		   	 , const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs"
-			 , const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs"
-		   /*  , const char fragmentPath1[] = "3rdPartyLibs/OpenGL/shader1.fs"
-		     , const char fragmentPath2[] = "3rdPartyLibs/OpenGL/shader2.fs"*/
-	)
+	PatchData(std::vector<float> patchRect, const int patchYdivide,
+			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
+			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
 			: shader(vertexPath, fragmentPath)
-		   /* , shader1(vertexPath, fragmentPath1)
-		    , shader2(vertexPath, fragmentPath2)*/
 			, rect(patchRect)
 			, yDivide(patchYdivide)
 	{
 		/* Frequent updating variable */
-		pIdx = 1;	
-		cIdx = 0;
+		pIdx = 0;	
 		shader.use();
 		shader.setInt("yDivide", yDivide);
 		shader.setInt("patternIdx", pIdx);
-		shader.setInt("cIdx", cIdx);
-		//shader1.use();
-		//shader1.setInt("yDivide", yDivide);
-		//shader1.setInt("patternIdx", pIdx);
-		////shader1.setInt("cIdx", cIdx);
-		//shader2.use();
-		//shader2.setInt("yDivide", yDivide);
-		//shader2.setInt("patternIdx", pIdx);
-		//shader2.setInt("cIdx", cIdx);
 	}
 	
 	bool initialize();
@@ -98,12 +83,10 @@ public:
 	const std::vector<float> rect; // upper-left corner (x, y, width, height)
 	const int yDivide;
 	int pIdx; // pattern index
-	int cIdx;
+	
 	Shader shader;
-	//Shader shader1;
-	//Shader shader2;
 	unsigned int VAO, VBO, EBO;
-	//unsigned int texture;
+	unsigned int texture;
 };
 /* represent pattern changes of an entire local area,
  which consists of many patches
@@ -111,7 +94,7 @@ public:
 class AreaData 
 {
 private:
-	//unsigned int texture1; // nothing for now
+	; // nothing for now
 public:
 	// methods
 	/* Enquire the number of patches in an arena */
@@ -121,11 +104,8 @@ public:
 	{
 		
 	}
-	bool initialize(std::vector<int> yDivideVec, int cIdx);
-	/* reverse all patch pattern */
+	bool initialize(std::vector<int> yDivideVec);
 	void reverseAllPatches();
-
-
 	// properties
 	std::vector<PatchData> allPatches;
 	const int numPatches;
@@ -135,13 +115,13 @@ public:
 class ScreenData 
 {
 private: // only used within class
-	GLFWmonitor * * monitors;	
+	GLFWmonitor * * monitors;
+	
 	GLFWwindow* window;
 	// buffer idx to store texture
-	//unsigned int texture0; // TODO: put this variable into AreaData to make 3 different CS patterns
-	//unsigned int texture1;
-	//unsigned int texture2;
-	unsigned int texture0[3];  // 3 = max numAreas
+
+	//unsigned int texture0, texture1, texture2;
+	unsigned int texture0[3];
 public:
 	// methods
 	ScreenData() // constructor
@@ -149,22 +129,29 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<const char*> filenames, int nAreas);
+	bool initialize(std::vector<const char*> filename, int nAreas);
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */
 	bool init_glad();
-	/* load texture from image */
-	bool loadTextureIntoBuffers(std::vector<const char*> filenames);
+	/* load txture from image */
+	bool loadTextureIntoBuffers(std::vector<const char*> filename, int texIdx);
+	
 	/* Update pattern for specific area */
 	void updatePattern(int cIdx);
+
+	
+	/* Update patternIdx for all shaders in the screen */
+	void updatePattern();
 	/* Render designed pattern on the screen */
 	void renderTexture();
+
+	
 	/* Update pattern in test experiment */
 	void updatePatternInTest(int sElapsed);
 	/* Update pattern in baseline experiment */
 	void updatePatternInBaseline(int sElapsed);
-	/* Update pattern in blackout experiment */
+	/* Update pattern in the blackout experiment */
 	void updatePatternInBlackout();
 
 
@@ -182,6 +169,7 @@ public:
 		|		|		|
 	*/
 	std::vector<AreaData> allAreas;
+	
 	int numAreas;
 	int lastScreenPatternUpdate;
 	/* Interval for updating pattern in baseline session, which is a random number in range */

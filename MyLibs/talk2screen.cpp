@@ -79,23 +79,13 @@ void PatchData::initVertices()
 	glEnableVertexAttribArray(2);
 }
 
-/* send pIdx from CPU to GPU */
 void PatchData::updatePattern()
 {
 	shader.use();
 	shader.setInt("patternIdx", pIdx);
-	shader.setInt("cIdx",cIdx);
-	//shader.setInt("cIdx", cIdx);
-	//shader1.use();
-	//shader1.setInt("patternIdx", pIdx);
-	////shader1.setInt("cIdx", cIdx);
-	//shader2.use();
-	//shader2.setInt("patternIdx", pIdx);
-	//shader2.setInt("cIdx", cIdx);
-	
 }
 
-bool AreaData::initialize(vector<int> yDivideVec, int cIdx)
+bool AreaData::initialize(vector<int> yDivideVec)
 {
 	for (int i = 0; i < numPatches; i++)
 	{
@@ -126,10 +116,33 @@ bool AreaData::initialize(vector<int> yDivideVec, int cIdx)
 		patchRect[3] /= 2; // the height of patch is half of area width
 		PatchData patch(patchRect, yDivideVec[i]);
 		patch.initialize();
-		//patch.shader.setInt("cIdx", i);
 		allPatches.push_back(patch);
 	}
 	return true;
+}
+
+void ScreenData::updatePattern()
+{
+	for (int i = 0; i < allAreas.size(); i++)
+	{
+		AreaData area = allAreas[i];
+		for (int j = 0; j < area.numPatches; j++)
+		{
+			area.allPatches[j].updatePattern();
+		}
+	}
+}
+
+/* update pattern for specific area */
+void ScreenData::updatePattern(int cIdx)
+{
+	
+	AreaData area = allAreas[cIdx];
+	for (int j = 0; j < area.numPatches; j++)
+	{
+		area.allPatches[j].updatePattern();
+	}	
+
 }
 
 void AreaData::reverseAllPatches() {
@@ -140,21 +153,6 @@ void AreaData::reverseAllPatches() {
 	}
 }
 
-
-// TODO: degrade it to a member function of AreaData
-// This function is useless now, 
-// but I don't know whether it will be useful when the patterns in three areas are different  
-/* update pattern for specific area */
-// send the pIdx from the CPU side to the GPU side
-void ScreenData::updatePattern(int cIdx)
-{
-	AreaData area = allAreas[cIdx];
-	for (int j = 0; j < area.numPatches; j++)
-	{
-		area.allPatches[j].updatePattern();
-	}	
-}
-
 void ScreenData::updatePatternInTest(int sElapsed) {
 	int testInterval = 30; // seconds, the interval in test is fixed
 	if (sElapsed > lastScreenPatternUpdate + testInterval)
@@ -163,7 +161,10 @@ void ScreenData::updatePatternInTest(int sElapsed) {
 		lastScreenPatternUpdate = sElapsed;
 		for (int i = 0; i < numAreas; i++)
 		{
-			allAreas[i].reverseAllPatches();
+			for (int j = 0; j < allAreas[i].numPatches; j++)
+			{
+				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
+			}
 		}
 	}
 }
@@ -177,12 +178,14 @@ void ScreenData::updatePatternInBaseline(int sElapsed) {
 		baselineInterval = rand() % 30 + 15;
 		for (int i = 0; i < numAreas; i++)
 		{
-			allAreas[i].reverseAllPatches();
+			for (int j = 0; j < allAreas[i].numPatches; j++)
+			{
+				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
+			}
 		}
 	}
 }
 
-// only need to run once
 void ScreenData::updatePatternInBlackout() {
 	for (int i = 0; i < numAreas; i++)
 	{
@@ -194,19 +197,19 @@ void ScreenData::updatePatternInBlackout() {
 	}
 }
 
-bool ScreenData::initialize(std::vector<const char*> imgNames, int nAreas)
+bool ScreenData::initialize(std::vector<const char*> imgName, int nAreas)
 {
 	numAreas = nAreas;
 	allAreas.reserve(nAreas);
 	/* GLFW initialize and configure */
-	if (!init_glfw_window()) {
+	if (!init_glfw_window())
 		return false;
-	}
+
 	/* glad: load all OpenGL function pointers */
 	if (!init_glad())
 		return false;
 
-	if (!loadTextureIntoBuffers(imgNames))
+	if (!loadTextureIntoBuffers(imgName,numAreas))
 		return false;
 	return true;
 }
@@ -223,10 +226,10 @@ bool ScreenData::init_glfw_window()
 	glfwWindowHint(GLFW_AUTO_ICONIFY, GL_FALSE);
 	int count;
 	monitors = glfwGetMonitors(&count);
-	mode = glfwGetVideoMode(monitors[0]);
+	mode = glfwGetVideoMode(monitors[1]);
 	// glfw window creation
 	// --------------------
-	window = glfwCreateWindow(mode->width , mode->height , "VR", monitors[0], NULL);
+	window = glfwCreateWindow(mode->width, mode->height, "VR", monitors[1], NULL);
 	cout << "Screen width: " << mode->width << endl;
 	cout << "Screen height: " << mode->height << endl;
 	if (window == NULL)
@@ -251,81 +254,51 @@ bool ScreenData::init_glad()
 }
 
 /* Load one texture for the entire screen */
-bool ScreenData::loadTextureIntoBuffers(std::vector<const char*> imgNames)
+bool ScreenData::loadTextureIntoBuffers(std::vector<const char*> imgName, int texIdx)
 {
-	glGenTextures(1, &texture0[0]);
-	glBindTexture(GL_TEXTURE_2D, texture0[0]);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	// load image, create texture and generate mipmaps
-	int width, height, nrChannels;
-	unsigned char *data = stbi_load(imgNames[0], &width, &height, &nrChannels, 0);
-	if (data)
+	std::vector<unsigned char*> data;
+	for (int i = 0; i < texIdx; i++)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenTextures(1, &texture0[i]);
+		glBindTexture(GL_TEXTURE_2D, texture0[i]);
+		// set the texture wrapping parameters
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		// set texture filtering parameters
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		// load image, create texture and generate mipmaps
+		int width, height, nrChannels;
+		//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
+		unsigned char *data0 = stbi_load(imgName[i], &width, &height, &nrChannels, 0);
+		data.push_back(data0);
+		if (data[i])
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data[i]);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else
+		{
+			std::cout << "Failed to load texture" << std::endl;
+			return false;
+		}
+		stbi_image_free(data[i]);
 	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-		return false;
-	}
-	stbi_image_free(data);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-
-
-	glGenTextures(1, &texture0[1]);
-	glBindTexture(GL_TEXTURE_2D, texture0[1]);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	unsigned char *	data1 = stbi_load(imgNames[1], &width, &height, &nrChannels, 0);
-	if (data1)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-		return false;
-	}
-	stbi_image_free(data1);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	glGenTextures(1, &texture0[2]);
-	glBindTexture(GL_TEXTURE_2D, texture0[2]);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	unsigned char *	data2 = stbi_load(imgNames[2], &width, &height, &nrChannels, 0);
-	if (data2)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data2);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-		return false;
-	}
-	stbi_image_free(data2);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	
-	return true;
-	//glGenTextures(1, &texture0);
-	//glBindTexture(GL_TEXTURE_2D, texture0);
+	//if (texIdx == 0)
+	//{
+	//	glGenTextures(1, &texture0);
+	//	glBindTexture(GL_TEXTURE_2D, texture0);
+	//}	
+	//else if (texIdx == 1)
+	//{
+	//	glGenTextures(1, &texture1);
+	//	glBindTexture(GL_TEXTURE_2D, texture1);
+	//}
+	//else if (texIdx == 2)
+	//{
+	//	glGenTextures(1, &texture2);
+	//	glBindTexture(GL_TEXTURE_2D, texture2);
+	//}
 	//// set the texture wrapping parameters
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
@@ -347,7 +320,7 @@ bool ScreenData::loadTextureIntoBuffers(std::vector<const char*> imgNames)
 	//	return false;
 	//}
 	//stbi_image_free(data);
-	//return true;
+	return true;
 }
 
 /* Render designed pattern on the screen */
@@ -356,70 +329,58 @@ void ScreenData::renderTexture()
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// bind textures on corresponding texture units
-	// render in shaders
+	int texIdx = 0;
+	for (int  i = 0; i < allAreas.size(); i++)
+	{
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, texture0[i]);
+		texIdx = texture0[i];
+		for (int j = 0; j < allAreas[i].numPatches; j++)
+		{
+			allAreas[i].allPatches[j].shader.use();
+			glUniform1i(glGetUniformLocation(allAreas[i].allPatches[j].shader.ID, "texture0"), i);
+			glBindVertexArray(allAreas[i].allPatches[j].VAO);
+			glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
+		}
+	}
+	//// render in shaders
 	//for (int i = 0; i < allAreas.size(); i++)
 	//{
+	//	if (i == 0)
+	//	{
+	//		// bind textures on corresponding texture units
+	//		glActiveTexture(GL_TEXTURE0);
+	//		glBindTexture(GL_TEXTURE_2D, texture0);
+	//		texIdx = texture0;
+	//	}
+	//	else if (i == 1)
+	//	{
+	//		// bind textures on corresponding texture units
+	//		glActiveTexture(GL_TEXTURE1);
+	//		glBindTexture(GL_TEXTURE_2D, texture1);
+	//		texIdx = texture1;
+	//	}
+	//	else if (i == 2)
+	//	{
+	//		// bind textures on corresponding texture units
+	//		glActiveTexture(GL_TEXTURE2);
+	//		glBindTexture(GL_TEXTURE_2D, texture2);
+	//		texIdx = texture2;
+	//	}
+
 	//	for (int j = 0; j < allAreas[i].numPatches; j++)
 	//	{
 	//		allAreas[i].allPatches[j].shader.use();
+	//		glUniform1i(glGetUniformLocation(allAreas[i].allPatches[j].shader.ID, "texture0"), i);
 	//		glBindVertexArray(allAreas[i].allPatches[j].VAO);
 	//		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
 	//	}
 	//}
-	GLint texLoc;
-	if (numAreas >= 3)
-	{
-		glActiveTexture(GL_TEXTURE2);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, texture0[2]);
-		for (int j = 0; j < allAreas[2].numPatches; j++)
-		{
-			//texLoc = glGetUniformLocation(allAreas[2].allPatches[0].shader2.ID, "texture0[2]");
-			glUniform1i(glGetUniformLocation(allAreas[2].allPatches[j].shader.ID, "texture0[2]"), 2); 
-			allAreas[2].allPatches[j].shader.use();
-			allAreas[2].allPatches[j].shader.setInt("cIdx", 2);
-			glBindVertexArray(allAreas[2].allPatches[j].VAO);
-			glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
-			glBindVertexArray(0);
-		}
-	}
-	if (numAreas >= 2)
-	{
-		glActiveTexture(GL_TEXTURE1);
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, texture0[1]);
-		for (int j = 0; j < allAreas[1].numPatches; j++)
-		{
-			glUniform1i(glGetUniformLocation(allAreas[1].allPatches[0].shader.ID, "texture0[1]"), 1);
-			allAreas[1].allPatches[j].shader.use();
-			allAreas[1].allPatches[j].shader.setInt("cIdx", 1);
-			glBindVertexArray(allAreas[1].allPatches[j].VAO);
-			glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
-			glBindVertexArray(0);
-		}
-		//glBindTexture(GL_TEXTURE_2D, 0);
-	}
-	if (numAreas >= 1)
-	{
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture0[0]);
-		for (int j = 0; j < allAreas[0].numPatches; j++)
-		{
-			
-			glUniform1i(glGetUniformLocation(allAreas[0].allPatches[j].shader.ID, "texture0[0]"), 0);
-			allAreas[0].allPatches[j].shader.use();
-			allAreas[0].allPatches[j].shader.setInt("cIdx",0);
-			glBindVertexArray(allAreas[0].allPatches[j].VAO);
-			glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
-			glBindVertexArray(0);
-		}
-	}
-	glBindTexture(GL_TEXTURE_2D, texture0[1]);
-	
+
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move 
+
 }
 
 

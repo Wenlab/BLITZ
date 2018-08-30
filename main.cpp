@@ -39,57 +39,78 @@ using namespace cv;
 
 int main()
 {
-	vector<const char*>imgNames;
-	/*imgNames.push_back("Images/RGB32.jpg");
-	imgNames.push_back("Images/RGB64.jpg");
-	imgNames.push_back("Images/RGB96.jpg");*/
-	imgNames.push_back("Images/fullBlue.jpg");
-	imgNames.push_back("Images/fullRed.jpg");
-	imgNames.push_back("Images/whiteBlackCheckerboard.jpg");
+	Timer expTimer;
 	
 	const vector<vector<float>> allAreaPos =
 	{
 		{ 0.082f, 0.300f, 0.258f, 0.668f },
-		{ 0.840f, -0.810f, 0.258f, 0.73f },
-		{ -0.665f, -0.810f, 0.258f, 0.73f }
+	{ 0.840f, -0.810f, 0.258f, 0.73f },
+	{ -0.665f, -0.810f, 0.258f, 0.73f }
 	};
+
 	vector<vector<int>> yPatternDivs =
 	{
 		{ 818, 818, 942, 942 },
-		{ 247, 247, 365, 365 },
-		{ 238, 238, 358, 358 }
+	{ 247, 247, 365, 365 },
+	{ 238, 238, 358, 358 }
 	};
-	Timer expTimer;
-	expTimer.start();
-	ScreenData screen;
-	screen.initialize(imgNames, 3);
-	
-	for (int i = 0; i < screen.numAreas; i++)
+
+	ScreenData myScreen;
+	vector<const char*> imgs;
+	imgs.push_back("Images/redBlackCheckerboard.jpg");
+	imgs.push_back("Images/whiteBlackCheckerboard.jpg");
+	imgs.push_back("Images/fullBlue.jpg");
+	/* GLFW initialize and configure */
+	//if (!myScreen.init_glfw_window())
+	//	return false;
+
+	///* glad: load all OpenGL function pointers */
+	//if (!myScreen.init_glad())
+	//	return false;
+	//
+	//const char img0[] = "Images/redBlackCheckerboard.jpg";
+	//const char img1[] = "Images/whiteBlackCheckerboard.jpg";
+	//const char img2[] = "Images/fullBlue.jpg";
+	//myScreen.loadTextureIntoBuffers(imgs, 3);
+	/*myScreen.loadTextureIntoBuffers(imgs[0], 0);
+	myScreen.loadTextureIntoBuffers(imgs[1], 1);
+	myScreen.loadTextureIntoBuffers(imgs[2], 2);*/
+	myScreen.initialize(imgs, 3);
+	// Initialize all areas
+	for (int i = 0; i < 3; i++)
 	{
-		AreaData area1(allAreaPos[i], 4);
-		area1.initialize(yPatternDivs[i],i);
-		screen.allAreas.push_back(area1);
+		AreaData area(allAreaPos[i], 4);
+		area.initialize(yPatternDivs[i]);
+		myScreen.allAreas.push_back(area);
 	}
-	int patchIdx = 0;
+
+	expTimer.start();
 	while (1)
 	{
 		int timeInSec = expTimer.getElapsedTimeInSec();
-		if (timeInSec % 3 == 0) 
-		{
-			screen.allAreas[2].allPatches[patchIdx].pIdx = !screen.allAreas[2].allPatches[patchIdx].pIdx;
-			//cout << "update" << endl;
-	    }
-		for (int i = 0; i < screen.numAreas; i++)
-		{
-			for (int j = 0; j < screen.allAreas[i].numPatches; j++)
-			{
-				screen.allAreas[i].allPatches[j].cIdx = i;
-				screen.allAreas[i].allPatches[j].updatePattern();
-			}
-		}
-		screen.renderTexture();
+		cout << "Time (s) : " << timeInSec << endl;
+		int areaIdx = rand() % 3;
+		if (timeInSec % 10 == 0)
+			myScreen.allAreas[areaIdx].allPatches[0].pIdx = !myScreen.allAreas[areaIdx].allPatches[0].pIdx;
+		myScreen.allAreas[areaIdx].allPatches[0].updatePattern();
+		myScreen.renderTexture();
 	}
 
+	/* 
+	string CS_Pattern = "RGB96";
+	ExperimentData exp(CS_Pattern);
+
+	if (!exp.initialize())
+	{
+	cout << "Experiment Initialization Failed." << endl;
+	exit(0);
+	}
+	else {
+	cout << "Experiment initialized." << endl;
+	}
+
+	exp.runOLexp();
+	The real main function */
 
 	/* Test serial port
 	string CS_Pattern = "redBlackCheckerboard";
@@ -112,14 +133,11 @@ int main()
 	}
 	*/
 
-	
+
 	/* main function
-	const string pathName = "F:/FishExpData/";
-	vector<string> CS_Patterns;
-	CS_Patterns.push_back("redBlackCheckerboard");
-	CS_Patterns.push_back("fullRed");
-	CS_Patterns.push_back("fullBlue");
-	ExperimentData exp(CS_Patterns, pathName);
+	string CS_Pattern = "redBlackCheckerboard";
+	ExperimentData exp(CS_Pattern);
+
 	if (!exp.initialize())
 	{
 		cout << "Experiment Initialization Failed." << endl;
@@ -128,14 +146,15 @@ int main()
 	else {
 		cout << "Experiment initialized." << endl;
 	}
+
 	exp.runOLexp();
 	*/
 
 
-	
-	
+
+
 	/* Test screen function
-	
+
 	const char imgName[] = "Images/redBlackCheckerboard.jpg";
 	const vector<vector<float>> allAreaPos =
 	{
@@ -173,9 +192,9 @@ int main()
 
 
 
-	/* Test OL Procedure 
+	/* Test OL Procedure
 	ExperimentData exp;
-	
+
 	const char imgName[] = "Images/redCheckerBoard.jpg";
 	try {
 		exp.initialize(imgName);
@@ -191,8 +210,8 @@ int main()
 	*/
 
 
-	/*  Test writeout
-	
+	/*
+
 	int testVar = 10;
 	vector<int> headVec(4, 0);
 	headVec[1] = 1;
@@ -209,8 +228,8 @@ int main()
 	*/
 	//yaml << "Frames" << "[";
 	//writeOutVarInline<int>(fs, testVar, "testVar");
-	
-	/* Timer.start can be used as reset 
+
+	/* Timer.start can be used as reset
 	Timer expTimer;
 	expTimer.start();
 	while (1)
@@ -222,8 +241,8 @@ int main()
 	}
 	*/
 
-	/* Test camera function 
-	
+	/* Test camera function
+
 	Timer expTimer;
 	expTimer.start();
 	CameraData cams;
@@ -239,7 +258,7 @@ int main()
 	*/
 
 
-	
+
 
 
 
@@ -252,8 +271,8 @@ int main()
 		ExperimentData myExp;
 		myExp.initialize();
 		myExp.prepareBgImg();
-		myExp.runOLexp(); // run operant learning experiment		
-	}	
+		myExp.runOLexp(); // run operant learning experiment
+	}
 	catch (const GenericException &e)
 	{
 		// Error handling

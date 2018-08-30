@@ -105,7 +105,7 @@ bool ExperimentData::initialize()
 		// create AreaData and push it into screen.allAreas
 		// the screen coordinates are (-1,1)
 		AreaData area(allAreaPos[i], arena.numFish);
-		area.initialize(yPatternDivs[i],i);
+		area.initialize(yPatternDivs[i]);
 		screen.allAreas.push_back(area);
 
 		// Append strain info to contentName
