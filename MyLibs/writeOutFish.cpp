@@ -28,6 +28,7 @@
 // Include user-defined libraries
 #include "writeOutFish.h"
 #include <chrono>
+#include <algorithm>  // include the algorithm reverse
 
 
 using namespace std;
@@ -63,6 +64,7 @@ string get_strainName(char firstChar)
 /* Get CS string to append to the filenames of yaml and video files */
 string get_CS_string(string CSpattern)
 {
+	// TODO: get the abbreviation by erasing all lower-case alphabetas
 	string CSstr;
 	if (CSpattern.compare("redBlackCheckerboard") == 0)
 		CSstr = "RBC";
@@ -77,6 +79,35 @@ string get_CS_string(string CSpattern)
 
 	}
 	return CSstr;
+}
+
+/* Extract the pattern name from the filename 
+ by erasing all lower-case alphabetas
+*/
+string extractPatternName(const char* fileName)
+{
+	int startIdx, endIdx;
+	string s(fileName);
+	std::reverse(s.begin(), s.end());
+	int foundIdx = s.find('/');
+	if (foundIdx != string::npos)
+		startIdx = s.size() - foundIdx;
+	else
+		startIdx = 0;
+
+	int foundIdx = s.find('.');
+	if (foundIdx != string::npos)
+		endIdx = s.size() - foundIdx;
+	else {
+		cout << "Wrong input pattern directory!" << endl;
+		cout << "Please check!" << endl;
+		exit(0);
+	}
+	
+	std::reverse(s.begin(), s.end()); // reverse back
+	string patternName = s.substr(startIdx + 1, endIdx - 1);
+
+
 }
 
 /* Get current date and time string from chrono system clock */
@@ -147,6 +178,8 @@ void showWelcomeMsg()
 		<< "Copyright 2018 Wenbin Yang <bysin7@gmail.com>" << endl;
 	cout << endl; // separated with an empty line
 
+	cout << "Please make sure all devices are connected." << endl;
+	cout << "Cameras, the relay, the projector." << endl;
 
 }
 
@@ -162,7 +195,6 @@ Diagram of fish positions in arena
 */
 void showFishPosDiagram()
 {
-
 	const int numSpaces = 3;
 	const string spaces(numSpaces, ' ');
 	const string cutLineL(4 * numSpaces + 3, '-');

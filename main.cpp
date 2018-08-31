@@ -50,12 +50,14 @@ int main()
 	
 	Timer expTimer;
 	ScreenData myScreen;
-	vector<const char*> CS_Patterns;
-	CS_Patterns.push_back("Images/redBlackCheckerboard.jpg");
-	CS_Patterns.push_back("Images/whiteBlackCheckerboard.jpg");
-	CS_Patterns.push_back("Images/fullBlue.jpg");
+	vector<const char*> CSpatterns = 
+	{
+		"Images/redBlackCheckerboard.jpg",
+		"Images/whiteBlackCheckerboard.jpg",
+		"Images/fullBlue.jpg"
+	};
 
-	myScreen.initialize(CS_Patterns);
+	myScreen.initialize(CSpatterns);
 
 	expTimer.start();
 	while (1)

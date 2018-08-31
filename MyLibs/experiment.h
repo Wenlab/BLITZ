@@ -59,7 +59,7 @@ public:
 		ITI = 0;
 	}
 	/* Initialize the experiment */
-	bool initialize();
+	bool initialize(std::vector<const char*> CSpatterns);
 	/* Prepare background image for MOG subtractor */
 	void prepareBgImg(const int prepareTime);
 	/* Run unpaired training in the operant learning procedure */

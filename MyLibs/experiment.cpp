@@ -37,79 +37,38 @@
 using namespace std;
 using namespace cv;
 
-bool ExperimentData::initialize()
+bool ExperimentData::initialize(vector<const char*> CSpatterns)
 {/* TODO: 1. rewrite the screen initialization part with new functions
 		  2. make modulars
  */
-	const vector<vector<float>> allAreaPos =
-	{
-		{ 0.082f, 0.300f, 0.258f, 0.668f },
-		{ 0.840f, -0.810f, 0.258f, 0.73f },
-		{ -0.665f, -0.810f, 0.258f, 0.73f }
-	};
-	// y division pos for all fish
-	vector<vector<int>> yDivs =
-	{
-		{ 195, 195, 574, 574 },
-		{ 223, 223, 588, 588 },
-		{ 214, 214, 588, 588 }
-	};
-	//y division pos for all patch
-	vector<vector<int>> yPatternDivs =
-	{
-		{ 818, 818, 942, 942 },
-		{ 247, 247, 365, 365 },
-		{ 238, 238, 358, 358 }
-	};
-
-	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
-	string imgFolderPath = "Images/";
-
 	showWelcomeMsg();
-	vector<string> imgStrs;
-	vector<const char*> imgName(CSpatterns.size());
-	vector<string> CSstr(CSpatterns.size());
-	for (int i = 0; i < CSpatterns.size(); i++)
-	{
-		imgStrs.push_back(imgFolderPath + CSpatterns[i] + ".jpg");
-		imgName[i] = imgStrs[i].c_str();
-		CSstr[i] = get_CS_string(CSpatterns[i]);
-	}
+	
 	string timeStr = get_current_date_time();
 	numCameras = enquireNumCams();
+	
+	int fishAge = enquireFishAge();
+	string expTask = enquireExpTask();
+	// Enquire fish IDs for all arenas
+	vector<vector<string>> fishIDs;
+	for (int i = 0; i < numCameras; i++)
+		fishIDs.push_back(enquireFishIDs(i));
+	
+
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
 		return false;
-	cout << endl; // separated with an empty line
 
-	cout << "Initializing the projector screen .. " << endl;
-	if (!screen.initialize(imgName, numCameras))
+	if (!screen.initialize(CSpatterns))
 		return false;
-	cout << endl; // separated with an empty line
 
 	/* Initialize the serial port */
 	if (!thePort.initialize(COM_NUM))
 		return false;
-	cout << endl; // separated with an empty line
 
-	int fishAge = enquireFishAge();
-	string expTask = enquireExpTask();
 
 	for (int i = 0; i < numCameras; i++)
 	{
-		// create ArenaData and push it into exp.allArenas
-		vector<string> fishIDs = enquireFishIDs(i);
 
-		ArenaData arena(binThreList[i], fishIDs.size());
-		arena.initialize(fishIDs, fishAge, yDivs[i]);
-		allArenas.push_back(arena);
-
-		// create AreaData and push it into screen.allAreas
-		// the screen coordinates are (-1,1)
-		AreaData area(allAreaPos[i], arena.numFish);
-		area.initialize(yPatternDivs[i]);
-		screen.allAreas.push_back(area);
-
-		// Append strain info to contentName
+		// TODO: write a WriteOut::function to generate filenames
 		string strainName = get_strainName(fishIDs[0][0]);
 		string contentName = timeStr + "_" + "Arena" + to_string(i+1)
 			+ "_" + strainName + "_" + to_string(fishAge)
@@ -132,6 +91,7 @@ bool ExperimentData::initialize()
 		writeOut.writeKeyValuePair("FrameSize", Size(WIDTH, HEIGHT), i);
 		writeOut.writeKeyValuePair("xCut", X_CUT, i);
 		writeOut.writeKeyValuePair("yCut", Y_CUT, i);
+		// TODO: put this line in other places
 		writeOut.writeKeyValuePair("yDivide", yDivs[i], i);
 
 

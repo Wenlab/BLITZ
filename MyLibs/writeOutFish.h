@@ -78,6 +78,9 @@ std::string get_strainName(char firstChar);
 /* Get CS string to append to the filenames of yaml and video files */
 std::string get_CS_string(std::string CSpattern);
 
+/* Extract the pattern name from the filename */
+std::string extractPatternName(const char*);
+
 /* Get experiment start local time */
 std::string get_current_date_time();
 

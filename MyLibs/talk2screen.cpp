@@ -247,6 +247,7 @@ bool ScreenData::initialize(
 		{ 238, 238, 358, 358 }
 	};
 
+	cout << "Initializing the projector screen .. " << endl;
 	/* GLFW initialize and configure */
 	if (!init_glfw_window())
 		return false;
@@ -264,7 +265,7 @@ bool ScreenData::initialize(
 		area.initialize(yPatternDivs[i], imgNames[i]);
 		allAreas.push_back(area);
 	}
-
+	cout << "Screen initialization succeeded." << endl << endl;
 	return true;
 }
 
