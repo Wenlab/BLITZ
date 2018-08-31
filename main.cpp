@@ -55,7 +55,7 @@ int main()
 	CS_Patterns.push_back("Images/whiteBlackCheckerboard.jpg");
 	CS_Patterns.push_back("Images/fullBlue.jpg");
 
-	myScreen.initialize(CS_Patterns, 3);
+	myScreen.initialize(CS_Patterns);
 
 	expTimer.start();
 	while (1)

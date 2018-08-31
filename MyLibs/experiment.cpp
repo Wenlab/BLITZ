@@ -38,8 +38,9 @@ using namespace std;
 using namespace cv;
 
 bool ExperimentData::initialize()
-{// TODO: rewrite the screen initialization part with new functions
-
+{/* TODO: 1. rewrite the screen initialization part with new functions
+		  2. make modulars
+ */
 	const vector<vector<float>> allAreaPos =
 	{
 		{ 0.082f, 0.300f, 0.258f, 0.668f },

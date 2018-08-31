@@ -229,7 +229,6 @@ void ScreenData::updatePatternInBlackout() {
 
 bool ScreenData::initialize(
 	std::vector<const char*> imgNames, // image file names
-	int nAreas, 
 	vector<int> patchesOfAreas
 	)
 {
@@ -257,7 +256,7 @@ bool ScreenData::initialize(
 		return false;
 
 	// Initialize all areas
-	numAreas = nAreas;
+	numAreas = imgNames.size();
 	allAreas.reserve(numAreas);
 	for (int i = 0; i < numAreas; i++)
 	{
