@@ -48,18 +48,27 @@ private:
 	;// nothing for now
 public:
 	// methods
-	ExperimentData(std::vector<std::string> texNames, std::string pName) : CSpatterns(texNames) , pathName(pName)
+	ExperimentData(std::vector<const char*> texNames, std::string pName) 
+		: CSpatterns(texNames) 
+		, pathName(pName)
 	{
 		numCameras = 0;
-
 		idxFrame = -1;
 		sElapsed = -1;
 		msRemElapsed = 0;
 		expPhase = -1;
 		ITI = 0;
+
+		// y division pos for all fish
+		yDivs =
+		{
+			{ 195, 195, 574, 574 },
+			{ 223, 223, 588, 588 },
+			{ 214, 214, 588, 588 }
+		};
 	}
 	/* Initialize the experiment */
-	bool initialize(std::vector<const char*> CSpatterns);
+	bool initialize();
 	/* Prepare background image for MOG subtractor */
 	void prepareBgImg(const int prepareTime);
 	/* Run unpaired training in the operant learning procedure */
@@ -81,7 +90,7 @@ public:
 	// properties
 
 	// constant ones
-	const std::vector<std::string> CSpatterns;
+	const std::vector<const char*> CSpatterns;
 	const std::string pathName;
 	int numCameras;
 
@@ -92,6 +101,8 @@ public:
 	/* Update time for the entire screen */
 	/* Inter-trial Interval */
 	int ITI;
+	std::vector<std::vector<int>> yDivs;
+
 
 	Timer expTimer;
 	CameraData cams;

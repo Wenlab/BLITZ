@@ -135,8 +135,6 @@ public:
 	// properties
 	const int numFish;
 	int binThre; // in the future, this might be adjusted in the GUI
-	
-	void BlackoutExp();
 
 	cv::Ptr<cv::BackgroundSubtractor> pMOG; // one pMOG for one arena
 	cv::Mat opencvImg, HUDSimg, subImg;
@@ -144,8 +142,8 @@ public:
 
 
 };
-
-
+/* Initialize all arenas will be used in the experiment */
+std::vector<ArenaData> initializeAllArenas(std::vector<std::vector<int>> yDivs, std::vector<std::vector<std::string>> fishIDs, int fishAge);
 /*Find the closest point on the contour to the reference point*/
 int findClosestPt(std::vector<cv::Point>& contour, cv::Point point);
 /* Rotate the image 90 degrees clockwise */
@@ -154,7 +152,6 @@ void rot90CW(cv::Mat src, cv::Mat dst);
 double getPt2LineDistance(cv::Point2f P, cv::Point2f A, cv::Point2f B);
 /* Find 2 intersection points of a line (AB) and contour */
 std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv::Point2f A, cv::Point2f B);
-
 
 
 #endif // !_GUARD_FISHANALYSIS_H

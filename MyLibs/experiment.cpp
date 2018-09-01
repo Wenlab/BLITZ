@@ -37,23 +37,14 @@
 using namespace std;
 using namespace cv;
 
-bool ExperimentData::initialize(vector<const char*> CSpatterns)
-{/* TODO: 1. rewrite the screen initialization part with new functions
-		  2. make modulars
- */
-	showWelcomeMsg();
+bool ExperimentData::initialize()
+{
+	numCameras = writeOut.enquireInfoFromUser();	
+	/* Create yaml and video files to write in */
+	if (!writeOut.initialize(pathName, WIDTH, HEIGHT, FRAMERATE,
+		X_CUT, Y_CUT, yDivs))
+		return false;
 	
-	string timeStr = get_current_date_time();
-	numCameras = enquireNumCams();
-	
-	int fishAge = enquireFishAge();
-	string expTask = enquireExpTask();
-	// Enquire fish IDs for all arenas
-	vector<vector<string>> fishIDs;
-	for (int i = 0; i < numCameras; i++)
-		fishIDs.push_back(enquireFishIDs(i));
-	
-
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
 		return false;
 
@@ -63,40 +54,7 @@ bool ExperimentData::initialize(vector<const char*> CSpatterns)
 	/* Initialize the serial port */
 	if (!thePort.initialize(COM_NUM))
 		return false;
-
-
-	for (int i = 0; i < numCameras; i++)
-	{
-
-		// TODO: write a WriteOut::function to generate filenames
-		string strainName = get_strainName(fishIDs[0][0]);
-		string contentName = timeStr + "_" + "Arena" + to_string(i+1)
-			+ "_" + strainName + "_" + to_string(fishAge)
-			+ "dpf_" + expTask + "_" + CSstr[i];
-
-		/* Create yaml and video files to write in */
-		if (!writeOut.initialize(pathName,contentName, WIDTH, HEIGHT, FRAMERATE))
-			return false;
-
-		/* Write out general experiment context info */
-
-		writeOut.writeKeyValuePair("FishIDs", strVec2str(fishIDs), i);
-		writeOut.writeKeyValuePair("FishAge", fishAge, i);
-		writeOut.writeKeyValuePair("FishStrain", strainName, i);
-		writeOut.writeKeyValuePair("Arena", i+1, i); // record which arena is in use
-		writeOut.writeKeyValuePair("Task", expTask, i);
-		writeOut.writeKeyValuePair("CSpattern", CSstr, i);
-		writeOut.writeKeyValuePair("ExpStartTime", timeStr, i);
-		writeOut.writeKeyValuePair("FrameRate", FRAMERATE, i);
-		writeOut.writeKeyValuePair("FrameSize", Size(WIDTH, HEIGHT), i);
-		writeOut.writeKeyValuePair("xCut", X_CUT, i);
-		writeOut.writeKeyValuePair("yCut", Y_CUT, i);
-		// TODO: put this line in other places
-		writeOut.writeKeyValuePair("yDivide", yDivs[i], i);
-
-
-	}
-	//expTimer.start(); 
+	
 	return true;
 }
 
