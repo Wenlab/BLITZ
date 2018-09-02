@@ -27,7 +27,7 @@
 
 // Include user-defined libraries
 #include "writeOutFish.h"
-#include <chrono>
+#include <ctime> // to get the current date and time
 #include <algorithm>  // include the algorithm reverse
 
 
@@ -76,46 +76,17 @@ int WriteOutData::enquireInfoFromUser()
 
 /* Get current date and time string from chrono system clock */
 void WriteOutData::get_current_date_time()
-{
-	// TODO: use a more elegant way to get the date and time (precise to seconds)
+{	
 	// Get system time
-	chrono::system_clock::time_point p = chrono::system_clock::now();
-	time_t t = chrono::system_clock::to_time_t(p);
-	char timeS[26]; // time string
-	ctime_s(timeS, sizeof timeS, &t);
+	time_t rawtime;
+	struct tm timeinfo;
+	char buffer[80];
 
-	vector<string> timeVec;
-	istringstream ss(timeS);
-	while (ss.good())
-	{
-		string subStr;
-		getline(ss, subStr, ' ');
-		timeVec.push_back(subStr);
-	}
-
-	timeStr = "2018"; // add year
-	if (timeVec[1].compare("May") == 0) // add month
-		timeStr += "05";
-	else if (timeVec[1].compare("Jun") == 0)
-		timeStr += "06";
-	else if (timeVec[1].compare("Jul") == 0)
-		timeStr += "07";
-
-	// add day, separator, to separator date and time
-	timeStr += timeVec[2] + "_";
-	ss.clear();
-	ss.str(timeVec[3]);
-	timeVec.clear();
-
-	while (ss.good())
-	{
-		string subStr;
-		getline(ss, subStr, ':');
-		timeVec.push_back(subStr);
-	}
-
-	timeStr += timeVec[0] + timeVec[1];
-
+	time(&rawtime);
+	
+	int errCode = localtime_s(&timeinfo, &rawtime);
+	strftime(buffer, sizeof(buffer), "%Y%m%d%H%M", &timeinfo);
+	timeStr(buffer);
 }
 
 /* Ask for the number of cameras to use in the experiment */
