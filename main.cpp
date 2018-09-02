@@ -46,6 +46,33 @@ int main()
 	4. reduce unnecessary data-type conversions
 	5. remove unnecessary code
 	*/
+	vector<const char*> CS_patterns =
+	{
+		"redBlackCheckerboard",
+		"whiteBlackCheckerboard",
+		"fullBlue"
+	};
+	string pathName = "F:/FishExpData/";
+	ExperimentData exp(CS_patterns,pathName);
+
+	if (!exp.initialize())
+	{
+		cout << "Experiment Initialization Failed." << endl;
+		exit(0);
+	}
+	else {
+		cout << "Experiment initialized." << endl;
+	}
+
+	exp.runOLexp();
+
+
+
+
+
+
+
+	/* The block for the real experiment 
 	string pathName = "F:/FishExpData/";
 	vector<string> CS_Patterns;
 	CS_Patterns.push_back("redBlackCheckerboard");
@@ -64,6 +91,7 @@ int main()
 	}
 
 	exp.runOLexp();
+	*/
 	/* 
 	string CS_Pattern = "RGB96";
 	ExperimentData exp(CS_Pattern);
@@ -123,47 +151,28 @@ int main()
 
 	/* Test screen function
 	Timer expTimer;
-
-	const vector<vector<float>> allAreaPos =
-	{
-	{ 0.082f, 0.300f, 0.258f, 0.668f },
-	{ 0.840f, -0.810f, 0.258f, 0.73f },
-	{ -0.665f, -0.810f, 0.258f, 0.73f }
-	};
-
-	vector<vector<int>> yPatternDivs =
-	{
-	{ 818, 818, 942, 942 },
-	{ 247, 247, 365, 365 },
-	{ 238, 238, 358, 358 }
-	};
-
 	ScreenData myScreen;
-	vector<const char*> imgs;
-	imgs.push_back("Images/redBlackCheckerboard.jpg");
-	imgs.push_back("Images/whiteBlackCheckerboard.jpg");
-	imgs.push_back("Images/fullBlue.jpg");
-
-	myScreen.initialize(imgs, 3);
-	// Initialize all areas
-	for (int i = 0; i < 3; i++)
+	vector<const char*> CSpatterns =
 	{
-	AreaData area(allAreaPos[i], 4);
-	area.initialize(yPatternDivs[i]);
-	myScreen.allAreas.push_back(area);
-	}
+		"Images/redBlackCheckerboard.jpg",
+		"Images/whiteBlackCheckerboard.jpg",
+		"Images/fullBlue.jpg"
+	};
+
+	myScreen.initialize(CSpatterns);
 
 	expTimer.start();
 	while (1)
 	{
-	int timeInSec = expTimer.getElapsedTimeInSec();
-	cout << "Time (s) : " << timeInSec << endl;
-	int areaIdx = rand() % 3;
-	if (timeInSec % 10 == 0)
-	myScreen.allAreas[areaIdx].allPatches[0].pIdx = !myScreen.allAreas[areaIdx].allPatches[0].pIdx;
-	myScreen.allAreas[areaIdx].allPatches[0].updatePattern();
-	myScreen.renderTexture();
+		int timeInSec = expTimer.getElapsedTimeInSec();
+		cout << "Time (s) : " << timeInSec << endl;
+		int areaIdx = rand() % 3;
+		if (timeInSec % 10 == 0)
+			myScreen.allAreas[areaIdx].allPatches[0].pIdx = !myScreen.allAreas[areaIdx].allPatches[0].pIdx;
+		myScreen.allAreas[areaIdx].allPatches[0].updatePattern();
+		myScreen.renderTexture();
 	}
+
 	*/
 
 

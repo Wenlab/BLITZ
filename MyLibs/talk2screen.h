@@ -86,7 +86,6 @@ public:
 	
 	Shader shader;
 	unsigned int VAO, VBO, EBO;
-	unsigned int texture;
 };
 /* represent pattern changes of an entire local area,
  which consists of many patches
@@ -104,10 +103,12 @@ public:
 	{
 		
 	}
-	bool initialize(std::vector<int> yDivideVec);
+	bool initialize(std::vector<int> yDivideVec, const char* imgName);
+	bool loadTextureIntoBuffers(const char* imgName);
 	void reverseAllPatches();
 	// properties
 	std::vector<PatchData> allPatches;
+	unsigned int texture0; // texture ID 
 	const int numPatches;
 	const std::vector<float> rect; // upper-left corner (x, y, width, height)
 };
@@ -116,12 +117,8 @@ class ScreenData
 {
 private: // only used within class
 	GLFWmonitor * * monitors;
-	
 	GLFWwindow* window;
-	// buffer idx to store texture
 
-	//unsigned int texture0, texture1, texture2;
-	unsigned int texture0[3];
 public:
 	// methods
 	ScreenData() // constructor
@@ -129,24 +126,17 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<const char*> filename, int nAreas);
+	bool initialize(std::vector<const char*> filenames, std::vector<int> patchesOfAreas = {4,4,4});
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */
 	bool init_glad();
-	/* load txture from image */
-	bool loadTextureIntoBuffers(std::vector<const char*> filename, int texIdx);
-	
 	/* Update pattern for specific area */
 	void updatePattern(int cIdx);
-
-	
 	/* Update patternIdx for all shaders in the screen */
 	void updatePattern();
 	/* Render designed pattern on the screen */
 	void renderTexture();
-
-	
 	/* Update pattern in test experiment */
 	void updatePatternInTest(int sElapsed);
 	/* Update pattern in baseline experiment */

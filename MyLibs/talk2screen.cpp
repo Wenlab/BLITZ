@@ -85,7 +85,7 @@ void PatchData::updatePattern()
 	shader.setInt("patternIdx", pIdx);
 }
 
-bool AreaData::initialize(vector<int> yDivideVec)
+bool AreaData::initialize(vector<int> yDivideVec, const char* imgName)
 {
 	for (int i = 0; i < numPatches; i++)
 	{
@@ -118,6 +118,46 @@ bool AreaData::initialize(vector<int> yDivideVec)
 		patch.initialize();
 		allPatches.push_back(patch);
 	}
+	loadTextureIntoBuffers(imgName);
+	return true;
+}
+
+/* Reverse the position of the CS pattern */
+void AreaData::reverseAllPatches() {
+	for (int j = 0; j < numPatches; j++)
+	{
+		allPatches[j].pIdx = !allPatches[j].pIdx;
+		allPatches[j].updatePattern();
+	}
+}
+
+
+/* Load a texture for one area */
+bool AreaData::loadTextureIntoBuffers(const char* imgName)
+{	
+	glGenTextures(1, &texture0);
+	glBindTexture(GL_TEXTURE_2D, texture0);
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// load image, create texture and generate mipmaps
+	int width, height, nrChannels;
+	//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
+	unsigned char *data = stbi_load(imgName, &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+		return false;
+	}
+	stbi_image_free(data);
 	return true;
 }
 
@@ -143,14 +183,6 @@ void ScreenData::updatePattern(int cIdx)
 		area.allPatches[j].updatePattern();
 	}	
 
-}
-
-void AreaData::reverseAllPatches() {
-	for (int j = 0; j < numPatches; j++)
-	{
-		allPatches[j].pIdx = !allPatches[j].pIdx;
-		allPatches[j].updatePattern();
-	}
 }
 
 //TODO: update the pattern first.
@@ -195,10 +227,27 @@ void ScreenData::updatePatternInBlackout() {
 	}
 }
 
-bool ScreenData::initialize(std::vector<const char*> imgName, int nAreas)
+bool ScreenData::initialize(
+	std::vector<const char*> imgNames, // image file names
+	vector<int> patchesOfAreas
+	)
 {
-	numAreas = nAreas;
-	allAreas.reserve(nAreas);
+	const vector<vector<float>> allAreaPos =
+	{
+		{ 0.082f, 0.300f, 0.258f, 0.668f },
+		{ 0.840f, -0.810f, 0.258f, 0.73f },
+		{ -0.665f, -0.810f, 0.258f, 0.73f }
+	};
+	
+	//y dividing positions for all patches
+	vector<vector<int>> yPatternDivs =
+	{
+		{ 818, 818, 942, 942 },
+		{ 247, 247, 365, 365 },
+		{ 238, 238, 358, 358 }
+	};
+
+	cout << "Initializing the projector screen .. " << endl;
 	/* GLFW initialize and configure */
 	if (!init_glfw_window())
 		return false;
@@ -207,8 +256,16 @@ bool ScreenData::initialize(std::vector<const char*> imgName, int nAreas)
 	if (!init_glad())
 		return false;
 
-	if (!loadTextureIntoBuffers(imgName,numAreas))
-		return false;
+	// Initialize all areas
+	numAreas = imgNames.size();
+	allAreas.reserve(numAreas);
+	for (int i = 0; i < numAreas; i++)
+	{
+		AreaData area(allAreaPos[i], patchesOfAreas[i]);
+		area.initialize(yPatternDivs[i], imgNames[i]);
+		allAreas.push_back(area);
+	}
+	cout << "Screen initialization succeeded." << endl << endl;
 	return true;
 }
 
@@ -251,52 +308,17 @@ bool ScreenData::init_glad()
 	return true;
 }
 
-/* Load one texture for the entire screen */
-bool ScreenData::loadTextureIntoBuffers(std::vector<const char*> imgName, int texIdx)
-{
-	std::vector<unsigned char*> data;
-	for (int i = 0; i < texIdx; i++)
-	{
-		glGenTextures(1, &texture0[i]);
-		glBindTexture(GL_TEXTURE_2D, texture0[i]);
-		// set the texture wrapping parameters
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		// set texture filtering parameters
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		// load image, create texture and generate mipmaps
-		int width, height, nrChannels;
-		//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
-		unsigned char *data0 = stbi_load(imgName[i], &width, &height, &nrChannels, 0);
-		data.push_back(data0);
-		if (data[i])
-		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data[i]);
-			glGenerateMipmap(GL_TEXTURE_2D);
-		}
-		else
-		{
-			std::cout << "Failed to load texture" << std::endl;
-			return false;
-		}
-		stbi_image_free(data[i]);
-	}
-	return true;
-}
-
 /* Render designed pattern on the screen */
 void ScreenData::renderTexture()
-{
+{// TODO: use functions to replace loops
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	int texIdx = 0;
 	for (int  i = 0; i < allAreas.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, texture0[i]);
-		texIdx = texture0[i];
+		glBindTexture(GL_TEXTURE_2D, allAreas[i].texture0);
+		
 		for (int j = 0; j < allAreas[i].numPatches; j++)
 		{
 			allAreas[i].allPatches[j].shader.use();

@@ -38,7 +38,7 @@ bool PortData::initialize(int com_num)
 	}
 	else
 	{
-		std::cout << "SerialPort initiation succeeded! " << std::endl;
+		std::cout << "SerialPort initiation succeeded! " << std::endl << std::endl;
 	}
 	return true;	
 }
