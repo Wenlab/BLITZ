@@ -85,7 +85,7 @@ void WriteOutData::get_current_date_time()
 	time(&rawtime);
 	
 	int errCode = localtime_s(&timeinfo, &rawtime);
-	strftime(buffer, sizeof(buffer), "%Y%m%d%H%M", &timeinfo);
+	strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M", &timeinfo);
 	timeStr(buffer);
 }
 
