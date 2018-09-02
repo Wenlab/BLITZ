@@ -305,7 +305,7 @@ string extractPatternName(const char* fileName)
 	}
 	
 	std::reverse(s.begin(), s.end()); // reverse back
-	string patternName = s.substr(startIdx + 1, endIdx - 1);
+	string patternName = s.substr(startIdx , endIdx - startIdx - 1);
 	return patternName;
 }
 
