@@ -180,7 +180,6 @@ void WriteOutData::enquireExpTask()
 /* Ask for fish IDs for all arenas */
 void WriteOutData::enquireFishIDs()
 {
-	vector<vector<string>> fishIDs;
 	for (int i = 0; i < numFiles; i++)
 		fishIDs.push_back(enquireFishIDs(i));
 }
@@ -248,6 +247,7 @@ string WriteOutData::getBasename(int arenaIdx)
 		timeStr + "_" + "Arena" + to_string(arenaIdx + 1)
 		+ "_" + strainNames[arenaIdx] + "_" + to_string(fishAge)
 		+ "dpf_" + expTask + "_" + CSstrs[arenaIdx];
+	return baseName;
 }
 
 /* Get CS strings for all arena */
@@ -322,7 +322,7 @@ string extractPatternName(const char* fileName)
 	else
 		startIdx = 0;
 
-	int foundIdx = s.find('.');
+	foundIdx = s.find('.');
 	if (foundIdx != string::npos)
 		endIdx = s.size() - foundIdx;
 	else {

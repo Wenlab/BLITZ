@@ -131,6 +131,9 @@ public:
 /* Show software description and welcome messages to user */
 void showWelcomeMsg();
 
+/* Show the diagram of fish */
+void showFishPosDiagram();
+
 /* Extract the pattern name from the filename */
 std::string extractPatternName(const char*);
 

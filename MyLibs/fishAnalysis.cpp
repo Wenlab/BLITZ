@@ -339,7 +339,7 @@ vector<ArenaData> initializeAllArenas(vector<vector<int>> yDivs, vector<vector<s
 		arena.initialize(fishIDs[i], fishAge, yDivs[i]);
 		allArenas.push_back(arena);
 	}
-
+	return allArenas;
 }
 
 

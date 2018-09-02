@@ -55,6 +55,8 @@ bool ExperimentData::initialize()
 	if (!thePort.initialize(COM_NUM))
 		return false;
 	
+	allArenas = initializeAllArenas(yDivs, writeOut.fishIDs, writeOut.fishAge);
+
 	return true;
 }
 
