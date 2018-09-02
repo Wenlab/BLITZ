@@ -39,6 +39,7 @@ using namespace cv;
 
 bool ExperimentData::initialize()
 {
+	writeOut.get_CS_strings(CSpatterns);
 	numCameras = writeOut.enquireInfoFromUser();	
 	/* Create yaml and video files to write in */
 	if (!writeOut.initialize(pathName, WIDTH, HEIGHT, FRAMERATE,

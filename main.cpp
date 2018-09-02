@@ -48,9 +48,9 @@ int main()
 	*/
 	vector<const char*> CS_patterns =
 	{
-		"redBlackCheckerboard",
-		"whiteBlackCheckerboard",
-		"fullBlue"
+		"Images/redBlackCheckerboard.jpg",
+		"Images/whiteBlackCheckerboard.jpg",
+		"Images/fullBlue.jpg"
 	};
 	string pathName = "F:/FishExpData/";
 	ExperimentData exp(CS_patterns,pathName);

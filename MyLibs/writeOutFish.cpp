@@ -27,7 +27,7 @@
 
 // Include user-defined libraries
 #include "writeOutFish.h"
-#include <chrono>
+#include <ctime> // to get the current date and time
 #include <algorithm>  // include the algorithm reverse
 
 
@@ -77,45 +77,16 @@ int WriteOutData::enquireInfoFromUser()
 /* Get current date and time string from chrono system clock */
 void WriteOutData::get_current_date_time()
 {
-	// TODO: use a more elegant way to get the date and time (precise to seconds)
 	// Get system time
-	chrono::system_clock::time_point p = chrono::system_clock::now();
-	time_t t = chrono::system_clock::to_time_t(p);
-	char timeS[26]; // time string
-	ctime_s(timeS, sizeof timeS, &t);
+	time_t rawtime;
+	struct tm timeinfo;
+	char buffer[80];
 
-	vector<string> timeVec;
-	istringstream ss(timeS);
-	while (ss.good())
-	{
-		string subStr;
-		getline(ss, subStr, ' ');
-		timeVec.push_back(subStr);
-	}
+	time(&rawtime);
 
-	timeStr = "2018"; // add year
-	if (timeVec[1].compare("May") == 0) // add month
-		timeStr += "05";
-	else if (timeVec[1].compare("Jun") == 0)
-		timeStr += "06";
-	else if (timeVec[1].compare("Jul") == 0)
-		timeStr += "07";
-
-	// add day, separator, to separator date and time
-	timeStr += timeVec[2] + "_";
-	ss.clear();
-	ss.str(timeVec[3]);
-	timeVec.clear();
-
-	while (ss.good())
-	{
-		string subStr;
-		getline(ss, subStr, ':');
-		timeVec.push_back(subStr);
-	}
-
-	timeStr += timeVec[0] + timeVec[1];
-
+	int errCode = localtime_s(&timeinfo, &rawtime);
+	strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M", &timeinfo);
+	timeStr = buffer;
 }
 
 /* Ask for the number of cameras to use in the experiment */
@@ -215,7 +186,7 @@ void WriteOutData::get_strainNames()
 {
 	for (int i = 0; i < numFiles; i++)
 	{
-		strainNames[i] = get_strainName(fishIDs[i]);
+		strainNames.push_back(get_strainName(fishIDs[i]));
 	}
 }
 /* Get strain name of fish in the arena */
@@ -236,7 +207,7 @@ string WriteOutData::get_strainName(vector<string> fishIDs)
 void WriteOutData::getBasenames()
 {
 	for (int i = 0; i < numFiles; i++)
-		baseNames[i] = getBasename(i);
+		baseNames.push_back(getBasename(i));
 }
 
 /* Get basename for the output files */
@@ -245,8 +216,9 @@ string WriteOutData::getBasename(int arenaIdx)
 	
 	string baseName =
 		timeStr + "_" + "Arena" + to_string(arenaIdx + 1)
-		+ "_" + strainNames[arenaIdx] + "_" + to_string(fishAge)
-		+ "dpf_" + expTask + "_" + CSstrs[arenaIdx];
+		+ "_" + strainNames[arenaIdx] + "_" 
+		+ to_string(fishAge)+ "dpf_" 
+		+ expTask + "_" + CSstrs[arenaIdx];
 	return baseName;
 }
 
@@ -255,14 +227,15 @@ void WriteOutData::get_CS_strings(vector<const char*> CSpatterns)
 {
 	for (int i = 0; i < CSpatterns.size(); i++)
 	{
-		CSstrs[i] = get_CS_string(CSpatterns[i]);
+		CSstrs.push_back(get_CS_string(CSpatterns[i]));
 	}
 }
 
 /* Get CS string to append to the filenames of yaml and video files */
 string WriteOutData::get_CS_string(const char* CSpattern)
 {
-	string patternStr(CSpattern);
+	
+	string patternStr = extractPatternName(CSpattern);
 	string CSstr;
 	if (patternStr.compare("redBlackCheckerboard") == 0)
 		CSstr = "RBC";
@@ -333,8 +306,7 @@ string extractPatternName(const char* fileName)
 	
 	std::reverse(s.begin(), s.end()); // reverse back
 	string patternName = s.substr(startIdx + 1, endIdx - 1);
-
-
+	return patternName;
 }
 
 
