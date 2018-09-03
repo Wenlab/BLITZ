@@ -64,12 +64,13 @@ int WriteOutData::enquireInfoFromUser()
 	showWelcomeMsg();
 	get_current_date_time();
 	enquireNumCams();
+	enquireAllBasenames();
 	enquireFishAge();
 	enquireExpTask();
 	// Enquire fish IDs for all arenas
 	enquireFishIDs();
 	get_strainNames();
-	getBasenames();
+	//getBasenames();
 
 	return numFiles;
 }
@@ -97,6 +98,26 @@ void WriteOutData::enquireNumCams()
 	cout << endl; // separated with an empty line
 }
 
+/* Ask for CS strs in the screen */
+void WriteOutData::enquireAllBasenames()
+{
+	showFishPosDiagram();
+	for (int i = 0; i < numFiles; i++)
+	{
+		CSstrs.push_back(enquireBasename(i));
+	}
+}
+
+/* get CS str in the area */
+string WriteOutData::enquireBasename(int areaIdx) 
+{
+	cout << "Enter the pattern used in the Arena " << areaIdx + 1 << endl;
+	string basename;
+	getline(cin, basename);
+	cout << endl; // separated with an empty line
+	return basename;
+	
+}
 /* Ask for the age for all fish */
 void WriteOutData::enquireFishAge()
 {

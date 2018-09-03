@@ -39,8 +39,9 @@ using namespace cv;
 
 bool ExperimentData::initialize()
 {
-	writeOut.get_CS_strings(CSpatterns);
+	//writeOut.get_CS_strings(CSpatterns);
 	numCameras = writeOut.enquireInfoFromUser();	
+	CSpatterns = get_CS_patterns(writeOut.CSstrs);
 	/* Create yaml and video files to write in */
 	if (!writeOut.initialize(pathName, WIDTH, HEIGHT, FRAMERATE,
 		X_CUT, Y_CUT, yDivs))
@@ -197,7 +198,7 @@ void ExperimentData::runOLexp()
 			break;
 		}
 		if (!allArenas[cIdx].findAllFish())
-			//cout << "Fish in arena " << cIdx << "not found."<< endl;
+			cout << "Fish in arena " << cIdx << "not found."<< endl;
 		if (sElapsed < baselineEndTime)
 		{
 			expPhase = 0;             //baseline = 0, training = 1, blackout = 2, test = 3
@@ -372,4 +373,28 @@ bool ExperimentData::getTime() {
 	msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 	cout << "Time: " << sElapsed << " (s) " << endl;
 	return true;
+}
+
+vector<const char*> ExperimentData::get_CS_patterns(vector<string> CS_strs) {
+	vector<const char*> CSpatterns_char;
+	vector<string> CSpatterns_string;
+	string imgFolderPath = "Images/";
+	for (int i = 0; i < CS_strs.size(); i++)
+	{
+		if (CS_strs[i].compare("RBC") == 0)
+			CSpatterns_string.push_back("redBlackCheckerboard");
+		else if (CS_strs[i].compare("WBC") == 0)
+			CSpatterns_string.push_back("whiteBlackCheckerboard");
+		else if (CS_strs[i].compare("PB") == 0)
+			CSpatterns_string.push_back("pureBlack");
+		else
+		{
+			CSpatterns_string.push_back(CS_strs[i]);
+		}
+		cout << "CS pattern is: " << CSpatterns_string[i] << endl;
+		CSpatterns_string[i] = imgFolderPath + CSpatterns_string[i] + ".jpg";
+		CSpatterns_char.push_back(CSpatterns_string[i].c_str());
+	}
+
+	return CSpatterns_char;
 }

@@ -53,7 +53,7 @@ int main()
 		"Images/fullBlue.jpg"
 	};
 	string pathName = "F:/FishExpData/";
-	ExperimentData exp(CS_patterns,pathName);
+	ExperimentData exp(pathName);
 
 	if (!exp.initialize())
 	{
@@ -92,6 +92,8 @@ int main()
 
 	exp.runOLexp();
 	*/
+
+
 	/* 
 	string CS_Pattern = "RGB96";
 	ExperimentData exp(CS_Pattern);

@@ -56,20 +56,29 @@ public:
 
 	}
 	bool initialize(std::string pathName, int width, int height, int frameRate, int x_cut, int y_cut, std::vector<std::vector<int>> yDivs);
+	
 	/* Ask the user about the experiment infos */
 	int enquireInfoFromUser();
+	
 	/* Get experiment start local time */
 	void get_current_date_time();
+	
 	/* Ask the number of cameras to use. */
 	void enquireNumCams();
+	
+	
 	/* Ask for the age for all fish */
 	void enquireFishAge();
+	
 	/* Ask for what experiment task for poor fish */
 	void enquireExpTask();
+	
 	/* Ask for fish IDs for all arenas */
 	void enquireFishIDs();
+	
 	/* Ask for fish IDs in the arena */
 	std::vector<std::string> enquireFishIDs(int arenaIdx);
+	
 	/* Get strain names of fish in all arenas */
 	void get_strainNames();
 
@@ -82,6 +91,13 @@ public:
 
 	/* Get basename for the output files */
 	std::string getBasename(int arenaIdx);
+
+	/* Get all basenames from user */
+	void enquireAllBasenames();
+
+	/* Get basename in one area */
+	std::string enquireBasename(int areaIdx);
+
 	/* Get CS strings for all arena */
 	void get_CS_strings(std::vector<const char*>);
 	/* Get the CS string for the arena */

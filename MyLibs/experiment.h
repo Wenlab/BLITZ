@@ -48,9 +48,8 @@ private:
 	;// nothing for now
 public:
 	// methods
-	ExperimentData(std::vector<const char*> texNames, std::string pName) 
-		: CSpatterns(texNames) 
-		, pathName(pName)
+	ExperimentData(std::string pName) 
+		:pathName(pName)
 	{
 		numCameras = 0;
 		idxFrame = -1;
@@ -69,28 +68,40 @@ public:
 	}
 	/* Initialize the experiment */
 	bool initialize();
+	
 	/* Prepare background image for MOG subtractor */
 	void prepareBgImg(const int prepareTime);
+	
 	/* Run unpaired training in the operant learning procedure */
 	void runUnpairedOLexp();
+	
 	/* Run the entire operant learning procedure */
 	void runOLexp();
+	
 	/* Give the fish a electric pulse */
 	void giveFishShock(int fishIdx);
+	
 	/* Experiment during the training period */
 	void trainFish(int cIdx);
+	
 	/* Write out info of a frame to disk */
 	void writeOutFrame();
+	
 	/* Decorate images with fish's heads, tails and visual pattern's info */
 	void annotateFishImgs();
+	
 	/* Present fish images with annotations. The code is adapted from code in stackfow*/
 	void displayFishImgs(std::string title);
+	
 	/* Get current time */
 	bool getTime();
+
+    /* Get CSpatterns from the basenames */
+	std::vector<const char*> get_CS_patterns(std::vector<std::string> CS_strs);
 	// properties
 
 	// constant ones
-	const std::vector<const char*> CSpatterns;
+	std::vector<const char*> CSpatterns;
 	const std::string pathName;
 	int numCameras;
 
