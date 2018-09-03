@@ -65,6 +65,8 @@ bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int
 	}
 	formatConverter.OutputPixelFormat = pixelFormat;
 	cameras.StartGrabbing();
+
+	cout << "Cameras initialization succeeded." << endl << endl;
 	return true;
 }
 

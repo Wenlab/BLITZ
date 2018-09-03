@@ -327,6 +327,22 @@ void ArenaData::resetShocksOn() {
 	}
 }
 
+/* Initialize all arenas will be used in the experiment */
+vector<ArenaData> initializeAllArenas(vector<vector<int>> yDivs, vector<vector<string>> fishIDs, int fishAge)
+{
+	vector<ArenaData> allArenas;
+	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
+	
+	for (int i = 0; i < fishIDs.size(); i++)
+	{
+		ArenaData arena(binThreList[i], fishIDs[i].size());
+		arena.initialize(fishIDs[i], fishAge, yDivs[i]);
+		allArenas.push_back(arena);
+	}
+	return allArenas;
+}
+
+
 /*Find the closest point on the contour to the reference point, return the index findClosestPt*/
 int findClosestPt(vector<Point>& contour, Point point)
 {

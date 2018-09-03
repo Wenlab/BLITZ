@@ -27,198 +27,104 @@
 
 // Include user-defined libraries
 #include "writeOutFish.h"
-#include <chrono>
+#include <ctime> // to get the current date and time
+#include <algorithm>  // include the algorithm reverse
 
 
 using namespace std;
 using namespace cv;
 
-bool WriteOutData::initialize(string pathName,string contentName, int width, int height, int frameRate)
+bool WriteOutData::initialize(string pathName, int width, int height, int frameRate, int x_cut, int y_cut, vector<vector<int>> yDivs)
 {
-	string videoName = pathName + contentName + ".avi";
-	string yamlName = pathName + contentName + ".yaml";
-	FileStorage fObj(yamlName, FileStorage::WRITE);
-	if (!fObj.isOpened())
-		return false;
-	yamlVec.push_back(fObj);
-	VideoWriter vObj(videoName, CV_FOURCC('D', 'I', 'V', 'X'), frameRate, Size(width, height), false);
-	if (!vObj.isOpened())
-		return false;
-	videoVec.push_back(vObj);
+	for (int i = 0; i < numFiles; i++)
+	{
+		string videoName = pathName + baseNames[i] + ".avi";
+		string yamlName = pathName + baseNames[i] + ".yaml";
+		FileStorage fObj(yamlName, FileStorage::WRITE);
+		if (!fObj.isOpened())
+			return false;
+		yamlVec.push_back(fObj);
+		VideoWriter vObj(videoName, CV_FOURCC('D', 'I', 'V', 'X'), frameRate, Size(width, height), false);
+		if (!vObj.isOpened())
+			return false;
+		videoVec.push_back(vObj);
+
+	}
+	writeOutExpSettings(frameRate, width, height,
+		x_cut, y_cut, yDivs);
+
+	
 	return true;
 	
 }
 
-/* Get strain name of fish */
-string get_strainName(char firstChar)
+/* Ask the user about the experiment infos */
+int WriteOutData::enquireInfoFromUser()
 {
-	string strainName;
-	if (firstChar == 'G' || firstChar == 'g') // GCaMP fish
-		strainName += "GCaMP";
-	else if (firstChar == 'S' || firstChar == 's')
-		strainName += "WT";
-	return strainName;
-}
+	showWelcomeMsg();
+	get_current_date_time();
+	enquireNumCams();
+	enquireAllBasenames();
+	enquireFishAge();
+	enquireExpTask();
+	// Enquire fish IDs for all arenas
+	enquireFishIDs();
+	get_strainNames();
+	getBasenames();
 
-/* Get CS string to append to the filenames of yaml and video files */
-string get_CS_string(string CSpattern)
-{
-	string CSstr;
-	if (CSpattern.compare("redBlackCheckerboard") == 0)
-		CSstr = "RBC";
-	else if (CSpattern.compare("whiteBlackCheckerboard") == 0)
-		CSstr = "WBC";
-	else if (CSpattern.compare("pureBlack") == 0)
-		CSstr = "PB";
-	else
-	{
-		CSstr = CSpattern;
-		cout << "CS pattern is: " << CSstr << endl;
-
-	}
-	return CSstr;
+	return numFiles;
 }
 
 /* Get current date and time string from chrono system clock */
-string get_current_date_time()
+void WriteOutData::get_current_date_time()
 {
-	// TODO: use a more elegant way to get the date and time (precise to seconds)
 	// Get system time
-	chrono::system_clock::time_point p = chrono::system_clock::now();
-	time_t t = chrono::system_clock::to_time_t(p);
-	char timeS[26]; // time string
-	ctime_s(timeS, sizeof timeS, &t);
+	time_t rawtime;
+	struct tm timeinfo;
+	char buffer[80];
 
-	vector<string> timeVec;
-	istringstream ss(timeS);
-	while (ss.good())
-	{
-		string subStr;
-		getline(ss, subStr, ' ');
-		timeVec.push_back(subStr);
-	}
+	time(&rawtime);
 
-	string timeStr = "2018"; // add year
-	if (timeVec[1].compare("May")==0) // add month
-		timeStr += "05";
-	else if (timeVec[1].compare("Jun")==0)
-		timeStr += "06";
-	else if (timeVec[1].compare("Jul")==0)
-		timeStr += "07";
-
-	// add day, separator, to separator date and time
-	timeStr += timeVec[2] + "_";
-	ss.clear();
-	ss.str(timeVec[3]);
-	timeVec.clear();
-
-	while (ss.good())
-	{
-		string subStr;
-		getline(ss, subStr, ':');
-		timeVec.push_back(subStr);
-	}
-
-	timeStr += timeVec[0] + timeVec[1];
-	
-	return timeStr;
+	int errCode = localtime_s(&timeinfo, &rawtime);
+	strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M", &timeinfo);
+	timeStr = buffer;
 }
 
-/* Show software description and welcome messages to user */
-void showWelcomeMsg()
+/* Ask for the number of cameras to use in the experiment */
+void WriteOutData::enquireNumCams()
 {
-	/* 
-	Welcome to BLITZ. 
-	BLITZ (Behavioral Learning In The Zebrafish) enables programmatic
-	control in video capture, online image processing, visual stimuli 
-	presentation and electric shock delivery, which allow researchers
-	design their custom learning paradigm in zebrafish.
-	Most updated code and other resources can be found at
-	https://github.com/Wenlab/BLITZ
-	Please send any feedback and suggestions to my email,
-	bysin7@gmail.com Wenbin Yang.
-	Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-	*/
-	cout << "Welcome to BLITZ (Behavioral Learning In The Zebrafish) ." << endl
-		<< "Most updated code and other resources can be found at " << endl
-		<< "https://github.com/Wenlab/BLITZ" << endl
-		<< "Please send any feedback and suggestions to my email: " << endl
-		<< "bysin7@gmail.com Wenbin Yang." << endl
-		<< "Copyright 2018 Wenbin Yang <bysin7@gmail.com>" << endl;
-	cout << endl; // separated with an empty line
-
-
-}
-
-/*
-Diagram of fish positions in arena
-|		|		|
-|	0   |   1	|
-|		|		|
-|---------------|
-|		|		|
-|	2   |   3	|
-|		|		|
-*/
-void showFishPosDiagram()
-{
-
-	const int numSpaces = 3;
-	const string spaces(numSpaces, ' ');
-	const string cutLineL(4 * numSpaces + 3, '-');
-	// show the fish indices diagram
-	cout << "Diagram of fish indices in the arena: " << endl;
-	cout << cutLineL << endl;
-	cout << spaces << "0" << spaces << "|" << spaces << "1" << spaces << endl;
-	cout << cutLineL << endl;
-	cout << spaces << "2" << spaces << "|" << spaces << "3" << spaces << endl;
-	cout << cutLineL << endl;
-	cout << endl; // separated with an empty line
-}
-
-/* Ask for how many cameras to use in the experiment */
-int enquireNumCams()
-{
-	int nCams;
-
 	cout << "Number of cameras to use? (3, 2, 1)" << endl;
-	cin >> nCams;
+	cin >> numFiles;
 	cout << endl; // separated with an empty line
-
-	return nCams;
 }
 
-/* Ask for fish IDs in the arena */
-vector<string> enquireFishIDs(int arenaIdx)
+/* Ask for CS strs in the screen */
+void WriteOutData::enquireAllBasenames()
 {
 	showFishPosDiagram();
-	cout << "Enter fishIDs used in the Arena " << arenaIdx + 1 << endl;
-	cout << "Enter all fishIDs with ',' as separator. (e.g. G11,G14)" << endl;
-
-	string inputStr;
-	getline(cin, inputStr);
-	cout << endl; // separated with an empty line
-	vector<string> fishIDs;
-
-	istringstream ss;
-	ss.clear();
-	ss.str(inputStr);
-	while (ss.good())
+	for (int i = 0; i < numFiles; i++)
 	{
-		string subStr;
-		getline(ss, subStr, ',');
-		fishIDs.push_back(subStr);
+		CSstrs.push_back(enquireBasename(i));
 	}
-
-	return fishIDs;
 }
 
-int enquireFishAge()
+/* get CS str in the area */
+string WriteOutData::enquireBasename(int areaIdx) 
+{
+	cout << "Enter the pattern used in the Arena " << areaIdx + 1 << endl;
+	string basename;
+	cin >> basename;
+    // separated with an empty line
+	cout << endl;
+	return basename;
+	
+}
+/* Ask for the age for all fish */
+void WriteOutData::enquireFishAge()
 {
 	cout << "Enter age for all fish. (A number, e.g. 9)" << endl;
 	cout << "(Assume they are at the same age)" << endl;
 
-	int fishAge;
 	while (!(cin >> fishAge)) // wrong input
 	{
 		cout << "Wrong input for fish age" << endl
@@ -227,17 +133,15 @@ int enquireFishAge()
 		cin.ignore(256, '\n');
 	}
 	cout << endl; // separated with an empty line
-	return fishAge;
 }
 
 /* Ask for what experiment task for poor fish */
-string enquireExpTask()
+void WriteOutData::enquireExpTask()
 {
-	string expTask;
 	cout << "Enter task for all fish (e.g. OLcontrol, OLexp)" << endl;
 	cin >> expTask;
 
-	if (iequals(expTask,"OLcontrol"))
+	if (iequals(expTask, "OLcontrol"))
 	{
 		cout << "Make sure the OUTPUT button is" << endl
 			<< "OFF (on the power source)" << endl;
@@ -264,8 +168,231 @@ string enquireExpTask()
 			exit(EXIT_FAILURE);
 		}
 
-	return expTask;
 }
+
+/* Ask for fish IDs for all arenas */
+void WriteOutData::enquireFishIDs()
+{
+	for (int i = 0; i < numFiles; i++)
+		fishIDs.push_back(enquireFishIDs(i));
+}
+
+/* Ask for fish IDs in the arena */
+vector<string> WriteOutData::enquireFishIDs(int arenaIdx)
+{
+
+	showFishPosDiagram();
+	cout << "Enter fishIDs used in the Arena " << arenaIdx + 1 << endl;
+	cout << "Enter all fishIDs with ',' as separator. (e.g. G11,G14)" << endl;
+
+	string inputStr;
+	getline(cin, inputStr);
+	cout << endl; // separated with an empty line
+	vector<string> fishIDs;
+
+	istringstream ss;
+	ss.clear();
+	ss.str(inputStr);
+	while (ss.good())
+	{
+		string subStr;
+		getline(ss, subStr, ',');
+		fishIDs.push_back(subStr);
+	}
+
+	return fishIDs;
+}
+
+/* Get strain names of fish in all arenas */
+void WriteOutData::get_strainNames()
+{
+	for (int i = 0; i < numFiles; i++)
+	{
+		strainNames.push_back(get_strainName(fishIDs[i]));
+	}
+}
+/* Get strain name of fish in the arena */
+string WriteOutData::get_strainName(vector<string> fishIDs)
+{
+	char firstChar = fishIDs[0][0];
+	string strainName;
+	if (firstChar == 'G' || firstChar == 'g') // GCaMP fish
+		strainName += "GCaMP";
+	else if (firstChar == 'S' || firstChar == 's')
+		strainName += "WT";
+	return strainName;
+}
+
+
+
+/* Get basename for the output files */
+void WriteOutData::getBasenames()
+{
+	for (int i = 0; i < numFiles; i++)
+		baseNames.push_back(getBasename(i));
+}
+
+/* Get basename for the output files */
+string WriteOutData::getBasename(int arenaIdx)
+{
+	
+	string baseName =
+		timeStr + "_" + "Arena" + to_string(arenaIdx + 1)
+		+ "_" + strainNames[arenaIdx] + "_" 
+		+ to_string(fishAge)+ "dpf_" 
+		+ expTask + "_" + CSstrs[arenaIdx];
+	return baseName;
+}
+
+/* Get CS strings for all arena */
+void WriteOutData::get_CS_strings(vector<const char*> CSpatterns)
+{
+	for (int i = 0; i < CSpatterns.size(); i++)
+	{
+		CSstrs.push_back(get_CS_string(CSpatterns[i]));
+	}
+}
+
+/* Get CS string to append to the filenames of yaml and video files */
+string WriteOutData::get_CS_string(const char* CSpattern)
+{
+	
+	string patternStr = extractPatternName(CSpattern);
+	string CSstr;
+	if (patternStr.compare("redBlackCheckerboard") == 0)
+		CSstr = "RBC";
+	else if (patternStr.compare("whiteBlackCheckerboard") == 0)
+		CSstr = "WBC";
+	else if (patternStr.compare("pureBlack") == 0)
+		CSstr = "PB";
+	else
+	{
+		CSstr = patternStr;
+		cout << "CS pattern is: " << CSstr << endl;
+
+	}
+	return CSstr;
+
+}
+
+/* Write out experiment settings as the header for files 
+	only write once */
+void WriteOutData::writeOutExpSettings(
+	int frameRate,
+	int width,
+	int height,
+	int x_cut,
+	int y_cut,
+	vector<vector<int>> yDivs
+	)
+{
+	for (int i = 0; i < numFiles; i++)
+	{
+		writeKeyValuePair("FishIDs", strVec2str(fishIDs[i]), i);
+		writeKeyValuePair("FishAge", fishAge, i);
+		writeKeyValuePair("FishStrain", strainNames[i], i);
+		writeKeyValuePair("Arena", i + 1, i); // record which arena is in use
+		writeKeyValuePair("Task", expTask, i);
+		writeKeyValuePair("CSpattern", CSstrs[i], i);
+		writeKeyValuePair("ExpStartTime", timeStr, i);
+		writeKeyValuePair("FrameRate", frameRate, i);
+		writeKeyValuePair("FrameSize", Size(width, height), i);
+		writeKeyValuePair("xCut", x_cut, i);
+		writeKeyValuePair("yCut", y_cut, i);
+		writeKeyValuePair("yDivide", yDivs[i], i);
+	}
+}
+
+/* Extract the pattern name from the filename 
+ by erasing all lower-case alphabetas
+*/
+string extractPatternName(const char* fileName)
+{
+	int startIdx, endIdx;
+	string s(fileName);
+	std::reverse(s.begin(), s.end());
+	int foundIdx = s.find('/');
+	if (foundIdx != string::npos)
+		startIdx = s.size() - foundIdx;
+	else
+		startIdx = 0;
+
+	foundIdx = s.find('.');
+	if (foundIdx != string::npos)
+		endIdx = s.size() - foundIdx;
+	else {
+		cout << "Wrong input pattern directory!" << endl;
+		cout << "Please check!" << endl;
+		exit(0);
+	}
+	
+	std::reverse(s.begin(), s.end()); // reverse back
+	string patternName = s.substr(startIdx , endIdx - startIdx - 1);
+	return patternName;
+}
+
+
+
+/* Show software description and welcome messages to user */
+void showWelcomeMsg()
+{
+	/* 
+	Welcome to BLITZ. 
+	BLITZ (Behavioral Learning In The Zebrafish) enables programmatic
+	control in video capture, online image processing, visual stimuli 
+	presentation and electric shock delivery, which allow researchers
+	design their custom learning paradigm in zebrafish.
+	Most updated code and other resources can be found at
+	https://github.com/Wenlab/BLITZ
+	Please send any feedback and suggestions to my email,
+	bysin7@gmail.com Wenbin Yang.
+	Copyright 2018 Wenbin Yang <bysin7@gmail.com>
+	*/
+	cout << "Welcome to BLITZ (Behavioral Learning In The Zebrafish) ." << endl
+		<< "Most updated code and other resources can be found at " << endl
+		<< "https://github.com/Wenlab/BLITZ" << endl
+		<< "Please send any feedback and suggestions to my email: " << endl
+		<< "bysin7@gmail.com Wenbin Yang." << endl
+		<< "Copyright 2018 Wenbin Yang <bysin7@gmail.com>" << endl;
+	cout << endl; // separated with an empty line
+
+	cout << "Please make sure all devices are connected." << endl;
+	cout << "Cameras, the relay, the projector." << endl;
+
+}
+
+/*
+Diagram of fish positions in arena
+|		|		|
+|	0   |   1	|
+|		|		|
+|---------------|
+|		|		|
+|	2   |   3	|
+|		|		|
+*/
+void showFishPosDiagram()
+{
+	const int numSpaces = 3;
+	const string spaces(numSpaces, ' ');
+	const string cutLineL(4 * numSpaces + 3, '-');
+	// show the fish indices diagram
+	cout << "Diagram of fish indices in the arena: " << endl;
+	cout << cutLineL << endl;
+	cout << spaces << "0" << spaces << "|" << spaces << "1" << spaces << endl;
+	cout << cutLineL << endl;
+	cout << spaces << "2" << spaces << "|" << spaces << "3" << spaces << endl;
+	cout << cutLineL << endl;
+	cout << endl; // separated with an empty line
+}
+
+
+
+
+
+
+
+
 
 /* convert string vector to int-vector like formatted output */
 string strVec2str(vector<string> strVec)
