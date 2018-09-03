@@ -97,11 +97,11 @@ public:
 	bool getTime();
 
     /* Get CSpatterns from the basenames */
-	std::vector<const char*> get_CS_patterns(std::vector<std::string> CS_strs);
+	std::vector<std::string> get_CS_patterns(std::vector<std::string> CS_strs);
 	// properties
 
 	// constant ones
-	std::vector<const char*> CSpatterns;
+	std::vector<std::string> CSpatterns;
 	const std::string pathName;
 	int numCameras;
 

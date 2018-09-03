@@ -31,7 +31,7 @@
 // Include user-defined libraries
 #include "talk2screen.h"
 #include <algorithm>
-
+#include <string>
 
 
 using namespace std;
@@ -85,7 +85,7 @@ void PatchData::updatePattern()
 	shader.setInt("patternIdx", pIdx);
 }
 
-bool AreaData::initialize(vector<int> yDivideVec, const char* imgName)
+bool AreaData::initialize(vector<int> yDivideVec, string imgName)
 {
 	for (int i = 0; i < numPatches; i++)
 	{
@@ -133,7 +133,7 @@ void AreaData::reverseAllPatches() {
 
 
 /* Load a texture for one area */
-bool AreaData::loadTextureIntoBuffers(const char* imgName)
+bool AreaData::loadTextureIntoBuffers(string imgName)
 {	
 	glGenTextures(1, &texture0);
 	glBindTexture(GL_TEXTURE_2D, texture0);
@@ -146,7 +146,7 @@ bool AreaData::loadTextureIntoBuffers(const char* imgName)
 	// load image, create texture and generate mipmaps
 	int width, height, nrChannels;
 	//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
-	unsigned char *data = stbi_load(imgName, &width, &height, &nrChannels, 0);
+	unsigned char *data = stbi_load(imgName.c_str(), &width, &height, &nrChannels, 0);
 	if (data)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
@@ -228,7 +228,7 @@ void ScreenData::updatePatternInBlackout() {
 }
 
 bool ScreenData::initialize(
-	std::vector<const char*> imgNames, // image file names
+	std::vector<string> imgNames, // image file names
 	vector<int> patchesOfAreas
 	)
 {

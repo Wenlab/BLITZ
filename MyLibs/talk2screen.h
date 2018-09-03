@@ -103,8 +103,8 @@ public:
 	{
 		
 	}
-	bool initialize(std::vector<int> yDivideVec, const char* imgName);
-	bool loadTextureIntoBuffers(const char* imgName);
+	bool initialize(std::vector<int> yDivideVec, std::string imgName);
+	bool loadTextureIntoBuffers(std::string imgName);
 	void reverseAllPatches();
 	// properties
 	std::vector<PatchData> allPatches;
@@ -126,7 +126,7 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<const char*> filenames, std::vector<int> patchesOfAreas = {4,4,4});
+	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {4,4,4});
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */

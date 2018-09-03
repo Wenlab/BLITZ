@@ -46,12 +46,12 @@ int main()
 	4. reduce unnecessary data-type conversions
 	5. remove unnecessary code
 	*/
-	vector<const char*> CS_patterns =
-	{
-		"Images/redBlackCheckerboard.jpg",
-		"Images/whiteBlackCheckerboard.jpg",
-		"Images/fullBlue.jpg"
-	};
+	//vector<const char*> CS_patterns =
+	//{
+	//	"Images/redBlackCheckerboard.jpg",
+	//	"Images/whiteBlackCheckerboard.jpg",
+	//	"Images/fullBlue.jpg"
+	//};
 	string pathName = "F:/FishExpData/";
 	ExperimentData exp(pathName);
 

@@ -70,7 +70,7 @@ int WriteOutData::enquireInfoFromUser()
 	// Enquire fish IDs for all arenas
 	enquireFishIDs();
 	get_strainNames();
-	//getBasenames();
+	getBasenames();
 
 	return numFiles;
 }
@@ -113,8 +113,9 @@ string WriteOutData::enquireBasename(int areaIdx)
 {
 	cout << "Enter the pattern used in the Arena " << areaIdx + 1 << endl;
 	string basename;
-	getline(cin, basename);
-	cout << endl; // separated with an empty line
+	cin >> basename;
+    // separated with an empty line
+	cout << endl;
 	return basename;
 	
 }

@@ -375,26 +375,14 @@ bool ExperimentData::getTime() {
 	return true;
 }
 
-vector<const char*> ExperimentData::get_CS_patterns(vector<string> CS_strs) {
-	vector<const char*> CSpatterns_char;
-	vector<string> CSpatterns_string;
+vector<string> ExperimentData::get_CS_patterns(vector<string> CS_strs) {
+	vector<string> CSpatterns_string; 
 	string imgFolderPath = "Images/";
 	for (int i = 0; i < CS_strs.size(); i++)
 	{
-		if (CS_strs[i].compare("RBC") == 0)
-			CSpatterns_string.push_back("redBlackCheckerboard");
-		else if (CS_strs[i].compare("WBC") == 0)
-			CSpatterns_string.push_back("whiteBlackCheckerboard");
-		else if (CS_strs[i].compare("PB") == 0)
-			CSpatterns_string.push_back("pureBlack");
-		else
-		{
-			CSpatterns_string.push_back(CS_strs[i]);
-		}
-		cout << "CS pattern is: " << CSpatterns_string[i] << endl;
+		CSpatterns_string.push_back(CS_strs[i]);
+		cout << "CS pattern in " << i + 1 << " is: " << CSpatterns_string[i] << endl;
 		CSpatterns_string[i] = imgFolderPath + CSpatterns_string[i] + ".jpg";
-		CSpatterns_char.push_back(CSpatterns_string[i].c_str());
 	}
-
-	return CSpatterns_char;
+	return CSpatterns_string;
 }
