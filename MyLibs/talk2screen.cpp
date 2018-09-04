@@ -162,7 +162,7 @@ bool AreaData::loadTextureIntoBuffers(string imgName)
 }
 
 void AreaData::renderTexture(int areaIdx)
-{// TODO: use functions to replace loops
+{
 	glActiveTexture(GL_TEXTURE0 + areaIdx);
 	glBindTexture(GL_TEXTURE_2D, texture0);
 	for (int j = 0; j < numPatches; j++)
@@ -324,7 +324,7 @@ bool ScreenData::init_glad()
 
 /* Render designed pattern on the screen */
 void ScreenData::renderTexture()
-{// TODO: use functions to replace loops
+{
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
