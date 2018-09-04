@@ -106,6 +106,7 @@ public:
 	bool initialize(std::vector<int> yDivideVec, std::string imgName);
 	bool loadTextureIntoBuffers(std::string imgName);
 	void reverseAllPatches();
+	void renderTexture(int areaIdx);
 	// properties
 	std::vector<PatchData> allPatches;
 	unsigned int texture0; // texture ID 

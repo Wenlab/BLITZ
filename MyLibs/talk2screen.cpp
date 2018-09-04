@@ -161,6 +161,20 @@ bool AreaData::loadTextureIntoBuffers(string imgName)
 	return true;
 }
 
+void AreaData::renderTexture(int areaIdx)
+{// TODO: use functions to replace loops
+	glActiveTexture(GL_TEXTURE0 + areaIdx);
+	glBindTexture(GL_TEXTURE_2D, texture0);
+	for (int j = 0; j < numPatches; j++)
+	{
+		allPatches[j].shader.use();
+		glUniform1i(glGetUniformLocation(allPatches[j].shader.ID, "texture0"), areaIdx);
+		glBindVertexArray(allPatches[j].VAO);
+		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
+	}
+}
+
+
 void ScreenData::updatePattern()
 {
 	for (int i = 0; i < allAreas.size(); i++)
@@ -316,18 +330,8 @@ void ScreenData::renderTexture()
 
 	for (int  i = 0; i < allAreas.size(); i++)
 	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, allAreas[i].texture0);
-		
-		for (int j = 0; j < allAreas[i].numPatches; j++)
-		{
-			allAreas[i].allPatches[j].shader.use();
-			glUniform1i(glGetUniformLocation(allAreas[i].allPatches[j].shader.ID, "texture0"), i);
-			glBindVertexArray(allAreas[i].allPatches[j].VAO);
-			glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
-		}
+		allAreas[i].renderTexture(i);
 	}
-
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move 
