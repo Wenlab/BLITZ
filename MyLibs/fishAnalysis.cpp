@@ -171,8 +171,8 @@ void FishData::findPosition()
 	{
 		head = EP2; tail = EP1;
 	}
-	Point T2H = head - tail; // tail to head, only applied to small fish
-	headingAngle = atan2(T2H.y, T2H.x) * 180 / PI;
+	Point C2H = head - center; // tail to head, only applied to small fish
+	headingAngle = atan2(C2H.y, C2H.x) * 180 / PI;
 	
 }
 
@@ -215,7 +215,7 @@ bool FishData::findHeadSide(Point2f* M)
 
 bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 	/* Control parameters */
-	int thinkingTime = 7; // seconds, give fish some thinking time
+	int thinkingTime = 0; // seconds, give fish some thinking time
 	int shockCD = 3; // seconds
 					 /* Give fish a shock whenever it stays in CS area too long */
 	int CStimeThre = 10;

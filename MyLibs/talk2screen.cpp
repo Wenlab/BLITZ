@@ -250,7 +250,7 @@ bool ScreenData::initialize(
 	{
 		{ 0.068f, 0.300f, 0.258f, 0.668f },
 		{ 0.840f, -0.810f, 0.258f, 0.73f },
-		{ -0.665f, -0.810f, 0.258f, 0.73f }
+		{ -0.668f, -0.810f, 0.258f, 0.73f }
 	};
 	
 	//y dividing positions for all patches

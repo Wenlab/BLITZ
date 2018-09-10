@@ -61,9 +61,9 @@ public:
 		// y division pos for all fish
 		yDivs =
 		{
-			{ 195, 195, 574, 574 },
+			{ 200, 200, 558, 558 },
 			{ 223, 223, 588, 588 },
-			{ 214, 214, 588, 588 }
+			{ 223, 223, 588, 588 }
 		};
 	}
 	/* Initialize the experiment */

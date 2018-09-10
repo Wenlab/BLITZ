@@ -171,19 +171,24 @@ void ExperimentData::runUnpairedOLexp()
 
 void ExperimentData::runOLexp()
 {
-	const int prepareTime = 1 * 20 / 10 ; // seconnds, default 1 min
-	const int baselineEndTime = 3 ; // seconds, default 10 mins
-	const int trainingEndTime = 12 ;//* 60 / 10 ; // seconds, default 20 mins
-	const int blackoutEndTime = 14;// *60 / 10; // seconds, default 1 min
-	const int testEndTime = 15 ; // seconds, default 18 mins (including memory extinction period)
+	const int prepareTime = 1 * 60  ; // seconnds, default 1 min
+	const int baselineEndTime = 10 * 60 ; // seconds, default 10 mins
+	const int trainingEndTime = 30 * 60 ; // seconds, default 20 mins
+	const int blackoutEndTime =  31 * 60 ; // seconds, default 1 min
+	const int testEndTime = 49 * 60 ; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
+	//const int prepareTime = 1; // seconnds, default 1 min
+	//const int baselineEndTime = 10 ; // seconds, default 10 mins
+	//const int trainingEndTime = 2 * 60; // seconds, default 20 mins
+	//const int blackoutEndTime = 2 * 60 + 20; // seconds, default 1 min
+	//const int testEndTime = 2 * 60 + 40; // seconds, default 18 mins (including memory extinction period)
+	//const int expEndTime = testEndTime;
 
 	prepareBgImg(prepareTime);
 	expTimer.start(); // reset timer to 0
 
-	while (idxFrame < numCameras * expEndTime * FRAMERATE )// giant grabbing loop
+	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)// giant grabbing loop
 	{
-		idxFrame++;
 		
 		cams.grabPylonImg();
 
@@ -198,7 +203,7 @@ void ExperimentData::runOLexp()
 			break;
 		}
 		if (!allArenas[cIdx].findAllFish())
-			cout << "Fish in arena " << cIdx << "not found."<< endl;
+			cout << "Fish in arena " << cIdx + 1 << " not found."<< endl;
 		if (sElapsed < baselineEndTime)
 		{
 			expPhase = 0;             //baseline = 0, training = 1, blackout = 2, test = 3
@@ -215,14 +220,10 @@ void ExperimentData::runOLexp()
 			allArenas[cIdx].resetShocksOn();
 			screen.updatePatternInBlackout();
 		}
-		else if (sElapsed <= testEndTime)
+		else if (sElapsed < testEndTime)
 		{
 			expPhase = 3;
 			screen.updatePatternInTest(sElapsed);
-		}
-		else
-		{   
-
 		}
 		screen.renderTexture();
 		writeOutFrame();
@@ -368,7 +369,7 @@ bool ExperimentData::getTime() {
 	int systemTime = (int)expTimer.getElapsedTimeInSec();
 	if (fabs(sElapsed - systemTime) > 1) {
 		cout << "The FRAMERATE is not acceptable" << endl;
-		return false;
+		//return false;
 	}
 	msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 	cout << "Time: " << sElapsed << " (s) " << endl;

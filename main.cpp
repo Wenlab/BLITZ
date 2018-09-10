@@ -52,6 +52,16 @@ int main()
 	//	"Images/whiteBlackCheckerboard.jpg",
 	//	"Images/fullBlue.jpg"
 	//};
+	/*
+	Mat I = imread("Images/fullBlue.jpg");
+
+	namedWindow("Display", 1);
+	imshow("Display", I);
+	waitKey(0);
+	*/
+
+
+	
 	string pathName = "F:/FishExpData/";
 	ExperimentData exp(pathName);
 
@@ -65,7 +75,7 @@ int main()
 	}
 
 	exp.runOLexp();
-
+	
 
 
 
