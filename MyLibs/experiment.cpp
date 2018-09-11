@@ -366,11 +366,6 @@ void ExperimentData::annotateFishImgs()
 
 bool ExperimentData::getTime() {
 	sElapsed = idxFrame / (FRAMERATE * numCameras);
-	int systemTime = (int)expTimer.getElapsedTimeInSec();
-	if (fabs(sElapsed - systemTime) > 1) {
-		cout << "The FRAMERATE is not acceptable" << endl;
-		//return false;
-	}
 	msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 	cout << "Time: " << sElapsed << " (s) " << endl;
 	return true;
