@@ -231,7 +231,6 @@ void ExperimentData::runOLexp()
 		displayFishImgs("Display");
 	}
 	cout << "Experiment ended. " << endl;
-	system("pause");
 }
 
 
