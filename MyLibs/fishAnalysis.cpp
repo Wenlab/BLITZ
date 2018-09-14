@@ -215,12 +215,12 @@ bool FishData::findHeadSide(Point2f* M)
 
 bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 	/* Control parameters */
-	int thinkingTime = 0; // seconds, give fish some thinking time
+	int thinkingTime = 7; // seconds, give fish some thinking time
 	int shockCD = 3; // seconds
-					 /* Give fish a shock whenever it stays in CS area too long */
+	/* Give fish a shock whenever it stays in CS area too long */
 	int CStimeThre = 10;
-
-	if (pIdx == 2) // blackout 
+	shockOn = false;
+    if (pIdx == 2) // blackout 
 		return false;
 	if (sElapsed < lastTimeUpdatePattern + thinkingTime)
 		return false;
@@ -231,33 +231,34 @@ bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 	if (pIdx) // patternIdx == 1, since 2 is already excluded
 	{
 		if (head.y < yDiv) // in non-CS area
-			return false;
+			shockOn = false;
 		else {
 			if (sElapsed - lastShockTime > CStimeThre)
-				return true;
+				shockOn = true;
 			else {
 				if (headingAngle < 0) // fish is trying to escape CS area
-					return false;
+					shockOn = false;
 				else
-					return true;
+					shockOn = true;
 			}
 		}
 	}
 	else
 	{
 		if (head.y > yDiv)
-			return false;
+			shockOn = false;
 		else {
 			if (sElapsed - lastShockTime > CStimeThre)
-				return true;
+				shockOn = true;
 			else {
 				if (headingAngle > 0) // fish is trying to escape CS area
-					return false;
+					shockOn = false;
 				else
-					return true;
+					shockOn = true;
 			}
 		}
 	}
+	return shockOn;
 }
 
 int FishData::updatePatternInTraining(int sElapsed,int pIdx, int ITI) {

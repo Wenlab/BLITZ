@@ -139,8 +139,6 @@ public:
 	cv::Ptr<cv::BackgroundSubtractor> pMOG; // one pMOG for one arena
 	cv::Mat opencvImg, HUDSimg, subImg;
 	std::vector<FishData> allFish;
-	
-	
 
 };
 /* Initialize all arenas will be used in the experiment */
