@@ -169,6 +169,11 @@ void ExperimentData::runUnpairedOLexp()
 	cout << "Experiment ended. " << endl;
 }
 
+void ExperimentData::runBlueTest()
+{
+
+}
+
 void ExperimentData::runOLexp()
 {
 	//const int prepareTime = 1 * 60  ; // seconnds, default 1 min

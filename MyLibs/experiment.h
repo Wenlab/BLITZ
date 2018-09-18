@@ -77,6 +77,9 @@ public:
 	
 	/* Run the entire operant learning procedure */
 	void runOLexp();
+
+	/* Run the experiment to do whether fish invisible to the blue pattern */
+	void runBlueTest();
 	
 	/* Give the fish a electric pulse */
 	void giveFishShock(int fishIdx);
