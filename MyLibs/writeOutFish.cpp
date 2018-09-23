@@ -65,11 +65,12 @@ int WriteOutData::enquireInfoFromUser()
 	get_current_date_time();
 	enquireNumCams();
 	enquireAllBasenames();
+	enquireStrainNames();
 	enquireFishAge();
 	enquireExpTask();
 	// Enquire fish IDs for all arenas
 	enquireFishIDs();
-	get_strainNames();
+	//get_strainNames();
 	getBasenames();
 
 	return numFiles;
@@ -119,6 +120,22 @@ string WriteOutData::enquireBasename(int areaIdx)
 	return basename;
 	
 }
+
+/* Ask for what strain of Fish is using */
+void WriteOutData::enquireStrainNames()
+{
+	cout << "Enter the strain name for all fish. (A number, e.g. GCaMP6f)" << endl;
+	cout << "(Assume they are the same strain)" << endl;
+	
+	string strainName;
+	cin >> strainName;
+
+	for (int i = 0; i < numFiles; i++)
+	{
+		strainNames.push_back(strainName);
+	}
+}
+
 /* Ask for the age for all fish */
 void WriteOutData::enquireFishAge()
 {
@@ -134,6 +151,8 @@ void WriteOutData::enquireFishAge()
 	}
 	cout << endl; // separated with an empty line
 }
+
+
 
 /* Ask for what experiment task for poor fish */
 void WriteOutData::enquireExpTask()
@@ -176,6 +195,8 @@ void WriteOutData::enquireFishIDs()
 	for (int i = 0; i < numFiles; i++)
 		fishIDs.push_back(enquireFishIDs(i));
 }
+
+
 
 /* Ask for fish IDs in the arena */
 vector<string> WriteOutData::enquireFishIDs(int arenaIdx)

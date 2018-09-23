@@ -66,7 +66,9 @@ public:
 	/* Ask the number of cameras to use. */
 	void enquireNumCams();
 	
-	
+	/* Ask for what strain of Fish is using */
+	void enquireStrainNames();
+
 	/* Ask for the age for all fish */
 	void enquireFishAge();
 	
