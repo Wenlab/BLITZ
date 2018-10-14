@@ -94,7 +94,7 @@ void ExperimentData::runUnpairedOLexp()
 	const int testEndTime = 49 * 60; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
-	int numShocks = 20;
+	const int numShocks = 20;
 	vector<int> vec;
 	for (int i = baselineEndTime * FRAMERATE; i < trainingEndTime*FRAMERATE; i++)
 		vec.push_back(i);
