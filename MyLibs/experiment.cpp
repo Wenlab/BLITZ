@@ -88,14 +88,13 @@ void ExperimentData::prepareBgImg(const int prepareTime)
 void ExperimentData::runUnpairedOLexp()
 {
 	const int prepareTime = 1 * 60; // seconnds, default 1 min
-	const int baselineEndTime = 1 * 60; // seconds, default 10 mins
-	const int trainingEndTime = 8 * 60; // seconds, default 20 mins
-	const int blackoutEndTime = 8 * 60; // seconds, default 1 min
-	const int testEndTime = 10 * 60; // seconds, default 18 mins (including memory extinction period)
+	const int baselineEndTime = 10 * 60; // seconds, default 10 mins
+	const int trainingEndTime = 30 * 60; // seconds, default 20 mins
+	const int blackoutEndTime = 31 * 60; // seconds, default 1 min
+	const int testEndTime = 49 * 60; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
-	const int numShocks = 20; // comparable to shocks fish received in the normal OLexp group
-
+	const int numShocks = 20;
 	vector<int> vec;
 	for (int i = baselineEndTime * FRAMERATE; i < trainingEndTime*FRAMERATE; i++)
 		vec.push_back(i);
@@ -106,22 +105,29 @@ void ExperimentData::runUnpairedOLexp()
 	mt19937 g(rnd_device());
 	shuffle(vec.begin(), vec.end(), g);
 	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
+	
 
 	prepareBgImg(prepareTime);
 	expTimer.start(); // reset timer to 0
-	while (idxFrame < numCameras * expEndTime * FRAMERATE)// giant grabbing loop
+
+	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)// giant grabbing loop
 	{
+
 		cams.grabPylonImg();
-		idxFrame++;
+
 		int cIdx = cams.cIdx;
-		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
-			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
+		allArenas[cIdx].prepareBgImg(
+			cams.ptrGrabResult->GetWidth(),
+			cams.ptrGrabResult->GetHeight(),
+			cIdx,
+			(uint8_t*)cams.pylonImg.GetBuffer());
+
 		getTime();
 		if (!allArenas[cIdx].findAllFish())
-			cout << "in arena: " << cIdx << endl;
+			cout << "Fish in arena " << cIdx + 1 << " not found." << endl;
 		if (sElapsed < baselineEndTime)
 		{
-			expPhase = 0;
+			expPhase = 0;             //baseline = 0, training = 1, blackout = 2, test = 3
 			screen.updatePatternInBaseline(sElapsed);
 		}
 		else if (sElapsed < trainingEndTime)
@@ -150,20 +156,14 @@ void ExperimentData::runUnpairedOLexp()
 				screen.updatePatternInBlackout();
 			}
 		}
-		else if (sElapsed <= testEndTime)
+		else if (sElapsed < testEndTime)
 		{
 			expPhase = 3;
 			screen.updatePatternInTest(sElapsed);
 		}
-		else
-		{ // experiment ends
-		  //cout << "Experiment ended. " << endl;
-		  //exit(0);
-		}
 		screen.renderTexture();
 		writeOutFrame();
 		annotateFishImgs();
-
 		displayFishImgs("Display");
 	}
 	cout << "Experiment ended. " << endl;
@@ -244,9 +244,7 @@ void ExperimentData::runOLexp()
 			cIdx, 
 			(uint8_t*)cams.pylonImg.GetBuffer());
 
-		if (!getTime()) {
-			break;
-		}
+		getTime();
 		if (!allArenas[cIdx].findAllFish())
 			cout << "Fish in arena " << cIdx + 1 << " not found."<< endl;
 		if (sElapsed < baselineEndTime)

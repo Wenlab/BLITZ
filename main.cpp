@@ -74,7 +74,11 @@ int main()
 		cout << "Experiment initialized." << endl;
 	}
 
+<<<<<<< HEAD
 	exp.runOLexp();
+=======
+	exp.runUnpairedOLexp();
+>>>>>>> b3fa92922b51cc419d219e0c1e5b1dc0bdcc1e8d
 	
 
 
