@@ -21,10 +21,10 @@ void main()
 	if (patternIdx == 0) // texture on the top
 	{
 		topColor = texColor;
-		bottomColor = blue;//gray;
+		bottomColor = gray;//gray;
 	}else if(patternIdx == 1)
 	{
-		topColor = blue;
+		topColor = gray;
 		bottomColor = texColor;
 	}else if(patternIdx == 2)
 	{

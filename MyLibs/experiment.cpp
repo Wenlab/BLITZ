@@ -223,10 +223,10 @@ void ExperimentData::runOLexp()
 	//const int testEndTime = 49 * 60 ; // seconds, default 18 mins (including memory extinction period)
 	//const int expEndTime = testEndTime;
 	const int prepareTime = 1 * 60; // seconnds, default 1 min
-	const int baselineEndTime = 2 * 60; // seconds, default 10 mins
-	const int trainingEndTime = 8 * 60; // seconds, default 20 mins
-	const int blackoutEndTime = 9 * 60; // seconds, default 1 min
-	const int testEndTime = 15 * 60; // seconds, default 18 mins (including memory extinction period)
+	const int baselineEndTime = 10 * 60; // seconds, default 10 mins
+	const int trainingEndTime = 30 * 60; // seconds, default 20 mins
+	const int blackoutEndTime = 31 * 60; // seconds, default 1 min
+	const int testEndTime = 49 * 60; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
 	prepareBgImg(prepareTime);
