@@ -74,7 +74,7 @@ int main()
 		cout << "Experiment initialized." << endl;
 	}
 
-	exp.runBlueTest();
+	exp.runUnpairedOLexp();
 	
 
 

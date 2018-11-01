@@ -170,6 +170,11 @@ void WriteOutData::enquireExpTask()
 		cout << "Make sure the OUTPUT button is" << endl
 			<< "ON (on the power source)" << endl;
 	}
+	else if (iequals(expTask, "UnpairedOLexp"))
+	{
+		cout << "Make sure the OUTPUT button is" << endl
+			<< "ON (on the power source)" << endl;
+	}
 	else {
 		cout << "Unrecognized expType" << endl;
 	}
