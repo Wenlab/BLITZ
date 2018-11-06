@@ -402,7 +402,11 @@ void ExperimentData::annotateFishImgs()
 {
 	for (int i = 0; i < numCameras; i++)
 	{
-		allArenas[i].annotateFish();
+		vector<int> pIndices;
+		AreaData area = screen.allAreas[i];
+		for (int j = 0; j < area.numPatches; j++)
+			pIndices.push_back(area.allPatches[j].pIdx);
+		allArenas[i].annotateFish(pIndices);
 	}
 }
 
