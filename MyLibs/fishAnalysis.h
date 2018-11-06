@@ -128,7 +128,7 @@ public:
 	
 	void prepareBgImg(int width, int height, int cIdx, uint8_t* buffer);
 
-	void annotateFish();
+	void annotateFish(std::vector<int> pIdx);
 	
 	void resetShocksOn();
 								   
