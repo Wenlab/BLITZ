@@ -276,7 +276,44 @@ void ExperimentData::runOLexp()
 	cout << "Experiment ended. " << endl;
 }
 
+void ExperimentData::monitorSponLocomotion()
+{
+	const int prepareTime = 1 * 60; //seconds
+	const int testEndTime = 30 * 60; // seconds
+	const int expEndTime = testEndTime;
 
+	prepareBgImg(prepareTime);
+	expTimer.start(); // reset timer to 0
+
+	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)// giant grabbing loop
+	{
+		cams.grabPylonImg();
+		int cIdx = cams.cIdx;
+		allArenas[cIdx].prepareBgImg(
+			cams.ptrGrabResult->GetWidth(),
+			cams.ptrGrabResult->GetHeight(),
+			cIdx,
+			(uint8_t*)cams.pylonImg.GetBuffer());
+
+		if (!getTime()) {
+			break;
+		}
+		if (!allArenas[cIdx].findAllFish())
+			cout << "Fish in arena " << cIdx + 1 << " not found." << endl;
+		if (sElapsed < expEndTime)
+		{
+			expPhase = 0;      
+			// No pattern update
+			
+		}
+		
+		screen.renderTexture();
+		writeOutFrame();
+		annotateFishImgs();
+		displayFishImgs("Display");
+		cout << "Experiment ended. " << endl;
+	}
+}
 
 void ExperimentData::giveFishShock(int fishIdx)
 {

@@ -80,6 +80,9 @@ public:
 
 	/* Run the experiment to do whether fish invisible to the blue pattern */
 	void runBlueTest();
+
+	/* Monitor the spontaneous locomotion */
+	void monitorSponLocomotion();
 	
 	/* Give the fish a electric pulse */
 	void giveFishShock(int fishIdx);

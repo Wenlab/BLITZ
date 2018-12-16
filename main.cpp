@@ -39,29 +39,64 @@ using namespace cv;
 
 int main()
 {
-	/*TODO:
-	1. degrade load_image_to_buffers to a method of AreaData
-	2. put all positions and patterns coordinates into ScreenData
-	3. do a similar update to the FishData class.
-	4. reduce unnecessary data-type conversions
-	5. remove unnecessary code
-	*/
-	//vector<const char*> CS_patterns =
-	//{
-	//	"Images/redBlackCheckerboard.jpg",
-	//	"Images/whiteBlackCheckerboard.jpg",
-	//	"Images/fullBlue.jpg"
-	//};
-	/*
-	Mat I = imread("Images/fullBlue.jpg");
+	
+	string pathName = "F:/forXuyan/";
+	ExperimentData exp(pathName);
 
-	namedWindow("Display", 1);
-	imshow("Display", I);
-	waitKey(0);
-	*/
-
+	if (!exp.initialize())
+	{
+		cout << "Experiment Initialization Failed." << endl;
+	}
+	else {
+		cout << "Experiment initialized." << endl;
+	}
+	exp.monitorSponLocomotion();
 
 	
+
+
+	/* Test screen function
+
+	ScreenData myScreen;
+	vector<string> CSpatterns =
+	{
+	"Images/fullBlack.jpg",
+	"Images/RBC.jpg",
+	"Images/fullBlue.jpg"
+	};
+	myScreen.initialize(CSpatterns);
+	while (1)
+	{
+	myScreen.renderTexture();
+	}
+
+
+	Timer expTimer;
+	ScreenData myScreen;
+	vector<const char*> CSpatterns =
+	{
+	"Images/redBlackCheckerboard.jpg",
+	"Images/whiteBlackCheckerboard.jpg",
+	"Images/fullBlue.jpg"
+	};
+
+	myScreen.initialize(CSpatterns);
+
+	expTimer.start();
+	while (1)
+	{
+	int timeInSec = expTimer.getElapsedTimeInSec();
+	cout << "Time (s) : " << timeInSec << endl;
+	int areaIdx = rand() % 3;
+	if (timeInSec % 10 == 0)
+	myScreen.allAreas[areaIdx].allPatches[0].pIdx = !myScreen.allAreas[areaIdx].allPatches[0].pIdx;
+	myScreen.allAreas[areaIdx].allPatches[0].updatePattern();
+	myScreen.renderTexture();
+	}
+
+	*/
+
+	/*
 	string pathName = "F:/FishExpData/";
 	ExperimentData exp(pathName);
 
@@ -74,12 +109,7 @@ int main()
 		cout << "Experiment initialized." << endl;
 	}
 	exp.runOLexp();
-
-
-	
-
-
-
+	*/
 
 
 
@@ -157,35 +187,6 @@ int main()
 	}
 
 	exp.runOLexp();
-	*/
-
-
-
-
-	/* Test screen function
-	Timer expTimer;
-	ScreenData myScreen;
-	vector<const char*> CSpatterns =
-	{
-		"Images/redBlackCheckerboard.jpg",
-		"Images/whiteBlackCheckerboard.jpg",
-		"Images/fullBlue.jpg"
-	};
-
-	myScreen.initialize(CSpatterns);
-
-	expTimer.start();
-	while (1)
-	{
-		int timeInSec = expTimer.getElapsedTimeInSec();
-		cout << "Time (s) : " << timeInSec << endl;
-		int areaIdx = rand() % 3;
-		if (timeInSec % 10 == 0)
-			myScreen.allAreas[areaIdx].allPatches[0].pIdx = !myScreen.allAreas[areaIdx].allPatches[0].pIdx;
-		myScreen.allAreas[areaIdx].allPatches[0].updatePattern();
-		myScreen.renderTexture();
-	}
-
 	*/
 
 

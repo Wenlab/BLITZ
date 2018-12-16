@@ -201,7 +201,7 @@ void ScreenData::updatePattern(int cIdx)
 
 //TODO: update the pattern first.
 void ScreenData::updatePatternInTest(int sElapsed) {
-	int testInterval = 30; // seconds, the interval in test is fixed
+	int testInterval = 120; // seconds, the interval in test is fixed
 	if (sElapsed > lastScreenPatternUpdate + testInterval)
 	{
 		cout << "Update pattern during test" << endl;
@@ -218,8 +218,8 @@ void ScreenData::updatePatternInBaseline(int sElapsed) {
 	{
 		cout << "Update pattern during baseline session " << endl;
 		lastScreenPatternUpdate = sElapsed;
-		// uniformly choose a time from 15s to 45s
-		baselineInterval = rand() % 30 + 15;
+		// uniformly choose a time from 30s to 45s
+		baselineInterval = rand() % 15 + 30;
 		for (int i = 0; i < numAreas; i++)
 		{
 			for (int j = 0; j < allAreas[i].numPatches; j++)
