@@ -61,8 +61,31 @@ int main()
 	*/
 
 
+	Timer expTimer;
+	ScreenData myScreen;
+	vector<string> CSpatterns =
+	{
+		"Images/RBC.jpg",
+		"Images/WBC.jpg",
+		"Images/fullBlue.jpg"
+	};
+
+	myScreen.initialize(CSpatterns);
+
+	expTimer.start();
 	
-	string pathName = "F:/FishExpData/";
+	while (1)
+	{
+		int timeInSec = expTimer.getElapsedTimeInSec();
+		cout << "Time (s) : " << timeInSec << endl;
+		int areaIdx = rand() %3;
+		if (timeInSec % 10 == 0)
+			myScreen.allAreas[areaIdx].allPatches[0].pIdx = !myScreen.allAreas[areaIdx].allPatches[0].pIdx;
+		myScreen.allAreas[areaIdx].allPatches[0].updatePattern();
+		myScreen.renderTexture();
+	}
+
+	/*string pathName = "F:/FishExpData/";
 	ExperimentData exp(pathName);
 
 	if (!exp.initialize())
@@ -73,7 +96,7 @@ int main()
 	else {
 		cout << "Experiment initialized." << endl;
 	}
-	exp.runOLexp();
+	exp.runOLexp();*/
 
 
 	
