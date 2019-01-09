@@ -219,13 +219,10 @@ void ScreenData::updatePatternInBaseline(int sElapsed) {
 		cout << "Update pattern during baseline session " << endl;
 		lastScreenPatternUpdate = sElapsed;
 		// uniformly choose a time from 15s to 45s
-		baselineInterval = rand() % 30 + 15;
+		baselineInterval = 30;
 		for (int i = 0; i < numAreas; i++)
 		{
-			for (int j = 0; j < allAreas[i].numPatches; j++)
-			{
-				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
-			}
+			allAreas[i].reverseAllPatches();
 		}
 	}
 }
