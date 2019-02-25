@@ -14,8 +14,8 @@
 * Filename: talk2screen.h
 * Abstract: this file contains all function definitions
 *			used to present visual stimulus to fish
-* 
-* A great portion of code was adapted from learnopengl.com, which is a great 
+*
+* A great portion of code was adapted from learnopengl.com, which is a great
 * website to learn OpenGL
 *
 * Current Version: 2.1
@@ -29,7 +29,7 @@
 
 
 // Include user-defined libraries
-#include "talk2screen.h"
+#include "talk2chessboard.h"
 #include <algorithm>
 #include <string>
 
@@ -37,15 +37,16 @@
 using namespace std;
 
 
-bool PatchData::initialize()
+bool ChessData::initialize(string imgName)
 {
 	initVertices();
+	loadTextureIntoBuffers(imgName);
 	return true;
 }
 
-void PatchData::initVertices()
+void ChessData::initVertices()
 {
-	const unsigned int indices[TRIANGLES_PER_PATCH * 3] =
+	const unsigned int indices[2 * 3] =
 	{
 		0, 1, 2,
 		0, 3, 2
@@ -79,62 +80,63 @@ void PatchData::initVertices()
 	glEnableVertexAttribArray(2);
 }
 
-void PatchData::updatePattern()
+void ChessData::updatePattern()
 {
 	shader.use();
 	shader.setInt("patternIdx", pIdx);
 }
 
-bool AreaData::initialize(vector<int> yDivideVec, string imgName)
-{
-	for (int i = 0; i < numPatches; i++)
-	{
-		vector<float> patchRect = rect;
-		switch (i) {
-		case 0:
-
-			break;// do nothing
-		case 1:
-		{
-			patchRect[0] -= patchRect[2] / 2; // minus half area width
-			break;
-		}
-		case 2:
-		{
-			patchRect[1] += patchRect[3] / 2;
-			break;
-		}
-		case 3:
-		{
-			patchRect[0] -= patchRect[2] / 2;
-			patchRect[1] += patchRect[3] / 2;
-			break;
-		}
-		default:;
-		}
-		patchRect[2] /= 2; // the width of patch is half of area width
-		patchRect[3] /= 2; // the height of patch is half of area width
-		PatchData patch(patchRect, yDivideVec[i]);
-		patch.initialize();
-		allPatches.push_back(patch);
-	}
-	loadTextureIntoBuffers(imgName);
-	return true;
-}
-
-/* Reverse the position of the CS pattern */
-void AreaData::reverseAllPatches() {
-	for (int j = 0; j < numPatches; j++)
-	{
-		allPatches[j].pIdx = !allPatches[j].pIdx;
-		allPatches[j].updatePattern();
-	}
-}
+// ///This function is not needed anymore
+//bool AreaData::initialize(vector<int> yDivideVec, string imgName)
+//{
+//	for (int i = 0; i < numPatches; i++)
+//	{
+//		vector<float> patchRect = rect;
+//		switch (i) {
+//		case 0:
+//
+//			break;// do nothing
+//		case 1:
+//		{
+//			patchRect[0] -= patchRect[2] / 2; // minus half area width
+//			break;
+//		}
+//		case 2:
+//		{
+//			patchRect[1] += patchRect[3] / 2;
+//			break;
+//		}
+//		case 3:
+//		{
+//			patchRect[0] -= patchRect[2] / 2;
+//			patchRect[1] += patchRect[3] / 2;
+//			break;
+//		}
+//		default:;
+//		}
+//		patchRect[2] /= 2; // the width of patch is half of area width
+//		patchRect[3] /= 2; // the height of patch is half of area width
+//		PatchData patch(patchRect, yDivideVec[i]);
+//		patch.initialize();
+//		allPatches.push_back(patch);
+//	}
+//	loadTextureIntoBuffers(imgName);
+//	return true;
+//}
+//
+// ///* Reverse the position of the CS pattern */
+//void AreaData::reverseAllPatches() {
+//	for (int j = 0; j < numPatches; j++)
+//	{
+//		allPatches[j].pIdx = !allPatches[j].pIdx;
+//		allPatches[j].updatePattern();
+//	}
+//}
 
 
 /* Load a texture for one area */
-bool AreaData::loadTextureIntoBuffers(string imgName)
-{	
+bool ChessData::loadTextureIntoBuffers(string imgName)
+{
 	glGenTextures(1, &texture0);
 	glBindTexture(GL_TEXTURE_2D, texture0);
 	// set the texture wrapping parameters
@@ -161,107 +163,73 @@ bool AreaData::loadTextureIntoBuffers(string imgName)
 	return true;
 }
 
-void AreaData::renderTexture(int areaIdx)
+void ChessData::renderTexture()
 {
-	glActiveTexture(GL_TEXTURE0 + areaIdx);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture0);
-	for (int j = 0; j < numPatches; j++)
-	{
-		allPatches[j].shader.use();
-		glUniform1i(glGetUniformLocation(allPatches[j].shader.ID, "texture0"), areaIdx);
-		glBindVertexArray(allPatches[j].VAO);
-		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
-	}
-}
-
-
-void ScreenData::updatePattern()
-{
-	for (int i = 0; i < allAreas.size(); i++)
-	{
-		AreaData area = allAreas[i];
-		for (int j = 0; j < area.numPatches; j++)
-		{
-			area.allPatches[j].updatePattern();
-		}
-	}
-}
-
-/* update pattern for specific area */
-void ScreenData::updatePattern(int cIdx)
-{
-	
-	AreaData area = allAreas[cIdx];
-	for (int j = 0; j < area.numPatches; j++)
-	{
-		area.allPatches[j].updatePattern();
-	}	
+	shader.use();
+	glUniform1i(glGetUniformLocation(shader.ID, "texture0"), 0);
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, 2 * 3, GL_UNSIGNED_INT, 0);
 
 }
+
+// ///
+//void ScreenData::updatePattern()
+//{
+//	for (int i = 0; i < allAreas.size(); i++)
+//	{
+//		AreaData area = allAreas[i];
+//		for (int j = 0; j < area.numPatches; j++)
+//		{
+//			area.allPatches[j].updatePattern();
+//		}
+//	}
+//}
+
+///* update pattern for specific area */
+//void ScreenData::updatePattern(int cIdx)
+//{
+//
+//	AreaData area = allAreas[cIdx];
+//	for (int j = 0; j < area.numPatches; j++)
+//	{
+//		area.allPatches[j].updatePattern();
+//	}
+//
+//}
 
 //TODO: update the pattern first.
-void ScreenData::updatePatternInTest(int sElapsed) {
+void ChessData::updatePatternInTest(int sElapsed) {
 	int testInterval = 30; // seconds, the interval in test is fixed
 	if (sElapsed > lastScreenPatternUpdate + testInterval)
 	{
 		cout << "Update pattern during test" << endl;
 		lastScreenPatternUpdate = sElapsed;
-		for (int i = 0; i < numAreas; i++)
-		{
-			allAreas[i].reverseAllPatches();
-		}
+		pIdx = !pIdx;
+		updatePattern();
 	}
 }
 
-void ScreenData::updatePatternInBaseline(int sElapsed) {
+void ChessData::updatePatternInBaseline(int sElapsed) {
 	if (sElapsed > lastScreenPatternUpdate + baselineInterval)
 	{
 		cout << "Update pattern during baseline session " << endl;
 		lastScreenPatternUpdate = sElapsed;
 		// uniformly choose a time from 15s to 45s
 		baselineInterval = rand() % 30 + 15;
-		for (int i = 0; i < numAreas; i++)
-		{
-			for (int j = 0; j < allAreas[i].numPatches; j++)
-			{
-				allAreas[i].allPatches[j].pIdx = !allAreas[i].allPatches[j].pIdx;
-				allAreas[i].allPatches[j].updatePattern();
-			}
-		}
+		pIdx = !pIdx;
+		updatePattern();
 	}
 }
 
-void ScreenData::updatePatternInBlackout() {
-	for (int i = 0; i < numAreas; i++)
-	{
-		for (int j = 0; j < allAreas[i].numPatches; j++)
-		{
-			allAreas[i].allPatches[j].pIdx = 2;
-			allAreas[i].allPatches[j].updatePattern();
-		}
-	}
+void ChessData::updatePatternInBlackout() {
+	pIdx = 2;
+	updatePattern();
 }
 
-bool ScreenData::initialize(
-	std::vector<string> imgNames, // image file names
-	vector<int> patchesOfAreas
-	)
+bool BoardData::initialize( std::string imgName)
 {
-	const vector<vector<float>> allAreaPos =
-	{
-		{ 0.068f, 0.300f, 0.258f, 0.668f },
-		{ 0.840f, -0.810f, 0.258f, 0.73f },
-		{ -0.668f, -0.810f, 0.258f, 0.73f }
-	};
-	
-	//y dividing positions for all patches
-	vector<vector<int>> yPatternDivs =
-	{
-		{ 818, 818, 942, 942 },
-		{ 247, 247, 365, 365 },
-		{ 238, 238, 358, 358 }
-	};
-
 	cout << "Initializing the projector screen .. " << endl;
 	/* GLFW initialize and configure */
 	if (!init_glfw_window())
@@ -272,20 +240,21 @@ bool ScreenData::initialize(
 		return false;
 
 	// Initialize all areas
-	numAreas = imgNames.size();
+	// /// This part has been commented
+	/*numAreas = imgNames.size();
 	allAreas.reserve(numAreas);
 	for (int i = 0; i < numAreas; i++)
 	{
 		AreaData area(allAreaPos[i], patchesOfAreas[i]);
 		area.initialize(yPatternDivs[i], imgNames[i]);
 		allAreas.push_back(area);
-	}
+	}*/
 	cout << "Screen initialization succeeded." << endl << endl;
 	return true;
 }
 
 /* Initialize GLFW window */
-bool ScreenData::init_glfw_window()
+bool BoardData::init_glfw_window()
 {
 	// glfw: initialize and configure
 	// ------------------------------
@@ -313,7 +282,7 @@ bool ScreenData::init_glfw_window()
 }
 
 /* Initiate glad for using OpenGL functions */
-bool ScreenData::init_glad() 
+bool BoardData::init_glad()
 {
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -324,15 +293,12 @@ bool ScreenData::init_glad()
 }
 
 /* Render designed pattern on the screen */
-void ScreenData::renderTexture()
+void BoardData::renderTexture()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	for (int  i = 0; i < allAreas.size(); i++)
-	{
-		allAreas[i].renderTexture(i);
-	}
+	Chess.renderTexture();
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move 

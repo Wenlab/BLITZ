@@ -24,8 +24,8 @@
 * Created on: Jan. 1, 2018
 */
 
-#ifndef _GUARD_TALK2SCREEN_H
-#define _GUARD_TALK2SCREEN_H
+#ifndef _GUARD_TALK2CHESSBOARD_H
+#define _GUARD_TALK2CHESSBOARD_H
 
 /* Disable warning to function std::copy */
 // ///CAN NOT Understand this statement!!!!! (USE "// ///" as the mark)
@@ -39,109 +39,48 @@
 // Include OpenGL libraries
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 // Include standard libraries
 #include <vector>
 #include <iostream>
 
 // User-defined macros
-#define NUM_ARENA 3
-#define PATCHES_PER_ARENA 4
-#define NUM_SHADER 12
-#define VERTEXS_PER_SHADER 4
-#define TRIANGLES_PER_PATCH 2
+// ///#define NUM_ARENA 3
+// ///#define PATCHES_PER_ARENA 4
+// ///#define NUM_SHADER 12
+// ///#define VERTEXS_PER_SHADER 4
+// ///#define TRIANGLES_PER_PATCH 2
 
-/* represent pattern changes for a single patch (shader) */
-class PatchData 
+class ChessData
 {
 private:
 	; // nothing for now
 public:
 	// methods
-	PatchData(std::vector<float> patchRect, const int patchYdivide,
-			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
-			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
-			: shader(vertexPath, fragmentPath)
-			, rect(patchRect)
-			, yDivide(patchYdivide)
+	ChessData(std::vector<float> ChessRect, // ///const int patchYdivide,
+		const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
+		: shader(vertexPath, fragmentPath)
+		, rect(ChessRect)
+		// ///, yDivide(patchYdivide)
 	{
 		/* Frequent updating variable */
-		pIdx = 0;	
+		pIdx = 0;
 		shader.use();
-		shader.setInt("yDivide", yDivide);
+		// ///shader.setInt("yDivide", yDivide);
 		shader.setInt("patternIdx", pIdx);
 	}
-	
-	bool initialize();
+
+	bool initialize(std::string imgName);
 	/* Initialize vertices and their buffers with providing pos(x,y) */
 	void initVertices();
 	/* Update pattern by giving the shader new pattern index */
 	void updatePattern();
-	
-	
 
-	// properties
-	const std::vector<float> rect; // upper-left corner (x, y, width, height)
-	const int yDivide;
-	int pIdx; // pattern index
-	
-	Shader shader;
-	unsigned int VAO, VBO, EBO;
-};
-/* represent pattern changes of an entire local area,
- which consists of many patches
-*/
-class AreaData 
-{
-private:
-	; // nothing for now
-public:
-	// methods
-	/* Enquire the number of patches in an arena */
-	AreaData(std::vector<float> areaRect, int n = 1)
-		: rect(areaRect)
-		, numPatches(n)
-	{
-		
-	}
-	bool initialize(std::vector<int> yDivideVec, std::string imgName);
 	bool loadTextureIntoBuffers(std::string imgName);
-	void reverseAllPatches();
-	void renderTexture(int areaIdx);
-	// properties
-	std::vector<PatchData> allPatches;
-	unsigned int texture0; // texture ID 
-	const int numPatches;
-	const std::vector<float> rect; // upper-left corner (x, y, width, height)
-};
 
-class ScreenData 
-{
-private: // only used within class
-	GLFWmonitor * * monitors;
-	GLFWwindow* window;
-
-public:
-	// methods
-	ScreenData() // constructor
-	{
-		
-	}
-	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {4,4,4});
-	/* GLFW initialize and configure window */
-	bool init_glfw_window();
-	/* glad: load all OpenGL function pointers */
-	bool init_glad();
-	/* Update pattern for specific area */
-	void updatePattern(int cIdx);
-	/* Update patternIdx for all shaders in the screen */
-	void updatePattern();
-	/* Render designed pattern on the screen */
 	void renderTexture();
+
 	/* Update pattern in test experiment */
 	void updatePatternInTest(int sElapsed);
 	/* Update pattern in baseline experiment */
@@ -151,25 +90,90 @@ public:
 
 
 	// properties
-	const GLFWvidmode* mode;
+	const std::vector<float> rect; // upper-left corner (x, y, width, height)
+	// ///const int yDivide;
+	int pIdx; // pattern index
+	unsigned int texture0; // texture ID 
+	Shader shader;
+	unsigned int VAO, VBO, EBO;
 
-	/* 3(#arenas) * 4(patchesPerArena)
-		Scheme for fish positions in arena
-		|		|		|
-		|	0	|	1	|
-		|		|		|
-		|---------------|
-		|		|		|
-		|	2	|	3	|
-		|		|		|
-	*/
-	std::vector<AreaData> allAreas;
-	
-	int numAreas;
 	int lastScreenPatternUpdate;
 	/* Interval for updating pattern in baseline session, which is a random number in range */
 	int baselineInterval;
 };
+/* represent pattern changes of an entire local area,
+which consists of many patches
+*/
+//class AreaData
+//{
+//private:
+//	; // nothing for now
+//public:
+//	// methods
+//	/* Enquire the number of patches in an arena */
+//	AreaData(std::vector<float> areaRect, int n = 1)
+//		: rect(areaRect)
+//		, numPatches(n)
+//	{
+//
+//	}
+//	// ///bool initialize(std::vector<int> yDivideVec, std::string imgName);
+//	// ///bool loadTextureIntoBuffers(std::string imgName);
+//	// /// reverseAllPatches();
+//	// ///void renderTexture(int areaIdx);
+//	// properties
+//	// ///std::vector<PatchData> allPatches;
+//	// ///unsigned int texture0; // texture ID 
+//	// ///const int numPatches;
+//	// ///const std::vector<float> rect; // upper-left corner (x, y, width, height)
+//};
 
-#endif // !_GUARD_TALK2SCREEN_H
+class BoardData
+{
+private: // only used within class
+	GLFWmonitor * * monitors;
+	GLFWwindow* window;
 
+public:
+	// methods
+	BoardData() // constructor
+	{
+
+	}
+	/* Initilize screen environment and coordinates */
+	bool initialize(std::string filename);
+	/* GLFW initialize and configure window */
+	bool init_glfw_window();
+	/* glad: load all OpenGL function pointers */
+	bool init_glad();
+	/* Update pattern for specific area */
+	// ///void updatePattern(int cIdx);
+
+	void renderTexture();
+	
+
+
+	// properties
+	const GLFWvidmode* mode;
+
+	ChessData Chess{ { 1.0f,-1.0f,2.0f,2.0f },
+		"3rdPartyLibs/OpenGL/shader.vs",
+		"3rdPartyLibs/OpenGL/shader.fs"
+	};
+	/* 3(#arenas) * 4(patchesPerArena)
+	Scheme for fish positions in arena
+	|		|		|
+	|	0	|	1	|
+	|		|		|
+	|---------------|
+	|		|		|
+	|	2	|	3	|
+	|		|		|
+	*/
+	// ///std::vector<AreaData> allAreas;
+
+	// ///int numAreas;
+
+};
+
+#endif
