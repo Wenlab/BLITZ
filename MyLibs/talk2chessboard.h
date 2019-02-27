@@ -59,7 +59,7 @@ public:
 	// methods
 	ChessData(std::vector<float> ChessRect, // ///const int patchYdivide,
 		const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
-		const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader1.fs")
 		: shader(vertexPath, fragmentPath)
 		, rect(ChessRect)
 		// ///, yDivide(patchYdivide)
@@ -101,32 +101,9 @@ public:
 	/* Interval for updating pattern in baseline session, which is a random number in range */
 	int baselineInterval;
 };
-/* represent pattern changes of an entire local area,
-which consists of many patches
-*/
-//class AreaData
-//{
-//private:
-//	; // nothing for now
-//public:
-//	// methods
-//	/* Enquire the number of patches in an arena */
-//	AreaData(std::vector<float> areaRect, int n = 1)
-//		: rect(areaRect)
-//		, numPatches(n)
-//	{
-//
-//	}
-//	// ///bool initialize(std::vector<int> yDivideVec, std::string imgName);
-//	// ///bool loadTextureIntoBuffers(std::string imgName);
-//	// /// reverseAllPatches();
-//	// ///void renderTexture(int areaIdx);
-//	// properties
-//	// ///std::vector<PatchData> allPatches;
-//	// ///unsigned int texture0; // texture ID 
-//	// ///const int numPatches;
-//	// ///const std::vector<float> rect; // upper-left corner (x, y, width, height)
-//};
+
+
+
 
 class BoardData
 {
@@ -136,7 +113,11 @@ private: // only used within class
 
 public:
 	// methods
-	BoardData() // constructor
+	BoardData(
+	          
+	) // constructor
+		
+
 	{
 
 	}
@@ -155,24 +136,7 @@ public:
 
 	// properties
 	const GLFWvidmode* mode;
-
-	ChessData Chess{ { 1.0f,-1.0f,2.0f,2.0f },
-		"3rdPartyLibs/OpenGL/shader.vs",
-		"3rdPartyLibs/OpenGL/shader.fs"
-	};
-	/* 3(#arenas) * 4(patchesPerArena)
-	Scheme for fish positions in arena
-	|		|		|
-	|	0	|	1	|
-	|		|		|
-	|---------------|
-	|		|		|
-	|	2	|	3	|
-	|		|		|
-	*/
-	// ///std::vector<AreaData> allAreas;
-
-	// ///int numAreas;
+	std::vector<ChessData> Chess;
 
 };
 

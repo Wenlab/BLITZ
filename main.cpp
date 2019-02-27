@@ -63,7 +63,7 @@ int main()
 	*/
 
 
-	Timer expTimer;
+	/*Timer expTimer;
 	ScreenData myScreen;
 	vector<string> CSpatterns =
 	{
@@ -85,7 +85,36 @@ int main()
 			myScreen.allAreas[areaIdx].allPatches[0].pIdx = !myScreen.allAreas[areaIdx].allPatches[0].pIdx;
 		myScreen.allAreas[areaIdx].allPatches[0].updatePattern();
 		myScreen.renderTexture();
+	}*/
+
+
+	// /// JUST FOR TEST
+	Timer expTimer;
+	BoardData myBoard;
+	string CSpattern = "Images/RBC.jpg";
+
+	myBoard.initialize(CSpattern);
+
+	expTimer.start();
+
+	while (1)
+	{
+		int timeInSec = expTimer.getElapsedTimeInSec();
+		cout << "Time (s) : " << timeInSec << endl;
+		int areaIdx = rand() % 3;
+		if (timeInSec % 10 == 0)
+			myBoard.Chess[0].pIdx = !myBoard.Chess[0].pIdx;
+		myBoard.Chess[0].updatePattern();
+		myBoard.renderTexture();
 	}
+
+
+
+
+
+
+
+
 
 	/*string pathName = "F:/FishExpData/";
 	ExperimentData exp(pathName);

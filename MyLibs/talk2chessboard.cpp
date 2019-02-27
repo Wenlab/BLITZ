@@ -54,10 +54,10 @@ void ChessData::initVertices()
 
 	float vertices[32] =
 	{	// positions (0-2)      // colors (3-5)         // texture coordinates (6-7)
-		rect[0], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // top left
-		rect[0], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, rect[3], // bottom left
-		rect[0] - rect[2], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], rect[3], // bottom right
-		rect[0] - rect[2], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], 0.0f // top right
+		 1, -1, 0.0f,  0.0f, 0.0f, 0.0f,  0.0f, 0.0f, // top left
+		 1,  1, 0.0f,  0.0f, 0.0f, 0.0f,  0.0f, 1, // bottom left
+		-1,  1, 0.0f,  0.0f, 0.0f, 0.0f,  1,    1, // bottom right
+		-1, -1, 0.0f,  0.0f, 0.0f, 0.0f,  1,    0.0f // top right
 	};
 
 	glGenVertexArrays(1, &VAO);
@@ -239,6 +239,10 @@ bool BoardData::initialize( std::string imgName)
 	if (!init_glad())
 		return false;
 
+	Chess.reserve(1);
+	ChessData chess({0.5f, -0.5f, 1.0f, 2.0f});
+	chess.initialize(imgName);
+	Chess.push_back(chess);
 	// Initialize all areas
 	// /// This part has been commented
 	/*numAreas = imgNames.size();
@@ -249,6 +253,7 @@ bool BoardData::initialize( std::string imgName)
 		area.initialize(yPatternDivs[i], imgNames[i]);
 		allAreas.push_back(area);
 	}*/
+	
 	cout << "Screen initialization succeeded." << endl << endl;
 	return true;
 }
@@ -298,7 +303,7 @@ void BoardData::renderTexture()
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	Chess.renderTexture();
+	Chess[0].renderTexture();
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move 
