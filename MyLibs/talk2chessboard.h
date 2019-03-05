@@ -40,6 +40,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 // Include standard libraries
 #include <vector>
 #include <iostream>
@@ -66,9 +70,15 @@ public:
 	{
 		/* Frequent updating variable */
 		pIdx = 0;
+		xDis = 0;
+		yDis = 0;
+		theta = 0;
 		shader.use();
 		// ///shader.setInt("yDivide", yDivide);
 		shader.setInt("patternIdx", pIdx);
+		shader.setFloat("xDis", xDis);
+		shader.setFloat("yDis", yDis);
+		shader.setFloat("theta", theta);
 	}
 
 	bool initialize(std::string imgName);
@@ -93,6 +103,10 @@ public:
 	const std::vector<float> rect; // upper-left corner (x, y, width, height)
 	// ///const int yDivide;
 	int pIdx; // pattern index
+
+	float xDis, yDis;
+	float theta;
+
 	unsigned int texture0; // texture ID 
 	Shader shader;
 	unsigned int VAO, VBO, EBO;

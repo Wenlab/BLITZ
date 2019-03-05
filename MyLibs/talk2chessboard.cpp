@@ -54,10 +54,10 @@ void ChessData::initVertices()
 
 	float vertices[32] =
 	{	// positions (0-2)      // colors (3-5)         // texture coordinates (6-7)
-		 1, -1, 0.0f,  0.0f, 0.0f, 0.0f,  0.0f, 0.0f, // top left
-		 1,  1, 0.0f,  0.0f, 0.0f, 0.0f,  0.0f, 1, // bottom left
-		-1,  1, 0.0f,  0.0f, 0.0f, 0.0f,  1,    1, // bottom right
-		-1, -1, 0.0f,  0.0f, 0.0f, 0.0f,  1,    0.0f // top right
+		 0.4f, -0.4f, 0.0f,  0.0f, 0.0f, 0.0f,  1.0f, 0.0f, // top left
+		 0.4f,  0.4f, 0.0f,  0.0f, 0.0f, 0.0f,  1.0f, 1.0f, // bottom left
+		-0.4f,  0.4f, 0.0f,  0.0f, 0.0f, 0.0f,  0.0f, 1.0f, // bottom right
+		-0.4f, -0.4f, 0.0f,  0.0f, 0.0f, 0.0f,  0.0f, 0.0f // top right
 	};
 
 	glGenVertexArrays(1, &VAO);
@@ -84,54 +84,12 @@ void ChessData::updatePattern()
 {
 	shader.use();
 	shader.setInt("patternIdx", pIdx);
+	shader.setFloat("xDis", xDis);
+	shader.setFloat("yDis", yDis);
+	shader.setFloat("theta", theta);
 }
 
-// ///This function is not needed anymore
-//bool AreaData::initialize(vector<int> yDivideVec, string imgName)
-//{
-//	for (int i = 0; i < numPatches; i++)
-//	{
-//		vector<float> patchRect = rect;
-//		switch (i) {
-//		case 0:
-//
-//			break;// do nothing
-//		case 1:
-//		{
-//			patchRect[0] -= patchRect[2] / 2; // minus half area width
-//			break;
-//		}
-//		case 2:
-//		{
-//			patchRect[1] += patchRect[3] / 2;
-//			break;
-//		}
-//		case 3:
-//		{
-//			patchRect[0] -= patchRect[2] / 2;
-//			patchRect[1] += patchRect[3] / 2;
-//			break;
-//		}
-//		default:;
-//		}
-//		patchRect[2] /= 2; // the width of patch is half of area width
-//		patchRect[3] /= 2; // the height of patch is half of area width
-//		PatchData patch(patchRect, yDivideVec[i]);
-//		patch.initialize();
-//		allPatches.push_back(patch);
-//	}
-//	loadTextureIntoBuffers(imgName);
-//	return true;
-//}
-//
-// ///* Reverse the position of the CS pattern */
-//void AreaData::reverseAllPatches() {
-//	for (int j = 0; j < numPatches; j++)
-//	{
-//		allPatches[j].pIdx = !allPatches[j].pIdx;
-//		allPatches[j].updatePattern();
-//	}
-//}
+
 
 
 /* Load a texture for one area */
@@ -169,35 +127,14 @@ void ChessData::renderTexture()
 	glBindTexture(GL_TEXTURE_2D, texture0);
 	shader.use();
 	glUniform1i(glGetUniformLocation(shader.ID, "texture0"), 0);
+
+	
+
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, 2 * 3, GL_UNSIGNED_INT, 0);
 
 }
 
-// ///
-//void ScreenData::updatePattern()
-//{
-//	for (int i = 0; i < allAreas.size(); i++)
-//	{
-//		AreaData area = allAreas[i];
-//		for (int j = 0; j < area.numPatches; j++)
-//		{
-//			area.allPatches[j].updatePattern();
-//		}
-//	}
-//}
-
-///* update pattern for specific area */
-//void ScreenData::updatePattern(int cIdx)
-//{
-//
-//	AreaData area = allAreas[cIdx];
-//	for (int j = 0; j < area.numPatches; j++)
-//	{
-//		area.allPatches[j].updatePattern();
-//	}
-//
-//}
 
 //TODO: update the pattern first.
 void ChessData::updatePatternInTest(int sElapsed) {
@@ -307,7 +244,6 @@ void BoardData::renderTexture()
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move 
-
 }
 
 

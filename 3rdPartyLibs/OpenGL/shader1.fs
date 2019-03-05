@@ -24,6 +24,11 @@ void main()
 	vec4 gray = vec4(0.5f, 0.5f, 0.5f, 1.0f);
 	vec4 blue = vec4(0.0f, 0.0f, 1.0f, 1.0f);
 	vec4 topColor, bottomColor;
+	vec2 v = gl_FragCoord.xy;
+	v.x += xDis;
+	v.y += yDis;
+
+
 	if (patternIdx == 0) // texture on the top
 	{
 		topColor = texColor;
@@ -40,11 +45,11 @@ void main()
 
 
 	FragColor = bottomColor;
-	if (mod(gl_FragCoord.y, 300.0) < 150.0) {
-        if (mod(gl_FragCoord.x, 300.0) > 150.0)
+	if (mod(v.x * cos(theta) - v.y * sin(theta) , 300.0) < 150.0) {
+        if (mod( v.x * sin(theta) + v.y * cos(theta) , 300.0) > 150.0)
             FragColor = topColor;
     } else {
-        if (mod(gl_FragCoord.x, 300.0) < 150.0)
+        if (mod( v.x * sin(theta) + v.y * cos(theta) , 300.0) < 150.0)
             FragColor = topColor;
     }
 }
