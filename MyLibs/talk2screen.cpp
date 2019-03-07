@@ -227,7 +227,7 @@ bool ScreenData::initialize(
 	//y dividing positions for all patches
 	vector<vector<int>> yPatternDivs =
 	{
-		{ 1080, 0, 0, 0 },
+		{1080},
 	};
 
 	cout << "Initializing the projector screen .. " << endl;

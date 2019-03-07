@@ -127,7 +127,7 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {1,4,4});
+	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {1});
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */
