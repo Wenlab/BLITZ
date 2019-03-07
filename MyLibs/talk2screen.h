@@ -48,9 +48,9 @@
 #include <iostream>
 
 // User-defined macros
-#define NUM_ARENA 3
-#define PATCHES_PER_ARENA 4
-#define NUM_SHADER 12
+#define NUM_ARENA 1
+#define PATCHES_PER_ARENA 1
+#define NUM_SHADER 1
 #define VERTEXS_PER_SHADER 4
 #define TRIANGLES_PER_PATCH 2
 
@@ -63,16 +63,22 @@ public:
 	// methods
 	PatchData(std::vector<float> patchRect, const int patchYdivide,
 			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
-			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
+			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader1.fs")
 			: shader(vertexPath, fragmentPath)
 			, rect(patchRect)
-			, yDivide(patchYdivide)
+			//, yDivide(patchYdivide)
 	{
 		/* Frequent updating variable */
 		pIdx = 0;	
+		xDis = 0;
+		yDis = 0;
+		theta = 0;
 		shader.use();
-		shader.setInt("yDivide", yDivide);
+		//shader.setInt("yDivide", yDivide);
 		shader.setInt("patternIdx", pIdx);
+		shader.setFloat("xDis", xDis);
+		shader.setFloat("yDis", yDis);
+		shader.setFloat("theta", theta);
 	}
 	
 	bool initialize();
@@ -85,8 +91,11 @@ public:
 
 	// properties
 	const std::vector<float> rect; // upper-left corner (x, y, width, height)
-	const int yDivide;
+	//const int yDivide;
 	int pIdx; // pattern index
+
+	float xDis, yDis;
+	float theta;
 	
 	Shader shader;
 	unsigned int VAO, VBO, EBO;
