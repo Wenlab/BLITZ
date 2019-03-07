@@ -89,7 +89,7 @@ int main()
 
 
 	// /// JUST FOR TEST
-	Timer expTimer;
+	/*Timer expTimer;
 	ScreenData Board;
 	string CSpattern = "Images/pureBlack.jpg";
 
@@ -107,7 +107,7 @@ int main()
 		Board.allAreas[0].allPatches[0].yDis += rand() /1000.0;
 		Board.updatePattern();
 		Board.renderTexture();
-	}
+	}*/
 
 
 
@@ -117,18 +117,19 @@ int main()
 
 
 
-	/*string pathName = "F:/FishExpData/";
+	string pathName = "F:/FishExpData/";
 	ExperimentData exp(pathName);
 
 	if (!exp.initialize())
 	{
 		cout << "Experiment Initialization Failed." << endl;
+		system("pause");
 		exit(0);
 	}
 	else {
 		cout << "Experiment initialized." << endl;
 	}
-	exp.runOLexp();*/
+	exp.runOLexp();
 
 
 	
