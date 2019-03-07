@@ -32,8 +32,7 @@
 #include "talk2camera.h"
 #include "talk2relay.h"
 #include "talk2screen.h"
-// ///
-#include "talk2chessboard.h"
+
 #include "writeOutFish.h"
 
 // User-defined macros

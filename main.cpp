@@ -28,8 +28,7 @@
 // Include user-defined libraries
 #include "MyLibs/experiment.h"
 #include "MyLibs/talk2screen.h"
-// ///
-#include "MyLibs/talk2chessboard.h"   
+ 
 #include "MyLibs/talk2camera.h"
 
 
