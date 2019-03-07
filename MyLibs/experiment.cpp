@@ -50,7 +50,7 @@ bool ExperimentData::initialize()
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
 		return false;
 
-	if (!screen.initialize(CSpatterns))
+	if (!screen.initialize(CSpatterns[0]))
 		return false;
 
 	/* Initialize the serial port */

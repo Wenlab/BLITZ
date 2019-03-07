@@ -83,38 +83,17 @@ void PatchData::updatePattern()
 {
 	shader.use();
 	shader.setInt("patternIdx", pIdx);
+	shader.setFloat("xDis", xDis);
+	shader.setFloat("yDis", yDis);
+	shader.setFloat("theta", theta);
 }
 
-bool AreaData::initialize(vector<int> yDivideVec, string imgName)
+bool AreaData::initialize(string imgName)
 {
 	for (int i = 0; i < numPatches; i++)
 	{
 		vector<float> patchRect = rect;
-		switch (i) {
-		case 0:
-
-			break;// do nothing
-		case 1:
-		{
-			patchRect[0] -= patchRect[2] / 2; // minus half area width
-			break;
-		}
-		case 2:
-		{
-			patchRect[1] += patchRect[3] / 2;
-			break;
-		}
-		case 3:
-		{
-			patchRect[0] -= patchRect[2] / 2;
-			patchRect[1] += patchRect[3] / 2;
-			break;
-		}
-		default:;
-		}
-		patchRect[2] /= 2; // the width of patch is half of area width
-		patchRect[3] /= 2; // the height of patch is half of area width
-		PatchData patch(patchRect, yDivideVec[i]);
+		PatchData patch(patchRect);
 		patch.initialize();
 		allPatches.push_back(patch);
 	}
@@ -243,23 +222,12 @@ void ScreenData::updatePatternInBlackout() {
 }
 
 bool ScreenData::initialize(
-	std::vector<string> imgNames, // image file names
-	vector<int> patchesOfAreas
+	std::string imgName // image file names
 	)
 {
-	const vector<vector<float>> allAreaPos =
+	const vector<float> allAreaPos =
 	{
-		{ 0.068f, 0.300f, 0.258f, 0.668f },
-		{ 0.840f, -0.810f, 0.258f, 0.73f },
-		{ -0.668f, -0.810f, 0.258f, 0.73f }
-	};
-	
-	//y dividing positions for all patches
-	vector<vector<int>> yPatternDivs =
-	{
-		{ 818, 818, 942, 942 },
-		{ 247, 247, 365, 365 },
-		{ 238, 238, 358, 358 }
+		{ 0.7f, -0.7f, 1.4f, 1.4f }
 	};
 
 	cout << "Initializing the projector screen .. " << endl;
@@ -272,14 +240,11 @@ bool ScreenData::initialize(
 		return false;
 
 	// Initialize all areas
-	numAreas = imgNames.size();
+	numAreas = 1;
 	allAreas.reserve(numAreas);
-	for (int i = 0; i < numAreas; i++)
-	{
-		AreaData area(allAreaPos[i], patchesOfAreas[i]);
-		area.initialize(yPatternDivs[i], imgNames[i]);
-		allAreas.push_back(area);
-	}
+	AreaData area(allAreaPos,1);
+	area.initialize(imgName);
+	allAreas.push_back(area);
 	cout << "Screen initialization succeeded." << endl << endl;
 	return true;
 }

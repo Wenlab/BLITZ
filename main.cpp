@@ -90,10 +90,10 @@ int main()
 
 	// /// JUST FOR TEST
 	Timer expTimer;
-	BoardData myBoard;
+	ScreenData Board;
 	string CSpattern = "Images/pureBlack.jpg";
 
-	myBoard.initialize(CSpattern);
+	Board.initialize(CSpattern);
 
 	expTimer.start();
 
@@ -102,13 +102,11 @@ int main()
 		int timeInSec = expTimer.getElapsedTimeInSec();
 		cout << "Time (s) : " << timeInSec << endl;
 		int areaIdx = rand() % 3;
-		myBoard.Chess[0].theta = timeInSec / 10.0;
-		myBoard.Chess[0].xDis += rand() /1000.0;
-		myBoard.Chess[0].yDis += rand() /1000.0;
-		if (timeInSec % 10 == 0)
-			myBoard.Chess[0].pIdx = myBoard.Chess[0].pIdx;
-		myBoard.Chess[0].updatePattern();
-		myBoard.renderTexture();
+		Board.allAreas[0].allPatches[0].theta = timeInSec / 10.0;
+		Board.allAreas[0].allPatches[0].xDis += rand() /1000.0;
+		Board.allAreas[0].allPatches[0].yDis += rand() /1000.0;
+		Board.updatePattern();
+		Board.renderTexture();
 	}
 
 

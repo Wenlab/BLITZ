@@ -28,7 +28,6 @@
 #define _GUARD_TALK2SCREEN_H
 
 /* Disable warning to function std::copy */
-// ///CAN NOT Understand this statement!!!!! (USE "// ///" as the mark)
 #pragma warning(disable : 4996) 
 
 
@@ -61,7 +60,7 @@ private:
 	; // nothing for now
 public:
 	// methods
-	PatchData(std::vector<float> patchRect, const int patchYdivide,
+	PatchData(std::vector<float> patchRect,
 			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
 			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader1.fs")
 			: shader(vertexPath, fragmentPath)
@@ -116,7 +115,7 @@ public:
 	{
 		
 	}
-	bool initialize(std::vector<int> yDivideVec, std::string imgName);
+	bool initialize(std::string imgName);
 	bool loadTextureIntoBuffers(std::string imgName);
 	void reverseAllPatches();
 	void renderTexture(int areaIdx);
@@ -140,7 +139,7 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {4,4,4});
+	bool initialize(std::string filename);
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */
