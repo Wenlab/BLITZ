@@ -44,9 +44,9 @@
 #include <iostream>
 
 // User-defined macros
-#define NUM_ARENA 3
-#define PATCHES_PER_ARENA 4
-#define NUM_SHADER 12
+#define NUM_ARENA 1
+#define PATCHES_PER_ARENA 1
+#define NUM_SHADER 1
 #define VERTEXS_PER_SHADER 4
 #define TRIANGLES_PER_PATCH 2
 
@@ -127,7 +127,7 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {4,4,4});
+	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {1,4,4});
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */

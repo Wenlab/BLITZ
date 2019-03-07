@@ -87,37 +87,10 @@ void PatchData::updatePattern()
 
 bool AreaData::initialize(vector<int> yDivideVec, string imgName)
 {
-	for (int i = 0; i < numPatches; i++)
-	{
-		vector<float> patchRect = rect;
-		switch (i) {
-		case 0:
-
-			break;// do nothing
-		case 1:
-		{
-			patchRect[0] -= patchRect[2] / 2; // minus half area width
-			break;
-		}
-		case 2:
-		{
-			patchRect[1] += patchRect[3] / 2;
-			break;
-		}
-		case 3:
-		{
-			patchRect[0] -= patchRect[2] / 2;
-			patchRect[1] += patchRect[3] / 2;
-			break;
-		}
-		default:;
-		}
-		patchRect[2] /= 2; // the width of patch is half of area width
-		patchRect[3] /= 2; // the height of patch is half of area width
-		PatchData patch(patchRect, yDivideVec[i]);
-		patch.initialize();
-		allPatches.push_back(patch);
-	}
+	vector<float> patchRect = rect;
+	PatchData patch(patchRect, yDivideVec[0]);
+	patch.initialize();
+	allPatches.push_back(patch);
 	loadTextureIntoBuffers(imgName);
 	return true;
 }
@@ -248,17 +221,13 @@ bool ScreenData::initialize(
 {
 	const vector<vector<float>> allAreaPos =
 	{
-		{ 0.068f, 0.300f, 0.258f, 0.668f },
-		{ 0.840f, -0.810f, 0.258f, 0.73f },
-		{ -0.668f, -0.810f, 0.258f, 0.73f }
+		{ 0.5f, -0.5f, 1.0f, 1.0f },
 	};
 	
 	//y dividing positions for all patches
 	vector<vector<int>> yPatternDivs =
 	{
-		{ 818, 818, 942, 942 },
-		{ 247, 247, 365, 365 },
-		{ 238, 238, 358, 358 }
+		{ 1080, 0, 0, 0 },
 	};
 
 	cout << "Initializing the projector screen .. " << endl;

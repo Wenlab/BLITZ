@@ -61,19 +61,48 @@ int main()
 	*/
 
 
-	
-	string pathName = "F:/FishExpData/";
-	ExperimentData exp(pathName);
 
-	if (!exp.initialize())
+	Timer expTimer;
+	ScreenData Board;
+	vector<string> CSpattern;
+	CSpattern.push_back("Images/pureBlack.jpg");
+
+	Board.initialize(CSpattern);
+
+	expTimer.start();
+
+	while (1)
 	{
-		cout << "Experiment Initialization Failed." << endl;
-		exit(0);
+		int timeInSec = expTimer.getElapsedTimeInSec();
+		cout << "Time (s) : " << timeInSec << endl;
+		if(timeInSec % 5 ==0)
+			Board.allAreas[0].allPatches[0].pIdx = !Board.allAreas[0].allPatches[0].pIdx;
+		Board.updatePattern();
+		Board.renderTexture();
 	}
-	else {
-		cout << "Experiment initialized." << endl;
-	}
-	exp.runOLexp();
+
+
+
+
+
+
+
+
+	
+
+	// ///
+	//string pathName = "F:/FishExpData/";
+	//ExperimentData exp(pathName);
+
+	//if (!exp.initialize())
+	//{
+	//	cout << "Experiment Initialization Failed." << endl;
+	//	exit(0);
+	//}
+	//else {
+	//	cout << "Experiment initialized." << endl;
+	//}
+	//exp.runOLexp();
 
 
 	
