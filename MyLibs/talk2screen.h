@@ -157,6 +157,9 @@ public:
 	/* Update pattern in the blackout experiment */
 	void updatePatternInBlackout();
 
+	void getTheta(float theta);
+	void getXDis(float xDis);
+	void getYDis(float yDis);
 
 	// properties
 	const GLFWvidmode* mode;

@@ -89,7 +89,7 @@ int main()
 
 
 	// /// JUST FOR TEST
-	/*Timer expTimer;
+	Timer expTimer;
 	ScreenData Board;
 	string CSpattern = "Images/pureBlack.jpg";
 
@@ -101,35 +101,34 @@ int main()
 	{
 		int timeInSec = expTimer.getElapsedTimeInSec();
 		cout << "Time (s) : " << timeInSec << endl;
-		int areaIdx = rand() % 3;
-		Board.allAreas[0].allPatches[0].theta = timeInSec / 10.0;
-		Board.allAreas[0].allPatches[0].xDis += rand() /1000.0;
-		Board.allAreas[0].allPatches[0].yDis += rand() /1000.0;
+		Board.getTheta(timeInSec / 10.0);
+		Board.getXDis(rand() /10.0);
+		Board.getYDis(rand() /10.0);
 		Board.updatePattern();
 		Board.renderTexture();
-	}*/
-
-
-
-
-
-
-
-
-
-	string pathName = "F:/FishExpData/";
-	ExperimentData exp(pathName);
-
-	if (!exp.initialize())
-	{
-		cout << "Experiment Initialization Failed." << endl;
-		system("pause");
-		exit(0);
 	}
-	else {
-		cout << "Experiment initialized." << endl;
-	}
-	exp.runOLexp();
+
+
+
+
+
+
+
+
+
+	//string pathName = "F:/FishExpData/";
+	//ExperimentData exp(pathName);
+
+	//if (!exp.initialize())
+	//{
+	//	cout << "Experiment Initialization Failed." << endl;
+	//	system("pause");
+	//	exit(0);
+	//}
+	//else {
+	//	cout << "Experiment initialized." << endl;
+	//}
+	//exp.runOLexp();
 
 
 	

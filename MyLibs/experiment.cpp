@@ -47,11 +47,13 @@ bool ExperimentData::initialize()
 		X_CUT, Y_CUT, yDivs))
 		return false;
 	
+
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
 		return false;
 
 	if (!screen.initialize(CSpatterns[0]))
 		return false;
+
 
 	/* Initialize the serial port */
 	if (!thePort.initialize(COM_NUM))
@@ -234,9 +236,8 @@ void ExperimentData::runOLexp()
 
 	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)// giant grabbing loop
 	{
-		
+	
 		cams.grabPylonImg();
-
 		int cIdx = cams.cIdx;
 		allArenas[cIdx].prepareBgImg(
 			cams.ptrGrabResult->GetWidth(), 
@@ -245,8 +246,9 @@ void ExperimentData::runOLexp()
 			(uint8_t*)cams.pylonImg.GetBuffer());
 
 		getTime();
-		if (!allArenas[cIdx].findAllFish())
-			cout << "Fish in arena " << cIdx + 1 << " not found."<< endl;
+
+		if (!allArenas[0].findAllFish())
+			cout << "Fish in arena " << 1 << " not found."<< endl;
 		if (sElapsed < baselineEndTime)
 		{
 			expPhase = 0;             //baseline = 0, training = 1, blackout = 2, test = 3
@@ -255,12 +257,12 @@ void ExperimentData::runOLexp()
 		else if (sElapsed < trainingEndTime)
 		{
 			expPhase = 1;
-			trainFish(cIdx);
+			trainFish(0);
 		}
 		else if (sElapsed < blackoutEndTime)
 		{
 			expPhase = 2;
-			allArenas[cIdx].resetShocksOn();
+			allArenas[0].resetShocksOn();
 			screen.updatePatternInBlackout();
 		}
 		else if (sElapsed < testEndTime)

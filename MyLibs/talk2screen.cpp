@@ -304,4 +304,18 @@ void ScreenData::renderTexture()
 
 }
 
+void ScreenData::getTheta(float theta) 
+{
+	allAreas[0].allPatches[0].theta = theta;
+}
+
+void ScreenData::getXDis(float xDis)
+{
+	allAreas[0].allPatches[0].xDis = xDis;
+}
+
+void ScreenData::getYDis(float yDis)
+{
+	allAreas[0].allPatches[0].yDis = yDis;
+}
 
