@@ -40,7 +40,7 @@ using namespace cv;
 
 /* find all fish contours in the arena at the same time
  by finding the largest #fish contours in all contours.
- Involved parameters: 
+ Involved parameters:
 	1.Threshold for contour size,
 	2.Moments of contours
 Scheme for fish positions in arena
@@ -59,7 +59,7 @@ TODO:
 
 void ArenaData::initialize(
 	vector<string> fishIDs, // unique fish IDs
-	int fishAge, 
+	int fishAge,
 	vector<int> yDivs
 	)
 {
@@ -77,7 +77,7 @@ bool ArenaData::findAllFish()
 	bool fishFlag = true;
 	// outer contours are counter clockwise
 	vector<vector<Point>> contours;
-	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE); 
+	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
 
 	// record largest contour of each quadratile and its index
 	// with initial values of -1 (not found)
@@ -143,7 +143,7 @@ bool ArenaData::findAllFish()
 
 
 	return fishFlag;
-	
+
 }
 /*
 	Find the head, center, tail and headingAngle of the fish
@@ -154,12 +154,12 @@ void FishData::findPosition()
 	Vec4f lineVec;
 	fitLine(fishContour, lineVec, CV_DIST_L2, 0, 0.01, 0.1);
 	double stepSize = 100;
-	vector<int> endIdx = findPtsLineIntersectContour(fishContour, 
+	vector<int> endIdx = findPtsLineIntersectContour(fishContour,
 		Point2f(lineVec[2] - stepSize * lineVec[0], lineVec[3] - stepSize * lineVec[1]), // on one side, far from the center point
 		Point2f(lineVec[2] + stepSize * lineVec[0], lineVec[3] + stepSize * lineVec[1]));// on the other side, far from the center point
 
 	Moments M = moments(fishContour); // to find the center
-	
+
 	center = Point(M.m10 / M.m00, M.m01 / M.m00);
 	Point EP1 = fishContour[endIdx[0]];
 	Point EP2 = fishContour[endIdx[1]];
@@ -173,11 +173,11 @@ void FishData::findPosition()
 	}
 	Point C2H = head - center; // tail to head, only applied to small fish
 	headingAngle = atan2(C2H.y, C2H.x) * 180 / PI;
-	
+
 }
 
 /*
-	Determine which side is fish's head 
+	Determine which side is fish's head
 	by measuring the area of each half
 */
 bool FishData::findHeadSide(Point2f* M)
@@ -220,7 +220,7 @@ bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 	/* Give fish a shock whenever it stays in CS area too long */
 	int CStimeThre = 10;
 	shockOn = false;
-    if (pIdx == 2) // blackout 
+    if (pIdx == 2) // blackout
 		return false;
 	if (sElapsed < lastTimeUpdatePattern + thinkingTime)
 		return false;
@@ -302,7 +302,7 @@ void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
 	pMOG->apply(opencvImg, subImg);
 }
 
-// TODO: check whether this for loop necessary 
+// TODO: check whether this for loop necessary
 // I think it is necessary, but I can not confirm now
 void ArenaData::annotateFish(vector<int> pIndices) {
 	for (int j = 0; j < numFish; j++)
@@ -314,14 +314,14 @@ void ArenaData::annotateFish(vector<int> pIndices) {
 		int h = j / 2;
 
 		Point txtPos = Point(10 + w * xShift,45 + h * yShift);
-		line(opencvImg, Point(0+w*xShift, allFish[j].yDiv), 
+		line(opencvImg, Point(0+w*xShift, allFish[j].yDiv),
 			Point(X_CUT+ w * xShift, allFish[j].yDiv),
 			Scalar(255, 0, 0), 1, LINE_AA);
-		if (pIdx == 0)	
+		if (pIdx == 0)
 			putText(opencvImg, "CS TOP", txtPos, FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
 		else if (pIdx == 1)
 			putText(opencvImg, "CS BOTTOM", txtPos, FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
-		
+
 
 		if (allFish[j].head.x == -1) // invalid fish analysis data
 			continue;
@@ -342,7 +342,7 @@ vector<ArenaData> initializeAllArenas(vector<vector<int>> yDivs, vector<vector<s
 {
 	vector<ArenaData> allArenas;
 	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
-	
+
 	for (int i = 0; i < fishIDs.size(); i++)
 	{
 		ArenaData arena(binThreList[i], fishIDs[i].size());
@@ -421,7 +421,7 @@ vector<int> findPtsLineIntersectContour(vector<Point>& contour, Point2f A, Point
 		goodIndices[1] = idxList[idxA];
 	}
 
-	
+
 	return goodIndices;
 
 }
@@ -431,4 +431,103 @@ void rot90CW(Mat src, Mat dst)
 	Mat temp;
 	flip(src, temp, 0);
 	transpose(temp, dst);
+}
+
+Point findCenter(vector<Point>& contour){
+	Moments M = moments(contour);
+	Point center = Point(M.m10 / M.m00, M.m01 / M.m00);
+	return center;
+}
+
+/*This function return a radian between axes of head and tail*/
+
+double fishAngleAnalysis(Mat fishImg) {
+	//Find the contour of fish
+	vector<vector<Point>> fishContours;
+	Mat dst, edge, out;
+	GaussianBlur(fishImg, dst, Size(5, 5), 0, 0);
+	Mat element = getStructuringElement(MORPH_RECT, Size(30, 50));
+	Canny(dst, edge, 50, 150);
+	morphologyEx(edge, out, MORPH_CLOSE, element);
+	findContours(out, fishContours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
+
+	//Find the bounding rectangle and midline of contour
+	RotatedRect minFishBoundingBox = minAreaRect(fishContours[0]);
+	Point2f vertices[4];
+	minFishBoundingBox.points(vertices);
+	vector<Point> boundingBox_midpoint(4);
+	if (minFishBoundingBox.size.width >= minFishBoundingBox.size.height) {
+		boundingBox_midpoint[0] = (vertices[0] + vertices[3])*0.5;
+		boundingBox_midpoint[1] = (vertices[1] + vertices[2])*0.5;
+		boundingBox_midpoint[2] = (vertices[0] + vertices[1])*0.5;
+		boundingBox_midpoint[3] = (vertices[2] + vertices[3])*0.5;
+	}
+	else {
+		boundingBox_midpoint[0] = (vertices[0] + vertices[1])*0.5;
+		boundingBox_midpoint[1] = (vertices[2] + vertices[3])*0.5;
+		boundingBox_midpoint[2] = (vertices[0] + vertices[3])*0.5;
+		boundingBox_midpoint[3] = (vertices[1] + vertices[2])*0.5;
+	}
+	//Find the contour of head and tail
+	vector<Point> fishHeadContour, fishTailContour;
+	vector<int> indices = findPtsLineIntersectContour(fishContours[0], boundingBox_midpoint[0], boundingBox_midpoint[1]);
+	vector<vector<Point>> contourHalves(2);
+
+	contourHalves[0].insert(contourHalves[0].end(), fishContours[0].begin() + indices[0], fishContours[0].begin() + indices[1]);
+	contourHalves[1].insert(contourHalves[1].end(), fishContours[0].begin() + indices[1], fishContours[0].end());
+	contourHalves[1].insert(contourHalves[1].end(), fishContours[0].begin(), fishContours[0].begin() + indices[0]);
+
+
+	vector<double> areas(2);
+	areas[0] = contourArea(contourHalves[0]);
+	areas[1] = contourArea(contourHalves[1]);
+	if (areas[0] > areas[1]) {
+		fishHeadContour = contourHalves[0];
+		fishTailContour = contourHalves[1];
+	}
+	else {
+		fishHeadContour = contourHalves[1];
+		fishTailContour = contourHalves[0];
+	}
+	//Find the closest boundingBox_midpoint to tail or head
+	Point fishCenter, fishHeadCenter, fishTailCenter, midpoint_head, midpoint_tail;
+	double distance[2];
+	fishCenter = findCenter(fishContours[0]);
+	fishHeadCenter = findCenter(fishHeadContour);
+	fishTailCenter = findCenter(fishTailContour);
+	distance[0] = norm(boundingBox_midpoint[2]-fishHeadCenter);
+	distance[1] = norm(boundingBox_midpoint[2]-fishTailCenter);
+	if (distance[0] > distance[1]) {
+		midpoint_head = boundingBox_midpoint[3];
+		midpoint_tail = boundingBox_midpoint[2];
+	}
+	else {
+		midpoint_head = boundingBox_midpoint[2];
+		midpoint_tail = boundingBox_midpoint[3];
+	}
+	int fishHead = findClosestPt(fishHeadContour, midpoint_head);
+	int fishTail = findClosestPt(fishTailContour, midpoint_tail);
+
+	/*
+	//Find axis of head by fitEllipse
+	RotatedRect fishHeadBox=fitEllipse(fishHeadContour);
+	Point2f headVertices[4],fishHeadLine;
+	fishHeadBox.points(headVertices);
+	if (fishHeadBox.size.width > fishHeadBox.size.height)
+		fishHeadLine = headVertices[3] - headVertices[0];
+	else
+		fishHeadLine = headVertices[0] - headVertices[1];
+	//Find axis of tail by fitLine
+	Vec4f fishTailLine;
+	fitLine(fishTailContour, fishTailLine, CV_DIST_L2, 0, 0.01, 0.01);
+	*/
+
+	//Calculate the angle
+	Point fishHeadVector, fishTailVector;
+	fishHeadVector = fishCenter - fishHeadContour[fishHead];
+	fishTailVector = fishTailContour[fishTail] - fishCenter;
+	double sinfi,fishAngle;
+	sinfi = (fishHeadVector.x*fishTailVector.y - fishTailVector.x*fishHeadVector.y) / (norm(fishHeadVector)*norm(fishTailVector));
+	fishAngle = asin(sinfi);
+	return fishAngle;
 }
