@@ -29,6 +29,7 @@
 #include "MyLibs/experiment.h"
 #include "MyLibs/talk2screen.h"
 #include "MyLibs/talk2camera.h"
+#include <ctime>
 
 
 // Include standard libraries
@@ -39,6 +40,166 @@ using namespace cv;
 
 int main()
 {
+	/* Get current date and time string from chrono system clock */
+	// Get system time
+	time_t rawtime;
+	struct tm timeinfo;
+	char buffer[80];
+
+	time(&rawtime);
+
+	int errCode = localtime_s(&timeinfo, &rawtime);
+	strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M", &timeinfo);
+	string timeStr = buffer;
+
+
+	int numCameras;
+	cout << "Number of cameras to use? (3, 2, 1)" << endl;
+	cin >> numCameras;
+	cout << endl; // separated with an empty line
+
+	int expMins;
+	cout << "How many minutes to record? (30 mins?)" << endl;
+	cin >> expMins;
+	cout << endl; // separated with an empty line
+
+	int fishAge;
+	cout << "Enter age for all fish. (A number, e.g. 9)" << endl;
+	cout << "(Assume they are at the same age)" << endl;
+	cin >> fishAge;
+	cout << endl; // separated with an empty line
+	
+	string strainName;
+	cout << "Enter the strain name for all fish. (A number, e.g. GCaMP6f)" << endl;
+	cout << "(Assume they are the same strain)" << endl;
+	cin >> strainName;
+
+	string expTask;
+	cout << "Enter task for all fish (e.g. fishScreen)" << endl;
+	cin >> expTask;
+
+	vector<string> fileNames(2);
+	fileNames[0] = timeStr + "_" + "Arena" + to_string(1)
+		+ "_" + strainName + "_"
+		+ to_string(fishAge) + "dpf_"
+		+ expTask;
+	
+	fileNames[1] = timeStr + "_" + "Arena" + to_string(2)
+		+ "_" + strainName + "_"
+		+ to_string(fishAge) + "dpf_"
+		+ expTask;
+
+
+
+	string pathName = "F:/FishExpData/";
+	vector<string> videoNames(2);
+	videoNames[0] = pathName + fileNames[0] + ".avi";
+	videoNames[1] = pathName + fileNames[1] + ".avi";
+
+	CameraData cams;
+
+	int expTime = expMins * 60; // seconds
+	int frameWidth = 800;//800;
+	int frameHeight = 750;//750;
+	int frameRate = 30;
+	cams.initialize(numCameras, frameWidth, frameHeight, frameRate);
+
+	// initialize the output videos
+	vector<VideoWriter> videoVec;
+	for (int i = 0; i < numCameras; i++)
+	{
+		VideoWriter vObj(videoNames[i], CV_FOURCC('D', 'I', 'V', 'X'), frameRate, Size(frameWidth, frameHeight), false);
+		videoVec.push_back(vObj);
+	}
+	
+
+	vector<Mat> imgVec(2);
+	int fIdx = 0; // time index
+	while (fIdx < expTime * frameRate * numCameras)
+	{
+		fIdx++;
+		int timeInSec = fIdx / (frameRate * numCameras);
+		cams.grabPylonImg();
+
+		cout << "Recording... " << timeInSec << " in " << expTime << " s" << endl;
+
+		int cIdx = cams.cIdx;
+
+		/* Convert Pylon image to opencvImg */
+		Mat rawImg = Mat(cams.ptrGrabResult->GetHeight(), cams.ptrGrabResult->GetWidth()
+			, CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
+
+		
+		if (cIdx == 0)
+		{
+			rawImg.copyTo(imgVec[0]);
+			videoVec[0] << imgVec[0];
+		}
+		else if (cIdx == 1)
+		{
+			Mat temp;
+			flip(rawImg, temp, 0);
+			transpose(temp, rawImg);
+			rawImg.copyTo(imgVec[1]);
+			videoVec[1] << imgVec[1];
+		}
+			
+
+
+
+		if (fIdx > 2)
+		{ 
+			/*Display videos*/
+			int size;
+			int i;
+			int m, n;
+			int x, y;
+
+			// w - Maximum number of images in a row
+			// h - Maximum number of images in a column
+			int w, h;
+
+			// scale - How much we have to resize the image
+			float scale;
+			int max;
+
+			w = 2; h = 1;
+			size = 300;
+
+			// Create a new 1 channel image
+			Mat DispImage = Mat::zeros(Size(100 + size * w, 60 + size * h), CV_8UC1);
+			for (i = 0, m = 20, n = 20; i < numCameras; i++, m += (20 + size)) {
+				// Get the Pointer to the IplImage
+				Mat img = imgVec[i];
+				
+				if (img.empty()) {
+					std::cout << "Invalid arguments" << std::endl;
+			
+				}
+				x = img.cols;
+				y = img.rows;
+				// Find whether height or width is greater in order to resize the image
+				max = (x > y) ? x : y;
+				// Find the scaling factor to resize the image
+				scale = (float)((float)max / size);
+				if (i % w == 0 && m != 20) {
+					m = 20;
+					n += 20 + size;
+				}
+				Rect ROI(m, n, (int)(x / scale), (int)(y / scale));
+				Mat temp; 
+				resize(img, temp, Size(ROI.width, ROI.height));
+				temp.copyTo(DispImage(ROI));
+			}
+			// Create a new window, and show the Single Big Image
+			namedWindow("Display", 1);
+			imshow("Display", DispImage);
+			waitKey(1);
+		}
+	}
+
+	
+	
 	/*TODO:
 	1. degrade load_image_to_buffers to a method of AreaData
 	2. put all positions and patterns coordinates into ScreenData
@@ -61,7 +222,7 @@ int main()
 	*/
 
 
-	
+	/* Blue test 
 	string pathName = "F:/FishExpData/";
 	ExperimentData exp(pathName);
 
@@ -75,7 +236,7 @@ int main()
 	}
 
 	exp.runBlueTest();
-	
+	*/
 
 
 

@@ -37,6 +37,7 @@
 using namespace std;
 using namespace cv;
 
+// TODO: make each module can be enabled separately
 bool ExperimentData::initialize()
 {
 	//writeOut.get_CS_strings(CSpatterns);
@@ -49,14 +50,14 @@ bool ExperimentData::initialize()
 	
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
 		return false;
-
+	/*
 	if (!screen.initialize(CSpatterns))
 		return false;
-
-	/* Initialize the serial port */
+	*/
+	/* Initialize the serial port 
 	if (!thePort.initialize(COM_NUM))
 		return false;
-	
+	*/
 	allArenas = initializeAllArenas(yDivs, writeOut.fishIDs, writeOut.fishAge);
 
 	return true;
