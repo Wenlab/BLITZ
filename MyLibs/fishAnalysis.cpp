@@ -433,101 +433,163 @@ void rot90CW(Mat src, Mat dst)
 	transpose(temp, dst);
 }
 
-Point findCenter(vector<Point>& contour){
-	Moments M = moments(contour);
-	Point center = Point(M.m10 / M.m00, M.m01 / M.m00);
-	return center;
+/* Find center of a set of points */
+Point findCenter(vector<Point>& contour) {
+	if (!contourArea(contour))
+		return contour[0];
+	else{
+		Moments M = moments(contour);
+		Point center = Point(M.m10 / M.m00, M.m01 / M.m00);
+		return center;
+	}
 }
 
-/*This function return a radian between axes of head and tail*/
-
-double fishAngleAnalysis(Mat fishImg) {
-	//Find the contour of fish
-	vector<vector<Point>> fishContours;
-	Mat dst, edge, out;
-	GaussianBlur(fishImg, dst, Size(5, 5), 0, 0);
-	Mat element = getStructuringElement(MORPH_RECT, Size(30, 50));
-	Canny(dst, edge, 50, 150);
-	morphologyEx(edge, out, MORPH_CLOSE, element);
-	findContours(out, fishContours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
-
-	//Find the bounding rectangle and midline of contour
-	RotatedRect minFishBoundingBox = minAreaRect(fishContours[0]);
+//This function return two midpoint of a minBoundingBox
+bool findMidpoint(vector<Point>& contour, vector<Point>& midPoint, bool isLong) {
+	RotatedRect minBoundingBox = minAreaRect(contour);
 	Point2f vertices[4];
-	minFishBoundingBox.points(vertices);
-	vector<Point> boundingBox_midpoint(4);
-	if (minFishBoundingBox.size.width >= minFishBoundingBox.size.height) {
-		boundingBox_midpoint[0] = (vertices[0] + vertices[3])*0.5;
-		boundingBox_midpoint[1] = (vertices[1] + vertices[2])*0.5;
-		boundingBox_midpoint[2] = (vertices[0] + vertices[1])*0.5;
-		boundingBox_midpoint[3] = (vertices[2] + vertices[3])*0.5;
+	minBoundingBox.points(vertices);
+	if ((minBoundingBox.size.width >= minBoundingBox.size.height) ^ isLong) {
+		midPoint[0] = (vertices[0] + vertices[1])*0.5;
+		midPoint[1] = (vertices[2] + vertices[3])*0.5;
 	}
 	else {
-		boundingBox_midpoint[0] = (vertices[0] + vertices[1])*0.5;
-		boundingBox_midpoint[1] = (vertices[2] + vertices[3])*0.5;
-		boundingBox_midpoint[2] = (vertices[0] + vertices[3])*0.5;
-		boundingBox_midpoint[3] = (vertices[1] + vertices[2])*0.5;
+		midPoint[0] = (vertices[0] + vertices[3])*0.5;
+		midPoint[1] = (vertices[1] + vertices[2])*0.5;
 	}
-	//Find the contour of head and tail
-	vector<Point> fishHeadContour, fishTailContour;
-	vector<int> indices = findPtsLineIntersectContour(fishContours[0], boundingBox_midpoint[0], boundingBox_midpoint[1]);
-	vector<vector<Point>> contourHalves(2);
+	return true;
+}
 
-	contourHalves[0].insert(contourHalves[0].end(), fishContours[0].begin() + indices[0], fishContours[0].begin() + indices[1]);
-	contourHalves[1].insert(contourHalves[1].end(), fishContours[0].begin() + indices[1], fishContours[0].end());
-	contourHalves[1].insert(contourHalves[1].end(), fishContours[0].begin(), fishContours[0].begin() + indices[0]);
+/* Find head and center of fish */
+bool findCenterAndHead(Mat fishImg, vector<Point>& fishHeadPoint, vector<Point>& fishCenterPoint) {
+	if (fishHeadPoint.size() < 50) {
+		//Find the contour of fish
+		Mat binaryzation;
+		vector<vector<Point>> allContours, fishContours;
+		threshold(fishImg, binaryzation, 10, 255, CV_THRESH_BINARY);
+		findContours(binaryzation, allContours, CV_RETR_LIST, CHAIN_APPROX_NONE);
+
+		for (int i = 0; i < allContours.size(); i++) {
+			if (contourArea(allContours[i]) < 700 && contourArea(allContours[i]) > 500)
+				fishContours.push_back(allContours[i]);
+		}
+		if (fishContours.size() != 1) {
+			cout << "Can't find contour of fish!Area of all contours:";
+			for (int i = 0; i < allContours.size(); i++) {
+				cout << contourArea(allContours[i]) << ',';
+			}
+			cout << endl;
+			return false;
+		}
+
+		//Find the center of fish
+		Point fishCenter = findCenter(fishContours[0]);
+		fishCenterPoint.push_back(fishCenter);
+
+		//Find the head of fish
+		vector<Point> boundingBox_midpoint(2);
+		findMidpoint(fishContours[0], boundingBox_midpoint, true);
+		vector<Point> fishHeadContour;
+		vector<int> indices = findPtsLineIntersectContour(fishContours[0], boundingBox_midpoint[0], boundingBox_midpoint[1]);
+		vector<vector<Point>> contourHalves(2);
+
+		contourHalves[0].insert(contourHalves[0].end(), fishContours[0].begin() + indices[0], fishContours[0].begin() + indices[1]);
+		contourHalves[1].insert(contourHalves[1].end(), fishContours[0].begin() + indices[1], fishContours[0].end());
+		contourHalves[1].insert(contourHalves[1].end(), fishContours[0].begin(), fishContours[0].begin() + indices[0]);
+
+		vector<double> areas(2);
+		if (contourHalves[0].size()*contourHalves[1].size() == 0) {
+			cout << "Can't find the headcontour!" << endl;
+			return false;
+		}
+
+		areas[0] = contourArea(contourHalves[0]);
+		areas[1] = contourArea(contourHalves[1]);
+		if (areas[0] > areas[1]) {
+			fishHeadContour = contourHalves[0];
+		}
+		else {
+			fishHeadContour = contourHalves[1];
+		}
 
 
-	vector<double> areas(2);
-	areas[0] = contourArea(contourHalves[0]);
-	areas[1] = contourArea(contourHalves[1]);
-	if (areas[0] > areas[1]) {
-		fishHeadContour = contourHalves[0];
-		fishTailContour = contourHalves[1];
+		Point fishHead;
+		vector<Point> headBoundingBox_midpoint(2);
+		findMidpoint(fishHeadContour, headBoundingBox_midpoint, false);
+		if (norm(fishCenter - headBoundingBox_midpoint[0]) < norm(fishCenter - headBoundingBox_midpoint[1]))
+			fishHeadPoint.push_back(headBoundingBox_midpoint[1]);
+		else
+			fishHeadPoint.push_back(headBoundingBox_midpoint[0]);
+		return false;
 	}
 	else {
-		fishHeadContour = contourHalves[1];
-		fishTailContour = contourHalves[0];
-	}
-	//Find the closest boundingBox_midpoint to tail or head
-	Point fishCenter, fishHeadCenter, fishTailCenter, midpoint_head, midpoint_tail;
-	double distance[2];
-	fishCenter = findCenter(fishContours[0]);
-	fishHeadCenter = findCenter(fishHeadContour);
-	fishTailCenter = findCenter(fishTailContour);
-	distance[0] = norm(boundingBox_midpoint[2]-fishHeadCenter);
-	distance[1] = norm(boundingBox_midpoint[2]-fishTailCenter);
-	if (distance[0] > distance[1]) {
-		midpoint_head = boundingBox_midpoint[3];
-		midpoint_tail = boundingBox_midpoint[2];
-	}
-	else {
-		midpoint_head = boundingBox_midpoint[2];
-		midpoint_tail = boundingBox_midpoint[3];
-	}
-	int fishHead = findClosestPt(fishHeadContour, midpoint_head);
-	int fishTail = findClosestPt(fishTailContour, midpoint_tail);
 
-	/*
-	//Find axis of head by fitEllipse
-	RotatedRect fishHeadBox=fitEllipse(fishHeadContour);
-	Point2f headVertices[4],fishHeadLine;
-	fishHeadBox.points(headVertices);
-	if (fishHeadBox.size.width > fishHeadBox.size.height)
-		fishHeadLine = headVertices[3] - headVertices[0];
-	else
-		fishHeadLine = headVertices[0] - headVertices[1];
-	//Find axis of tail by fitLine
-	Vec4f fishTailLine;
-	fitLine(fishTailContour, fishTailLine, CV_DIST_L2, 0, 0.01, 0.01);
-	*/
+
+		vector<Point> fishCenterPoint_reserve, fishHeadPoint_reserve;
+		Point fishCenter_mean = findCenter(fishCenterPoint), fishHead_mean = findCenter(fishHeadPoint);
+
+		for (int i = 0; i < 50; i++) {
+			if (norm(fishCenterPoint[i] - fishCenter_mean) < 6)
+				fishCenterPoint_reserve.push_back(fishCenterPoint[i]);
+			if (norm(fishHeadPoint[i] - fishHead_mean) < 6)
+				fishHeadPoint_reserve.push_back(fishHeadPoint[i]);
+		}
+		if (fishCenterPoint_reserve.size() < 30) {
+			cout << "Can't find the Center!Reserve point:" << fishCenterPoint_reserve.size() << endl;
+
+		}
+		if (fishHeadPoint_reserve.size() < 30) {
+			cout << "Can't find the head!Reserve point:" << fishHeadPoint_reserve.size() << endl;
+
+		}
+		fishCenterPoint[0] = findCenter(fishCenterPoint_reserve);
+		fishHeadPoint[0] = findCenter(fishHeadPoint_reserve);
+		cout << "Center and Head have been found." << endl;
+		return true;
+	}
+}
+
+/* This function return a radian to describe the fishtailing motion */
+bool fishAngleAnalysis(Mat fishImg, Point fishHead, Point fishCenter, Point* fishTail_return,double *fishAngle) {
+	//Find the contour of fish
+	Mat binaryzation, closeImg;
+	vector<vector<Point>> allContours, fishContours;
+	threshold(fishImg, binaryzation, 10, 255, CV_THRESH_BINARY);
+	findContours(binaryzation, allContours, CV_RETR_LIST, CHAIN_APPROX_NONE);
+	for (int i = 0; i < allContours.size(); i++) {
+		if (contourArea(allContours[i]) < 700 && contourArea(allContours[i]) > 500)
+			fishContours.push_back(allContours[i]);
+	}
+	if (fishContours.size() != 1) {
+		cout << "Can't find contour of fish!Area of all contours:";
+		for (int i = 0; i < allContours.size(); i++) {
+			cout << contourArea(allContours[i]) << ',';
+		}
+		cout << endl;
+		return false;
+	}
+
+	//Find the tail of fish
+	RotatedRect minBoundingBox = minAreaRect(fishContours[0]);
+	Point2f vertices[4], fishHead_Pt2f = fishHead, tailPt_a, tailPt_b;
+	vector<double> distance_head(4);
+	minBoundingBox.points(vertices);
+	for (int i = 0; i < 4; i++) {
+		distance_head[i] = norm(vertices[i] - fishHead_Pt2f);
+	}
+	tailPt_a = vertices[distance(begin(distance_head), max_element(begin(distance_head), end(distance_head)))];
+	*max_element(begin(distance_head), end(distance_head)) = 0;
+	tailPt_b = vertices[distance(begin(distance_head), max_element(begin(distance_head), end(distance_head)))];
+	vector<int> fishTail = findPtsLineIntersectContour(fishContours[0], tailPt_a, tailPt_b);
 
 	//Calculate the angle
 	Point fishHeadVector, fishTailVector;
-	fishHeadVector = fishCenter - fishHeadContour[fishHead];
-	fishTailVector = fishTailContour[fishTail] - fishCenter;
-	double sinfi,fishAngle;
+	fishHeadVector = fishCenter - fishHead;
+	fishTailVector = fishContours[0][fishTail[0]] - fishCenter;
+	double sinfi;
 	sinfi = (fishHeadVector.x*fishTailVector.y - fishTailVector.x*fishHeadVector.y) / (norm(fishHeadVector)*norm(fishTailVector));
-	fishAngle = asin(sinfi);
-	return fishAngle;
+	*fishAngle = asin(sinfi);
+	*fishTail_return = fishContours[0][fishTail[0]];
+
+	return true;
 }

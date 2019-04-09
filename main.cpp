@@ -30,6 +30,13 @@
 #include "MyLibs/talk2screen.h"
 #include "MyLibs/talk2camera.h"
 
+//Just for test
+#include<opencv2/opencv.hpp>
+#include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
+#include<algorithm>
+#include<time.h>
+
 
 // Include standard libraries
 #include <iostream>
@@ -59,9 +66,44 @@ int main()
 	imshow("Display", I);
 	waitKey(0);
 	*/
+	//Just for test
+	VideoCapture capture("F:\\FishData\\test5.avi");
+	Point testHead, testCenter, testTail;
+	clock_t start, finish;
+	namedWindow("output", CV_WINDOW_NORMAL);
+	vector<Point> fishHeadPoint, fishCenterPoint;
+	while (1) {
+		Mat curImg,grey;
+		capture >> curImg;
+		cvtColor(curImg, grey, CV_BGR2GRAY);
+		if (findCenterAndHead(grey, fishHeadPoint, fishCenterPoint))
+			break;
+
+		if (curImg.empty())
+			break;
+	}
+	for (int i = 0; i < 10000; i++) {
+		start = clock();
+		Mat curImg, grey;
+		Point fishTail=Point(-1,-1);
+		double fishAngle = -4;
+		capture >> curImg;
+		cvtColor(curImg, grey, CV_BGR2GRAY);
+		if (!fishAngleAnalysis(grey, fishHeadPoint[0], fishCenterPoint[0], &fishTail, &fishAngle))
+			cout << "AngleAnalysis error!" << endl;
+
+		cout <<"fishAngle:"<< fishAngle << endl;
+		circle(curImg, fishTail, 1, Scalar(255, 0, 0), -1);
+		circle(curImg, fishHeadPoint[0], 1, Scalar(255, 0, 0), -1);
+		circle(curImg, fishCenterPoint[0], 1, Scalar(255, 0, 0), -1);
+		imshow("output", curImg);
+		finish = clock();
+		cout << (double)(finish - start) / CLOCKS_PER_SEC << "s is spent on picture processing." << endl;
+		waitKey();
+	}
 
 
-	
+	/*
 	string pathName = "F:/FishExpData/";
 	ExperimentData exp(pathName);
 
@@ -75,15 +117,15 @@ int main()
 	}
 	exp.runOLexp();
 
-
-	
-
+*/
 
 
 
 
 
-	/* The block for the real experiment 
+
+
+	/* The block for the real experiment
 	string pathName = "F:/FishExpData/";
 	vector<string> CS_Patterns;
 	CS_Patterns.push_back("redBlackCheckerboard");
@@ -105,7 +147,7 @@ int main()
 	*/
 
 
-	/* 
+	/*
 	string CS_Pattern = "RGB96";
 	ExperimentData exp(CS_Pattern);
 

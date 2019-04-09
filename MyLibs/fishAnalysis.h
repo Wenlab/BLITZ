@@ -82,7 +82,7 @@ public:
 	int yDiv; // the division pos between CS and NCS pattern
 
 	int lastBlackoutStart;
-	
+
 	int lastTimeUpdatePattern;
 	int lastTimeInCS;
 	int lastShockTime;
@@ -109,7 +109,7 @@ public:
 	}
 
 	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
-	
+
 	/* find all fish contours in the arena at the same time
 	by finding the largest #fish contours in all contours.
 	Involved parameters:
@@ -125,13 +125,13 @@ public:
 	|		|		|
 	*/
 	bool findAllFish();
-	
+
 	void prepareBgImg(int width, int height, int cIdx, uint8_t* buffer);
 
 	void annotateFish(std::vector<int> pIdx);
-	
+
 	void resetShocksOn();
-								   
+
 	// properties
 	const int numFish;
 	int binThre; // in the future, this might be adjusted in the GUI
@@ -151,6 +151,14 @@ void rot90CW(cv::Mat src, cv::Mat dst);
 double getPt2LineDistance(cv::Point2f P, cv::Point2f A, cv::Point2f B);
 /* Find 2 intersection points of a line (AB) and contour */
 std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv::Point2f A, cv::Point2f B);
+/* Find center of a set of points */
+cv::Point findCenter(std::vector<cv::Point>& contour);
+/* This function return two midpoint of a minBoundingBox */
+bool findMidpoint(std::vector<cv::Point>& contour, std::vector<cv::Point>& midPoint, bool isLong);
+/* Find head and center of fish */
+bool findCenterAndHead(cv::Mat fishImg, std::vector<cv::Point>& fishHeadPoint, std::vector<cv::Point>& fishCenterPoint);
+/* This function return a  radian to describe the fishtailing motion */
+bool fishAngleAnalysis(cv::Mat fishImg, cv::Point fishHead, cv::Point fishCenter, cv::Point* fishTail_return, double *fishAngle);
 
 
 #endif // !_GUARD_FISHANALYSIS_H
