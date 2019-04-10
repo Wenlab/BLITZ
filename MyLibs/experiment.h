@@ -12,7 +12,7 @@
 * (at your option) any later version.
 *
 * Filename: experiment.h
-* Abstract: this file contains all classes and function declarations 
+* Abstract: this file contains all classes and function declarations
 *		used in constructing final behavioral learning experiment in zebrafish
 * Current Version: 2.0
 * Author: Wenbin Yang <bysin7@gmail.com>
@@ -48,7 +48,7 @@ private:
 	;// nothing for now
 public:
 	// methods
-	ExperimentData(std::string pName) 
+	ExperimentData(std::string pName)
 		:pathName(pName)
 	{
 		numCameras = 0;
@@ -68,36 +68,39 @@ public:
 	}
 	/* Initialize the experiment */
 	bool initialize();
-	
+
 	/* Prepare background image for MOG subtractor */
 	void prepareBgImg(const int prepareTime);
-	
+
 	/* Run unpaired training in the operant learning procedure */
 	void runUnpairedOLexp();
-	
+
 	/* Run the entire operant learning procedure */
 	void runOLexp();
 
 	/* Run the experiment to do whether fish invisible to the blue pattern */
 	void runBlueTest();
-	
+
 	/* Give the fish a electric pulse */
 	void giveFishShock(int fishIdx);
-	
+
 	/* Experiment during the training period */
 	void trainFish(int cIdx);
-	
+
 	/* Write out info of a frame to disk */
 	void writeOutFrame();
-	
+
 	/* Decorate images with fish's heads, tails and visual pattern's info */
 	void annotateFishImgs();
-	
+
 	/* Present fish images with annotations. The code is adapted from code in stackfow*/
 	void displayFishImgs(std::string title);
-	
+
 	/* Get current time */
 	bool getTime();
+
+  /* Test function for fishAngleAnalysis.Select "output" window and press any key to get next frame*/
+	bool fishAngleAnalysis_test(std::String fishVideoAddress, bool isGrey);
 
     /* Get CSpatterns from the basenames */
 	std::vector<std::string> get_CS_patterns(std::vector<std::string> CS_strs);
@@ -116,7 +119,7 @@ public:
 	/* Inter-trial Interval */
 	int ITI;
 	std::vector<std::vector<int>> yDivs;
-	
+
 
 
 	Timer expTimer;

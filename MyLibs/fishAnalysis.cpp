@@ -465,12 +465,13 @@ bool findCenterAndHead(Mat fishImg, vector<Point>& fishHeadPoint, vector<Point>&
 	if (fishHeadPoint.size() < 50) {
 		//Find the contour of fish
 		Mat binaryzation;
+		double threshold_val = 10, max_val = 255,maxFishArea=700,minFishArea=500;
 		vector<vector<Point>> allContours, fishContours;
-		threshold(fishImg, binaryzation, 10, 255, CV_THRESH_BINARY);
+		threshold(fishImg, binaryzation, threshold_val, max_val, CV_THRESH_BINARY);
 		findContours(binaryzation, allContours, CV_RETR_LIST, CHAIN_APPROX_NONE);
 
 		for (int i = 0; i < allContours.size(); i++) {
-			if (contourArea(allContours[i]) < 700 && contourArea(allContours[i]) > 500)
+			if (contourArea(allContours[i]) < maxFishArea && contourArea(allContours[i]) > minFishArea)
 				fishContours.push_back(allContours[i]);
 		}
 		if (fishContours.size() != 1) {
@@ -552,12 +553,13 @@ bool findCenterAndHead(Mat fishImg, vector<Point>& fishHeadPoint, vector<Point>&
 /* This function return a radian to describe the fishtailing motion */
 bool fishAngleAnalysis(Mat fishImg, Point fishHead, Point fishCenter, Point* fishTail_return,double *fishAngle) {
 	//Find the contour of fish
-	Mat binaryzation, closeImg;
+	Mat binaryzation;
+	double threshold_val = 10, max_val = 255,maxFishArea=700,minFishArea=500;
 	vector<vector<Point>> allContours, fishContours;
-	threshold(fishImg, binaryzation, 10, 255, CV_THRESH_BINARY);
+	threshold(fishImg, binaryzation, threshold_val, max_val, CV_THRESH_BINARY);
 	findContours(binaryzation, allContours, CV_RETR_LIST, CHAIN_APPROX_NONE);
 	for (int i = 0; i < allContours.size(); i++) {
-		if (contourArea(allContours[i]) < 700 && contourArea(allContours[i]) > 500)
+		if (contourArea(allContours[i]) < maxFishArea && contourArea(allContours[i]) > minFishArea)
 			fishContours.push_back(allContours[i]);
 	}
 	if (fishContours.size() != 1) {

@@ -40,13 +40,13 @@ using namespace cv;
 bool ExperimentData::initialize()
 {
 	//writeOut.get_CS_strings(CSpatterns);
-	numCameras = writeOut.enquireInfoFromUser();	
+	numCameras = writeOut.enquireInfoFromUser();
 	CSpatterns = get_CS_patterns(writeOut.CSstrs);
 	/* Create yaml and video files to write in */
 	if (!writeOut.initialize(pathName, WIDTH, HEIGHT, FRAMERATE,
 		X_CUT, Y_CUT, yDivs))
 		return false;
-	
+
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
 		return false;
 
@@ -56,7 +56,7 @@ bool ExperimentData::initialize()
 	/* Initialize the serial port */
 	if (!thePort.initialize(COM_NUM))
 		return false;
-	
+
 	allArenas = initializeAllArenas(yDivs, writeOut.fishIDs, writeOut.fishAge);
 
 	return true;
@@ -82,7 +82,7 @@ void ExperimentData::prepareBgImg(const int prepareTime)
 
 		screen.renderTexture();
 	}
-	
+
 }
 
 void ExperimentData::runUnpairedOLexp()
@@ -105,7 +105,7 @@ void ExperimentData::runUnpairedOLexp()
 	mt19937 g(rnd_device());
 	shuffle(vec.begin(), vec.end(), g);
 	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
-	
+
 
 	prepareBgImg(prepareTime);
 	expTimer.start(); // reset timer to 0
@@ -234,14 +234,14 @@ void ExperimentData::runOLexp()
 
 	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)// giant grabbing loop
 	{
-		
+
 		cams.grabPylonImg();
 
 		int cIdx = cams.cIdx;
 		allArenas[cIdx].prepareBgImg(
-			cams.ptrGrabResult->GetWidth(), 
+			cams.ptrGrabResult->GetWidth(),
 			cams.ptrGrabResult->GetHeight(),
-			cIdx, 
+			cIdx,
 			(uint8_t*)cams.pylonImg.GetBuffer());
 
 		getTime();
@@ -294,7 +294,7 @@ void ExperimentData::trainFish(int cIdx) {
 		if (allArenas[cIdx].allFish[i].ifGiveShock(pIdx, sElapsed)) {
 			giveFishShock(i);
 		}
-		screen.allAreas[cIdx].allPatches[i].pIdx 
+		screen.allAreas[cIdx].allPatches[i].pIdx
 			= allArenas[cIdx].allFish[i].updatePatternInTraining(sElapsed,pIdx,ITI);
 		screen.allAreas[cIdx].allPatches[i].updatePattern();
 	}
@@ -418,7 +418,7 @@ bool ExperimentData::getTime() {
 }
 
 vector<string> ExperimentData::get_CS_patterns(vector<string> CS_strs) {
-	vector<string> CSpatterns_string; 
+	vector<string> CSpatterns_string;
 	string imgFolderPath = "Images/";
 	for (int i = 0; i < CS_strs.size(); i++)
 	{
@@ -427,4 +427,56 @@ vector<string> ExperimentData::get_CS_patterns(vector<string> CS_strs) {
 		CSpatterns_string[i] = imgFolderPath + CSpatterns_string[i] + ".jpg";
 	}
 	return CSpatterns_string;
+}
+
+bool fishAngleAnalysis_test(String fishVideoAddress, bool isGrey) {
+	VideoCapture capture(fishVideoAddress);
+	Point testHead, testCenter, testTail;
+	clock_t start, finish;
+	namedWindow("output", CV_WINDOW_NORMAL);
+	vector<Point> fishHeadPoint, fishCenterPoint;
+	while (1) {
+		Mat curImg, grey;
+		capture >> curImg;
+		if (!isGrey) {
+			cvtColor(curImg, grey, CV_BGR2GRAY);
+			if (findCenterAndHead(grey, fishHeadPoint, fishCenterPoint))
+				break;
+		}
+		else
+			if (findCenterAndHead(curImg, fishHeadPoint, fishCenterPoint))
+				break;
+		if (curImg.empty())
+			break;
+	}
+	for (int i = 0; i < 10000; i++) {
+		start = clock();
+		Mat curImg, grey;
+		Point fishTail = Point(-1, -1);
+		double fishAngle = -4;
+		capture >> curImg;
+		if (!isGrey) {
+			cvtColor(curImg, grey, CV_BGR2GRAY);
+			if (!fishAngleAnalysis(grey, fishHeadPoint[0], fishCenterPoint[0], &fishTail, &fishAngle)) {
+				cout << "AngleAnalysis error!" << endl;
+				return false;
+			}
+		}
+		else {
+			if (!fishAngleAnalysis(grey, fishHeadPoint[0], fishCenterPoint[0], &fishTail, &fishAngle)) {
+				cout << "AngleAnalysis error!" << endl;
+				return false;
+			}
+		}
+
+		cout << "fishAngle:" << fishAngle << endl;
+		circle(curImg, fishTail, 1, Scalar(255, 0, 0), -1);
+		circle(curImg, fishHeadPoint[0], 1, Scalar(255, 0, 0), -1);
+		circle(curImg, fishCenterPoint[0], 1, Scalar(255, 0, 0), -1);
+		imshow("output", curImg);
+		finish = clock();
+		cout << (double)(finish - start) / CLOCKS_PER_SEC << "s is spent on picture processing." << endl;
+		waitKey();
+	}
+	return true;
 }
