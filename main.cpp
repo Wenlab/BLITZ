@@ -91,7 +91,7 @@ int main()
 
 
 
-	string pathName = "F:/FishExpData/";
+	string pathName = "F:/cym/PreyCaptureScreen/";
 	vector<string> videoNames(2);
 	videoNames[0] = pathName + fileNames[0] + ".avi";
 	videoNames[1] = pathName + fileNames[1] + ".avi";
@@ -99,8 +99,8 @@ int main()
 	CameraData cams;
 
 	int expTime = expMins * 60; // seconds
-	int frameWidth = 800;//800;
-	int frameHeight = 750;//750;
+	int frameWidth = 1088;//800;
+	int frameHeight = 1088;//750;
 	int frameRate = 30;
 	cams.initialize(numCameras, frameWidth, frameHeight, frameRate);
 
@@ -128,7 +128,6 @@ int main()
 		/* Convert Pylon image to opencvImg */
 		Mat rawImg = Mat(cams.ptrGrabResult->GetHeight(), cams.ptrGrabResult->GetWidth()
 			, CV_8UC1, (uint8_t*)cams.pylonImg.GetBuffer());
-
 		
 		if (cIdx == 0)
 		{
@@ -136,11 +135,11 @@ int main()
 			videoVec[0] << imgVec[0];
 		}
 		else if (cIdx == 1)
-		{
-			Mat temp;
+		{	
+			Mat temp, dst;
 			flip(rawImg, temp, 0);
-			transpose(temp, rawImg);
-			rawImg.copyTo(imgVec[1]);
+			transpose(temp, dst);
+			dst.copyTo(imgVec[1]);
 			videoVec[1] << imgVec[1];
 		}
 			
