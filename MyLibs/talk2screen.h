@@ -38,9 +38,7 @@
 // Include OpenGL libraries
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+
 
 // Include standard libraries
 #include <vector>
@@ -61,6 +59,7 @@ private:
 public:
 	// methods
 	PatchData(std::vector<float> patchRect,
+			  const int patchYdivide,
 			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
 			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader1.fs")
 			: shader(vertexPath, fragmentPath)
@@ -78,6 +77,8 @@ public:
 		shader.setFloat("xDis", xDis);
 		shader.setFloat("yDis", yDis);
 		shader.setFloat("theta", theta);
+		shader.setInt("centerX", rect[0] + rect[2] / 2);
+		shader.setInt("centerY", rect[1] + rect[3] / 2);
 	}
 	
 	bool initialize();
@@ -115,7 +116,7 @@ public:
 	{
 		
 	}
-	bool initialize(std::string imgName);
+	bool initialize(std::vector<int> yDivideVec, std::string imgName);
 	bool loadTextureIntoBuffers(std::string imgName);
 	void reverseAllPatches();
 	void renderTexture(int areaIdx);
@@ -139,7 +140,8 @@ public:
 		
 	}
 	/* Initilize screen environment and coordinates */
-	bool initialize(std::string filename);
+	bool initialize(std::vector<std::string> filenames, 
+		std::vector<int> patchesOfAreas = { 4,4,4 });
 	/* GLFW initialize and configure window */
 	bool init_glfw_window();
 	/* glad: load all OpenGL function pointers */

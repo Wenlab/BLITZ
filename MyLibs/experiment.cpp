@@ -51,7 +51,7 @@ bool ExperimentData::initialize()
 	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
 		return false;
 
-	if (!screen.initialize(CSpatterns[0]))
+	if (!screen.initialize(CSpatterns))
 		return false;
 
 

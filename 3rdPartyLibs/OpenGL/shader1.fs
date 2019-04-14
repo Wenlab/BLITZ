@@ -10,6 +10,12 @@ uniform sampler2D texture0;
 uniform int patternIdx;
 //uniform int yDivide;
 
+//patch center
+uniform float centerX;
+uniform float centerY;
+
+// TODO: can the above be passed in one variable?
+
 //rotation angle
 uniform float theta;
 //x-distance & y-distance
@@ -18,40 +24,21 @@ uniform float yDis;
 
 void main()
 {
-	vec4 texColor =  texture(texture0,TexCoord);
-	vec4 black = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	vec4 white = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	vec4 gray = vec4(0.5f, 0.5f, 0.5f, 1.0f);
-	vec4 blue = vec4(0.0f, 0.0f, 1.0f, 1.0f);
-	vec4 topColor, bottomColor;
-	vec2 v = gl_FragCoord.xy;
-	v.x = gl_FragCoord.x *  cos(theta) + gl_FragCoord.y * sin(theta);
-	v.y = gl_FragCoord.x * -sin(theta) + gl_FragCoord.y * cos(theta);
-	v.x += xDis;
-	v.y += yDis;
+	
+	
+	//v.x = centerX + (TexCoord.x - centerX) * cos(theta) + centerY + (TexCoord.y - centerY) * sin(theta);
+	//v.y = centerX + (TexCoord.x - centerX) * -sin(theta) + centerY + (TexCoord.y - centerY) * cos(theta);
+
+	vec2 v = TexCoord.xy;
+	v.x = TexCoord.x *  cos(theta) + TexCoord.y * sin(theta);
+	v.y = TexCoord.x * -sin(theta) + TexCoord.y * cos(theta);
+
+	//gl_FragCoord.xy = v;
+	vec4 texColor =  texture(texture0, v);
 
 
-	if (patternIdx == 0) // texture on the top
-	{
-		topColor = texColor;
-		bottomColor = gray;//gray;
-	}else if(patternIdx == 1)
-	{
-		topColor = gray;
-		bottomColor = texColor;
-	}else if(patternIdx == 2)
-	{
-		topColor = black;
-		bottomColor = black;
-	}	
 
-
-	FragColor = bottomColor;
-	if (mod(v.x , 300.0) < 150.0) {
-        if (mod( v.y, 300.0) > 150.0)
-            FragColor = topColor;
-    } else {
-        if (mod( v.y, 300.0) < 150.0)
-            FragColor = topColor;
-    }
+	FragColor = texColor;
+	
+	
 }

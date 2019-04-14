@@ -88,14 +88,40 @@ void PatchData::updatePattern()
 	shader.setFloat("theta", theta);
 }
 
-bool AreaData::initialize(string imgName)
+bool AreaData::initialize(vector<int> yDivideVec, string imgName)
 {
 	for (int i = 0; i < numPatches; i++)
 	{
 		vector<float> patchRect = rect;
-		PatchData patch(patchRect);
-		patch.initialize();
-		allPatches.push_back(patch);
+		switch (i) {
+			case 0:
+				break;// do nothing	
+			case 1:
+			{
+				patchRect[0] -= patchRect[2] / 2; // minus half area width	
+				break;
+			}
+			case 2:
+			{
+				patchRect[1] += patchRect[3] / 2;
+				break;
+			}
+			case 3:
+			{
+				patchRect[0] -= patchRect[2] / 2;
+				patchRect[1] += patchRect[3] / 2;
+				break;
+			}
+			
+		}
+
+			patchRect[2] /= 2; // the width of patch is half of area width	
+			patchRect[3] /= 2; // the height of patch is half of area width	
+			PatchData patch(patchRect, yDivideVec[i]);
+			patch.initialize();
+			allPatches.push_back(patch);
+		
+		
 	}
 	loadTextureIntoBuffers(imgName);
 	return true;
@@ -222,14 +248,25 @@ void ScreenData::updatePatternInBlackout() {
 }
 
 bool ScreenData::initialize(
-	std::string imgName // image file names
+	std::vector<string> imgNames, // image file names
+	vector<int> patchesOfAreas
 	)
 {
-	const vector<float> allAreaPos =
+	const vector<vector<float>> allAreaPos =
 	{
-		{ 0.7f, -0.7f, 1.4f, 1.4f }
+		{ 0.068f, 0.300f, 0.258f, 0.668f },
+		{ 0.840f, -0.810f, 0.258f, 0.73f },
+		{ -0.668f, -0.810f, 0.258f, 0.73f }
 	};
 
+	//y dividing positions for all patches	
+	vector<vector<int>> yPatternDivs =
+	{
+		{ 818, 818, 942, 942 },
+		{ 247, 247, 365, 365 },
+		{ 238, 238, 358, 358 }
+	};
+	
 	cout << "Initializing the projector screen .. " << endl;
 	/* GLFW initialize and configure */
 	if (!init_glfw_window())
@@ -240,11 +277,15 @@ bool ScreenData::initialize(
 		return false;
 
 	// Initialize all areas
-	numAreas = 1;
+	numAreas = imgNames.size();
 	allAreas.reserve(numAreas);
-	AreaData area(allAreaPos,1);
-	area.initialize(imgName);
-	allAreas.push_back(area);
+	for (int i = 0; i < numAreas; i++)
+	{
+		AreaData area(allAreaPos[i], patchesOfAreas[i]);
+		area.initialize(yPatternDivs[i], imgNames[i]);
+		allAreas.push_back(area);
+	}
+
 	cout << "Screen initialization succeeded." << endl << endl;
 	return true;
 }
@@ -306,7 +347,15 @@ void ScreenData::renderTexture()
 
 void ScreenData::getTheta(float theta) 
 {
-	allAreas[0].allPatches[0].theta = theta;
+	for (int i = 0; i < allAreas.size(); i++)
+	{
+		AreaData area = allAreas[i];
+		for (int j = 0; j < area.numPatches; j++)
+		{
+			allAreas[i].allPatches[j].theta = theta;
+		}
+	}
+	
 }
 
 void ScreenData::getXDis(float xDis)
