@@ -45,48 +45,51 @@
 #include <iostream>
 
 
-class WriteOutData
+class FileWriter
 {
 private:
 	;// nothing for now
 public:
 	// methods
-	WriteOutData()
+	FileWriter()
 	{
 
 	}
+	// methods
+
+	/* initialize yaml- and video- writers */
 	bool initialize(std::string pathName, int width, int height, int frameRate, int x_cut, int y_cut, std::vector<std::vector<int>> yDivs);
-	
+
 	/* Ask the user about the experiment infos */
 	int enquireInfoFromUser();
-	
+
 	/* Get experiment start local time */
-	void get_current_date_time();
-	
+	void get_current_date_time(); // TODO: consider to move this method
+
 	/* Ask the number of cameras to use. */
 	void enquireNumCams();
-	
+
 	/* Ask for what strain of Fish is using */
 	void enquireStrainNames();
 
 	/* Ask for the age for all fish */
 	void enquireFishAge();
-	
+
 	/* Ask for what experiment task for poor fish */
 	void enquireExpTask();
-	
+
 	/* Ask for fish IDs for all arenas */
 	void enquireFishIDs();
-	
+
 	/* Ask for fish IDs in the arena */
 	std::vector<std::string> enquireFishIDs(int arenaIdx);
-	
-	/* Get strain names of fish in all arenas */
-	void get_strainNames();
 
-	/* Get strain name of fish in the arena 
+	/* Get strain names of fish in all arenas */
+	void getStrainNames();
+
+	/* Get strain name of fish in the arena
 	   fishIDs are IDs of fish in one arena */
-	std::string get_strainName(std::vector<std::string> fishIDs);
+	std::string getStrainName(std::vector<std::string> fishIDs);
 
 	/* Get basenames for all output files */
 	void getBasenames();
@@ -128,7 +131,7 @@ public:
 	{
 		yamlVec[idxFile] << "{:" << vName << var << "}";
 	};
-	
+
 	// properties
 	std::vector<cv::FileStorage> yamlVec;
 	std::vector<cv::VideoWriter> videoVec;
@@ -158,10 +161,9 @@ std::string extractPatternName(const char*);
 /* convert string vector to int-vector like formatted output */
 std::string strVec2str(std::vector<std::string> strVec);
 
-/* Case insensitive comparasion 
+/* Case insensitive comparasion
 Adapted from Timmmm, https://stackoverflow.com/a/4119881
 */
 bool iequals(const std::string& a, const std::string& b);
 
 #endif // !_GUARD_WRITEOUTFISH_H
-

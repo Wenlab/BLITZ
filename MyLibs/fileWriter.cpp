@@ -26,15 +26,15 @@
 */
 
 // Include user-defined libraries
-#include "writeOutFish.h"
+#include "fileWriter.h"
 #include <ctime> // to get the current date and time
 #include <algorithm>  // include the algorithm reverse
 
 
 using namespace std;
-using namespace cv;
+using namespace cv; // TODO: consider to remove this namespace
 
-bool WriteOutData::initialize(string pathName, int width, int height, int frameRate, int x_cut, int y_cut, vector<vector<int>> yDivs)
+bool FileWriter::initialize(string pathName, int width, int height, int frameRate, int x_cut, int y_cut, vector<vector<int>> yDivs)
 {
 	for (int i = 0; i < numFiles; i++)
 	{

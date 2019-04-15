@@ -175,7 +175,7 @@ void AreaData::renderTexture(int areaIdx)
 }
 
 
-void ScreenData::updatePattern()
+void Screen::updatePattern()
 {
 	for (int i = 0; i < allAreas.size(); i++)
 	{
@@ -228,7 +228,7 @@ void ScreenData::updatePatternInBaseline(int sElapsed) {
 	}
 }
 
-void ScreenData::updatePatternInBlackout() {
+void Screen::renderBlackPattern() {
 	for (int i = 0; i < numAreas; i++)
 	{
 		for (int j = 0; j < allAreas[i].numPatches; j++)

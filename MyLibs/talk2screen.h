@@ -58,7 +58,7 @@
 	5. remove unnecessary code
 */
 
-class ScreenData
+class Screen
 {
 private: // only used within class
 	GLFWmonitor * * monitors;
@@ -66,7 +66,7 @@ private: // only used within class
 
 public:
 	// methods
-	ScreenData() // constructor
+	Screen() // constructor
 	{
 
 	}
@@ -82,73 +82,60 @@ public:
 	void updatePattern();
 	/* Render designed pattern on the screen */
 	void renderTexture();
-
-	/* Update pattern in test experiment */
-	void updatePatternInTest(int sElapsed);// TODO: change the name
-	// since test is a thing in experiments, not for screen rendering
-	/* Update pattern in baseline experiment */
-	void updatePatternInBaseline(int sElapsed);
-	/* Update pattern in the blackout experiment */
-	void updatePatternInBlackout();
-
+	/* Reverse patterns on the top and on the bottom */
+	void reverse();
+	/* Given the indices of patches, reverse patterns on the top and on the bottom */
+	void reverse(std::vector<int> patchIndices);
+	/* Render black pattern */
+	void renderBlackPattern();
 
 	// properties
 	const GLFWvidmode* mode;
-
-	/* 3(#arenas) * 4(patchesPerArena)
-		Scheme for fish positions in arena
-		|		|		|
-		|	0	|	1	|
-		|		|		|
-		|---------------|
-		|		|		|
-		|	2	|	3	|
-		|		|		|
-	*/
 	std::vector<AreaData> allAreas;
 
 	int numAreas;
 	int lastScreenPatternUpdate;
-	/* Interval for updating pattern in baseline session, which is a random number in range */
-	int baselineInterval;
 };
 
 /* represent pattern changes of an entire local area,
  which consists of many patches
 */
-class AreaData
+class Area
 {
 private:
 	; // nothing for now
 public:
 	// methods
 	/* Enquire the number of patches in an arena */
-	AreaData(std::vector<float> areaRect, int n = 1)
+	Area(std::vector<float> areaRect, int n = 1)
 		: rect(areaRect)
 		, numPatches(n)
 	{
 
 	}
+	/* TODO: add descriptions */
 	bool initialize(std::vector<int> yDivideVec, std::string imgName);
 	bool loadTextureIntoBuffers(std::string imgName);
-	void reverseAllPatches();
+	void reverseAllPatches(); // TODO: -> reverse();
 	void renderTexture(int areaIdx);
+
+
 	// properties
 	std::vector<PatchData> allPatches;
-	unsigned int texture0; // texture ID
+	unsigned int textureID; // texture ID // TODO: update this name in other files (texture0 -> textureID)
 	const int numPatches;
 	const std::vector<float> rect; // upper-left corner (x, y, width, height)
 };
 
 
 /* represent pattern changes for a single patch (shader) */
-class PatchData
+class Patch
 {
 private:
 	; // nothing for now
 public:
 	// methods
-	PatchData(std::vector<float> patchRect, const int patchYdivide,
+	Patch(std::vector<float> patchRect, const int patchYdivide,
 			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
 			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
 			: shader(vertexPath, fragmentPath)

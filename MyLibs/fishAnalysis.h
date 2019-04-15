@@ -61,10 +61,10 @@ class FishAnalysis {
 		void findAllFish();
 
 		/* Decorate images with fish's heads, tails and visual pattern's info */
-		void annotateFishImgs(); // TODO: consider to move this into fishAnalysis
+		void annotateImgs(); // TODO: consider to move this into fishAnalysis
 
 		/* Present fish images with annotations. The code is adapted from code in stackfow*/
-		void displayFishImgs(std::string title); // TODO: consider to move this into fishAnalysis
+		void displayImgs(std::string title); // TODO: consider to move this into fishAnalysis
 
 
 
@@ -75,13 +75,13 @@ class FishAnalysis {
 }
 
 /* Define all infos including fish for a single arena */
-class ArenaData {
+class Arena {
 
 private:
 	;// nothing for now
 public:
 	// methods
-	ArenaData(int BWthre = 30, int n = 1) // constructor
+	Arena(int BWthre = 30, int n = 1) // constructor
 		: numFish(n)
 	{
 		binThre = BWthre;
@@ -123,19 +123,6 @@ public:
 
 };
 
-/* TODO: consider to convert the following global functions to methods of FishAnalysis */
-
-
-/*Find the closest point on the contour to the reference point*/
-int findClosestPt(std::vector<cv::Point>& contour, cv::Point point);
-/* Rotate the image 90 degrees clockwise */
-void rot90CW(cv::Mat src, cv::Mat dst);
-/* Get the Euclidean distance from point P to line AB */
-double getPt2LineDistance(cv::Point2f P, cv::Point2f A, cv::Point2f B);
-/* Find 2 intersection points of a line (AB) and contour */
-std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv::Point2f A, cv::Point2f B);
-
-
 
 
 /* Define related methods and properties for a single fish */
@@ -145,7 +132,7 @@ private:
 	; // nothing for now
 public:
 	// methods
-	FishData(std::string fishID = "", int fishAge = 0, int yDivide = 0) // constructor
+	Fish(std::string fishID = "", int fishAge = 0, int yDivide = 0) // constructor
 		: ID(fishID)
 		, age(fishAge)
 		, yDiv(yDivide)
@@ -177,21 +164,37 @@ public:
 	// const properties
 	const std::string ID;
 	const int age;
-	// TODO: assign yDivide in the initialization function
 	int yDiv; // the division pos between CS and NCS pattern
 
-	int lastBlackoutStart;
+	int lastBlackoutStart;// TODO: consider to relocate this variable
 
-	int lastTimeUpdatePattern;
+	int lastTimeUpdatePattern;// TODO: consider to relocate this variable
+
 	int lastTimeInCS;
 	int lastShockTime;
-	int pauseFrames;
+	int pauseFrames;// TODO: consider to change this variable
 	bool shockOn;
 
+	// motion parameters
 	std::vector<cv::Point> fishContour;
 	cv::Point head, tail, center;
 	int headingAngle;
 };
+
+// Global functions
+
+
+/* TODO: consider to convert the following global functions to methods of FishAnalysis */
+/*Find the closest point on the contour to the reference point*/
+int findClosestPt(std::vector<cv::Point>& contour, cv::Point point);
+/* Rotate the image 90 degrees clockwise */
+void rot90CW(cv::Mat src, cv::Mat dst);
+/* Get the Euclidean distance from point P to line AB */
+double getPt2LineDistance(cv::Point2f P, cv::Point2f A, cv::Point2f B);
+/* Find 2 intersection points of a line (AB) and contour */
+std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv::Point2f A, cv::Point2f B);
+
+
 
 
 #endif // !_GUARD_FISHANALYSIS_H

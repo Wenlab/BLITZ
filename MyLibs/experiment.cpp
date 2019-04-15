@@ -400,6 +400,7 @@ void ExperimentData::trainFish(int cIdx) {
 	}
 }
 
+
 void ExperimentData::writeOutFrame()
 {
 	int cIdx = cams.cIdx;
