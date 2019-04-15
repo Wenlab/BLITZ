@@ -215,12 +215,6 @@ void ExperimentData::runBlueTest()
 
 void ExperimentData::runOLexp()
 {
-	//const int prepareTime = 1 * 60  ; // seconnds, default 1 min
-	//const int baselineEndTime = 10 * 60 ; // seconds, default 10 mins
-	//const int trainingEndTime = 30 * 60 ; // seconds, default 20 mins
-	//const int blackoutEndTime =  31 * 60 ; // seconds, default 1 min
-	//const int testEndTime = 49 * 60 ; // seconds, default 18 mins (including memory extinction period)
-	//const int expEndTime = testEndTime;
 	const int prepareTime = 1 * 60; // seconnds, default 1 min
 	const int baselineEndTime = 2 * 60; // seconds, default 10 mins
 	const int trainingEndTime = 8 * 60; // seconds, default 20 mins
@@ -228,25 +222,27 @@ void ExperimentData::runOLexp()
 	const int testEndTime = 15 * 60; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
-	prepareBgImg(prepareTime);
+	prepareBgImg(prepareTime); // TODO: -> FishAnalysisObj.prepareBgImg();
 	expTimer.start(); // reset timer to 0
 
+	// TODO: consider to encapsulate FRAMERATE?
 	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)// giant grabbing loop
 	{
 
 		cams.grabPylonImg();
 
 		int cIdx = cams.cIdx;
+		// TODO: encapsulate the following lines to a FishAnalysis method.
 		allArenas[cIdx].prepareBgImg(
 			cams.ptrGrabResult->GetWidth(),
 			cams.ptrGrabResult->GetHeight(),
 			cIdx,
 			(uint8_t*)cams.pylonImg.GetBuffer());
 
-		if (!getTime()) {
+		if (!getTime()) { // TODO: consider to improve the error handling.
 			break;
 		}
-		if (!allArenas[cIdx].findAllFish())
+		if (!allArenas[cIdx].findAllFish()) // TODO: make this line a FishAnalysis method as well as improve error handling
 			cout << "Fish in arena " << cIdx + 1 << " not found."<< endl;
 		if (sElapsed < baselineEndTime)
 		{

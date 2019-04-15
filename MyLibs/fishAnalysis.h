@@ -39,6 +39,27 @@
 #define X_CUT 385 // x position to separate fish 0,1 and 2,3
 #define Y_CUT 385 // y position to separate fish 0,1 and 2,3
 
+/* the highest class that encapsulates everything about imaging processing */
+class FishAnalysis {
+		yDivs =
+		{
+			{ 200, 200, 558, 558 },
+			{ 223, 223, 588, 588 },
+			{ 223, 223, 588, 588 }
+		}; // TODO: make this variable private
+
+		// Methods
+		
+
+
+		// Properties
+		std::vector<std::vector<int>> yDivs; 	// TODO: move this into the imaging processing module
+
+}
+
+
+
+
 /* Define related methods and properties for a single fish */
 class FishData {
 
@@ -82,7 +103,7 @@ public:
 	int yDiv; // the division pos between CS and NCS pattern
 
 	int lastBlackoutStart;
-	
+
 	int lastTimeUpdatePattern;
 	int lastTimeInCS;
 	int lastShockTime;
@@ -109,7 +130,7 @@ public:
 	}
 
 	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
-	
+
 	/* find all fish contours in the arena at the same time
 	by finding the largest #fish contours in all contours.
 	Involved parameters:
@@ -125,13 +146,13 @@ public:
 	|		|		|
 	*/
 	bool findAllFish();
-	
+
 	void prepareBgImg(int width, int height, int cIdx, uint8_t* buffer);
 
 	void annotateFish();
-	
+
 	void resetShocksOn();
-								   
+
 	// properties
 	const int numFish;
 	int binThre; // in the future, this might be adjusted in the GUI

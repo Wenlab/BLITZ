@@ -60,19 +60,10 @@ public:
 		ITI = 0;
 
 		// y division pos for all fish
-		// TODO: move this into the imaging processing module
-		yDivs =
-		{
-			{ 200, 200, 558, 558 },
-			{ 223, 223, 588, 588 },
-			{ 223, 223, 588, 588 }
-		}; // make this variable private
+
 	}
 	/* Initialize the experiment */
-	bool initialize();
-
-	/* Prepare background image for MOG subtractor */
-	void prepareBgImg(const int prepareTime); // TODO: move this into fishAnalysis
+	bool initialize(); // TODO: make every module can be enabled separately
 
 	/* Run unpaired training in the operant learning procedure */
 	void runUnpairedOLexp();
@@ -92,11 +83,7 @@ public:
 	/* Write out info of a frame to disk */
 	void writeOutFrame();
 
-	/* Decorate images with fish's heads, tails and visual pattern's info */
-	void annotateFishImgs(); // TODO: consider to move this into fishAnalysis
 
-	/* Present fish images with annotations. The code is adapted from code in stackfow*/
-	void displayFishImgs(std::string title); // TODO: consider to move this into fishAnalysis
 
 	/* Get current time */
 	bool getTime();
@@ -115,13 +102,13 @@ public:
 	int msRemElapsed;
 	int expPhase;
 	int ITI; // Inter-trial Interval
-	std::vector<std::vector<int>> yDivs; 	// TODO: move this into the imaging processing module
+
 
 
 	// Functional module objects
 	Timer expTimer;
 	CameraData cams; //TODO: CameraData -> Cameras;
-	std::vector<ArenaData> allArenas; // TODO: consider to create a class to encapsulate this vector and its parameters, such as yDivs?
+	FishAnalysis fishAnalysisObj;
 	ScreenData screen; // TODO: ScreenData -> Screen;
 	PortData thePort; // TODO: PortData -> Port; thePort -> portObj
 	WriteOutData writeOut; // TODO: WriteOutData -> FileWriter
