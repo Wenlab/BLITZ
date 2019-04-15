@@ -11,7 +11,7 @@
 * the Free Software Foundation, either version 3 of the license, or
 * (at your option) any later version.
 *
-* Filename: writeOutFish.h
+* Filename: fileWriter.h
 * Abstract: this file contains all function definitions
 *			used to write experiment info and extracted motion parameters
 *			into yaml files and save videos for each camera
@@ -53,9 +53,9 @@ bool WriteOutData::initialize(string pathName, int width, int height, int frameR
 	writeOutExpSettings(frameRate, width, height,
 		x_cut, y_cut, yDivs);
 
-	
+
 	return true;
-	
+
 }
 
 /* Ask the user about the experiment infos */
@@ -110,7 +110,7 @@ void WriteOutData::enquireAllBasenames()
 }
 
 /* get CS str in the area */
-string WriteOutData::enquireBasename(int areaIdx) 
+string WriteOutData::enquireBasename(int areaIdx)
 {
 	cout << "Enter the pattern used in the Arena " << areaIdx + 1 << endl;
 	string basename;
@@ -118,7 +118,7 @@ string WriteOutData::enquireBasename(int areaIdx)
     // separated with an empty line
 	cout << endl;
 	return basename;
-	
+
 }
 
 /* Ask for what strain of Fish is using */
@@ -126,7 +126,7 @@ void WriteOutData::enquireStrainNames()
 {
 	cout << "Enter the strain name for all fish. (A number, e.g. GCaMP6f)" << endl;
 	cout << "(Assume they are the same strain)" << endl;
-	
+
 	string strainName;
 	cin >> strainName;
 
@@ -256,11 +256,11 @@ void WriteOutData::getBasenames()
 /* Get basename for the output files */
 string WriteOutData::getBasename(int arenaIdx)
 {
-	
+
 	string baseName =
 		timeStr + "_" + "Arena" + to_string(arenaIdx + 1)
-		+ "_" + strainNames[arenaIdx] + "_" 
-		+ to_string(fishAge)+ "dpf_" 
+		+ "_" + strainNames[arenaIdx] + "_"
+		+ to_string(fishAge)+ "dpf_"
 		+ expTask + "_" + CSstrs[arenaIdx];
 	return baseName;
 }
@@ -277,7 +277,7 @@ void WriteOutData::get_CS_strings(vector<const char*> CSpatterns)
 /* Get CS string to append to the filenames of yaml and video files */
 string WriteOutData::get_CS_string(const char* CSpattern)
 {
-	
+
 	string patternStr = extractPatternName(CSpattern);
 	string CSstr;
 	if (patternStr.compare("redBlackCheckerboard") == 0)
@@ -296,7 +296,7 @@ string WriteOutData::get_CS_string(const char* CSpattern)
 
 }
 
-/* Write out experiment settings as the header for files 
+/* Write out experiment settings as the header for files
 	only write once */
 void WriteOutData::writeOutExpSettings(
 	int frameRate,
@@ -324,7 +324,7 @@ void WriteOutData::writeOutExpSettings(
 	}
 }
 
-/* Extract the pattern name from the filename 
+/* Extract the pattern name from the filename
  by erasing all lower-case alphabetas
 */
 string extractPatternName(const char* fileName)
@@ -346,7 +346,7 @@ string extractPatternName(const char* fileName)
 		cout << "Please check!" << endl;
 		exit(0);
 	}
-	
+
 	std::reverse(s.begin(), s.end()); // reverse back
 	string patternName = s.substr(startIdx , endIdx - startIdx - 1);
 	return patternName;
@@ -357,10 +357,10 @@ string extractPatternName(const char* fileName)
 /* Show software description and welcome messages to user */
 void showWelcomeMsg()
 {
-	/* 
-	Welcome to BLITZ. 
+	/*
+	Welcome to BLITZ.
 	BLITZ (Behavioral Learning In The Zebrafish) enables programmatic
-	control in video capture, online image processing, visual stimuli 
+	control in video capture, online image processing, visual stimuli
 	presentation and electric shock delivery, which allow researchers
 	design their custom learning paradigm in zebrafish.
 	Most updated code and other resources can be found at

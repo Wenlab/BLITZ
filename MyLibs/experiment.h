@@ -12,7 +12,7 @@
 * (at your option) any later version.
 *
 * Filename: experiment.h
-* Abstract: this file contains all classes and function declarations 
+* Abstract: this file contains all classes and function declarations
 *		used in constructing final behavioral learning experiment in zebrafish
 * Current Version: 2.0
 * Author: Wenbin Yang <bysin7@gmail.com>
@@ -40,91 +40,92 @@
 #define HEIGHT 784 // frame height for all cameras and video files
 #define FRAMERATE 10 // frame rate for all cameras to capture videos
 
+// TODO: rename this class, drop "Data"
 class ExperimentData
 {
 private:
 	/* Stands for different experiment phases */
 	enum { baseline = 0, training = 1, blackout = 2, test = 3 };
-	;// nothing for now
+	// any usage of this?
 public:
 	// methods
-	ExperimentData(std::string pName) 
+	ExperimentData(std::string pName)
 		:pathName(pName)
 	{
 		numCameras = 0;
 		idxFrame = -1;
-		sElapsed = -1;
-		msRemElapsed = 0;
+		sElapsed = -1; // TODO: do we need this, if we already have idxFrame?
+		msRemElapsed = 0; // TODO: useful for calibrations and plotting, but requires better insulation
 		expPhase = -1;
 		ITI = 0;
 
 		// y division pos for all fish
+		// TODO: move this into the imaging processing module
 		yDivs =
 		{
 			{ 200, 200, 558, 558 },
 			{ 223, 223, 588, 588 },
 			{ 223, 223, 588, 588 }
-		};
+		}; // make this variable private
 	}
 	/* Initialize the experiment */
 	bool initialize();
-	
+
 	/* Prepare background image for MOG subtractor */
-	void prepareBgImg(const int prepareTime);
-	
+	void prepareBgImg(const int prepareTime); // TODO: move this into fishAnalysis
+
 	/* Run unpaired training in the operant learning procedure */
 	void runUnpairedOLexp();
-	
+
 	/* Run the entire operant learning procedure */
 	void runOLexp();
 
 	/* Run the experiment to do whether fish invisible to the blue pattern */
 	void runBlueTest();
-	
+
 	/* Give the fish a electric pulse */
-	void giveFishShock(int fishIdx);
-	
+	void giveFishShock(int fishIdx); // TODO: think about this abstraction level, is it different from runxxtest?
+
 	/* Experiment during the training period */
 	void trainFish(int cIdx);
-	
+
 	/* Write out info of a frame to disk */
 	void writeOutFrame();
-	
+
 	/* Decorate images with fish's heads, tails and visual pattern's info */
-	void annotateFishImgs();
-	
+	void annotateFishImgs(); // TODO: consider to move this into fishAnalysis
+
 	/* Present fish images with annotations. The code is adapted from code in stackfow*/
-	void displayFishImgs(std::string title);
-	
+	void displayFishImgs(std::string title); // TODO: consider to move this into fishAnalysis
+
 	/* Get current time */
 	bool getTime();
 
     /* Get CSpatterns from the basenames */
-	std::vector<std::string> get_CS_patterns(std::vector<std::string> CS_strs);
+	std::vector<std::string> get_CS_patterns(std::vector<std::string> CS_strs); // TODO: consider to move this into userInterface
 	// properties
 
 	// constant ones
-	std::vector<std::string> CSpatterns;
-	const std::string pathName;
+	std::vector<std::string> CSpatterns; // TODO: move this into the WritOut module
+	const std::string pathName; // TODO: move this into the WritOut module
 	int numCameras;
 
 	int idxFrame;
 	int sElapsed;
 	int msRemElapsed;
 	int expPhase;
-	/* Update time for the entire screen */
-	/* Inter-trial Interval */
-	int ITI;
-	std::vector<std::vector<int>> yDivs;
-	
+	int ITI; // Inter-trial Interval
+	std::vector<std::vector<int>> yDivs; 	// TODO: move this into the imaging processing module
 
 
+	// Functional module objects
 	Timer expTimer;
-	CameraData cams;
-	std::vector<ArenaData> allArenas;
-	ScreenData screen;
-	PortData thePort;
-	WriteOutData writeOut;
+	CameraData cams; //TODO: CameraData -> Cameras;
+	std::vector<ArenaData> allArenas; // TODO: consider to create a class to encapsulate this vector and its parameters, such as yDivs?
+	ScreenData screen; // TODO: ScreenData -> Screen;
+	PortData thePort; // TODO: PortData -> Port; thePort -> portObj
+	WriteOutData writeOut; // TODO: WriteOutData -> FileWriter
+	// TODO: consider to create a user-interface class which can handle user inputs?
 };
 
 

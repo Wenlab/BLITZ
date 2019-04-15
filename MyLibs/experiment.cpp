@@ -41,23 +41,17 @@ using namespace cv;
 bool ExperimentData::initialize()
 {
 	//writeOut.get_CS_strings(CSpatterns);
-	numCameras = writeOut.enquireInfoFromUser();	
-	CSpatterns = get_CS_patterns(writeOut.CSstrs);
+	numCameras = writeOut.enquireInfoFromUser();
+	CSpatterns = get_CS_patterns(writeOut.CSstrs); // TODO: this line should be incorperated into the above function.
 	/* Create yaml and video files to write in */
 	if (!writeOut.initialize(pathName, WIDTH, HEIGHT, FRAMERATE,
 		X_CUT, Y_CUT, yDivs))
 		return false;
-	
-	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE))
+	// TODO: consider to improve this error handling with exceptions
+
+	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE)) // TODO: consider to improve this error handling with exceptions
 		return false;
-	/*
-	if (!screen.initialize(CSpatterns))
-		return false;
-	*/
-	/* Initialize the serial port 
-	if (!thePort.initialize(COM_NUM))
-		return false;
-	*/
+
 	allArenas = initializeAllArenas(yDivs, writeOut.fishIDs, writeOut.fishAge);
 
 	return true;
@@ -81,9 +75,11 @@ void ExperimentData::prepareBgImg(const int prepareTime)
 		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
 			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
 
+		// TODO: fix the rotation bug
+
 		screen.renderTexture();
 	}
-	
+
 }
 
 void ExperimentData::runUnpairedOLexp()
@@ -107,6 +103,8 @@ void ExperimentData::runUnpairedOLexp()
 	mt19937 g(rnd_device());
 	shuffle(vec.begin(), vec.end(), g);
 	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
+
+	// TODO: wrap the above RNG code
 
 	prepareBgImg(prepareTime);
 	expTimer.start(); // reset timer to 0
@@ -134,7 +132,7 @@ void ExperimentData::runUnpairedOLexp()
 				if (find(rndVec.begin(), rndVec.end(), target) != rndVec.end())
 					giveFishShock(i);
 				else
-					allArenas[cIdx].allFish[i].shockOn = 0;
+					allArenas[cIdx].allFish[i].shockOn = 0; // TODO: condiser to align abstraction level
 				int pIdx = screen.allAreas[cIdx].allPatches[i].pIdx;
 				screen.allAreas[cIdx].allPatches[i].pIdx
 					= allArenas[cIdx].allFish[i].updatePatternInTraining(sElapsed, pIdx, ITI);
@@ -161,7 +159,7 @@ void ExperimentData::runUnpairedOLexp()
 		  //cout << "Experiment ended. " << endl;
 		  //exit(0);
 		}
-		screen.renderTexture();
+		screen.renderTexture(); // TODO: Specify rendering style, e.g., avoidance, OMR, etc.
 		writeOutFrame();
 		annotateFishImgs();
 
@@ -235,14 +233,14 @@ void ExperimentData::runOLexp()
 
 	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)// giant grabbing loop
 	{
-		
+
 		cams.grabPylonImg();
 
 		int cIdx = cams.cIdx;
 		allArenas[cIdx].prepareBgImg(
-			cams.ptrGrabResult->GetWidth(), 
+			cams.ptrGrabResult->GetWidth(),
 			cams.ptrGrabResult->GetHeight(),
-			cIdx, 
+			cIdx,
 			(uint8_t*)cams.pylonImg.GetBuffer());
 
 		if (!getTime()) {
@@ -297,7 +295,7 @@ void ExperimentData::trainFish(int cIdx) {
 		if (allArenas[cIdx].allFish[i].ifGiveShock(pIdx, sElapsed)) {
 			giveFishShock(i);
 		}
-		screen.allAreas[cIdx].allPatches[i].pIdx 
+		screen.allAreas[cIdx].allPatches[i].pIdx
 			= allArenas[cIdx].allFish[i].updatePatternInTraining(sElapsed,pIdx,ITI);
 		screen.allAreas[cIdx].allPatches[i].updatePattern();
 	}
@@ -416,8 +414,10 @@ bool ExperimentData::getTime() {
 	return true;
 }
 
+
+// This should be in WriteOut class.
 vector<string> ExperimentData::get_CS_patterns(vector<string> CS_strs) {
-	vector<string> CSpatterns_string; 
+	vector<string> CSpatterns_string;
 	string imgFolderPath = "Images/";
 	for (int i = 0; i < CS_strs.size(); i++)
 	{
