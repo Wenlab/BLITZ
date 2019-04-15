@@ -41,6 +41,7 @@
 
 /* the highest class that encapsulates everything about imaging processing */
 class FishAnalysis {
+		// y division pos for all fish
 		yDivs =
 		{
 			{ 200, 200, 558, 558 },
@@ -49,19 +50,96 @@ class FishAnalysis {
 		}; // TODO: make this variable private
 
 		// Methods
-		
+
+		/* Initialize all arenas will be used in the experiment */
+		std::vector<ArenaData> initializeAllArenas(std::vector<std::vector<int>> yDivs, std::vector<std::vector<std::string>> fishIDs, int fishAge);
+
+		/* Prepare background image for MOG subtractor */
+		void prepareBgImg(const int prepareTime); // TODO: move this into fishAnalysis
+
+		/* Find all fish for all cameras */
+		void findAllFish();
+
+		/* Decorate images with fish's heads, tails and visual pattern's info */
+		void annotateFishImgs(); // TODO: consider to move this into fishAnalysis
+
+		/* Present fish images with annotations. The code is adapted from code in stackfow*/
+		void displayFishImgs(std::string title); // TODO: consider to move this into fishAnalysis
+
 
 
 		// Properties
+		std::vector<ArenaData> allArenas; // TODO: consider to create a class to encapsulate this vector and its parameters, such as yDivs?
 		std::vector<std::vector<int>> yDivs; 	// TODO: move this into the imaging processing module
 
 }
+
+/* Define all infos including fish for a single arena */
+class ArenaData {
+
+private:
+	;// nothing for now
+public:
+	// methods
+	ArenaData(int BWthre = 30, int n = 1) // constructor
+		: numFish(n)
+	{
+		binThre = BWthre;
+		allFish.reserve(numFish); // allocate memory
+	}
+
+	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
+
+	/* find all fish contours in the arena at the same time
+	by finding the largest #fish contours in all contours.
+	Involved parameters:
+	1.Threshold for contour size,
+	2.Moments of contours
+	Scheme for fish positions in arena
+	|		|		|
+	|	0	|	1	|
+	|		|		|
+	|---------------|
+	|		|		|
+	|	2	|	3	|
+	|		|		|
+	*/
+	bool findAllFish();
+
+	/* Align all images to user's view */
+	void alignImgs(int width, int height, int cIdx, uint8_t* buffer);
+
+	void annotateFish();
+
+	void resetShocksOn();
+
+	// properties
+	const int numFish;
+	int binThre; // in the future, this might be adjusted in the GUI
+
+	cv::Ptr<cv::BackgroundSubtractor> pMOG; // one pMOG for one arena
+	cv::Mat opencvImg, HUDSimg, subImg;
+	std::vector<FishData> allFish;
+
+};
+
+/* TODO: consider to convert the following global functions to methods of FishAnalysis */
+
+
+/*Find the closest point on the contour to the reference point*/
+int findClosestPt(std::vector<cv::Point>& contour, cv::Point point);
+/* Rotate the image 90 degrees clockwise */
+void rot90CW(cv::Mat src, cv::Mat dst);
+/* Get the Euclidean distance from point P to line AB */
+double getPt2LineDistance(cv::Point2f P, cv::Point2f A, cv::Point2f B);
+/* Find 2 intersection points of a line (AB) and contour */
+std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv::Point2f A, cv::Point2f B);
 
 
 
 
 /* Define related methods and properties for a single fish */
-class FishData {
+class Fish {
 
 private:
 	; // nothing for now
@@ -114,64 +192,6 @@ public:
 	cv::Point head, tail, center;
 	int headingAngle;
 };
-
-/* Define all infos including fish for a single arena */
-class ArenaData {
-
-private:
-	;// nothing for now
-public:
-	// methods
-	ArenaData(int BWthre = 30, int n = 1) // constructor
-		: numFish(n)
-	{
-		binThre = BWthre;
-		allFish.reserve(numFish); // allocate memory
-	}
-
-	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
-
-	/* find all fish contours in the arena at the same time
-	by finding the largest #fish contours in all contours.
-	Involved parameters:
-	1.Threshold for contour size,
-	2.Moments of contours
-	Scheme for fish positions in arena
-	|		|		|
-	|	0	|	1	|
-	|		|		|
-	|---------------|
-	|		|		|
-	|	2	|	3	|
-	|		|		|
-	*/
-	bool findAllFish();
-
-	void prepareBgImg(int width, int height, int cIdx, uint8_t* buffer);
-
-	void annotateFish();
-
-	void resetShocksOn();
-
-	// properties
-	const int numFish;
-	int binThre; // in the future, this might be adjusted in the GUI
-
-	cv::Ptr<cv::BackgroundSubtractor> pMOG; // one pMOG for one arena
-	cv::Mat opencvImg, HUDSimg, subImg;
-	std::vector<FishData> allFish;
-
-};
-/* Initialize all arenas will be used in the experiment */
-std::vector<ArenaData> initializeAllArenas(std::vector<std::vector<int>> yDivs, std::vector<std::vector<std::string>> fishIDs, int fishAge);
-/*Find the closest point on the contour to the reference point*/
-int findClosestPt(std::vector<cv::Point>& contour, cv::Point point);
-/* Rotate the image 90 degrees clockwise */
-void rot90CW(cv::Mat src, cv::Mat dst);
-/* Get the Euclidean distance from point P to line AB */
-double getPt2LineDistance(cv::Point2f P, cv::Point2f A, cv::Point2f B);
-/* Find 2 intersection points of a line (AB) and contour */
-std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv::Point2f A, cv::Point2f B);
 
 
 #endif // !_GUARD_FISHANALYSIS_H

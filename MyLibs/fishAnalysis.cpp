@@ -40,7 +40,7 @@ using namespace cv;
 
 /* find all fish contours in the arena at the same time
  by finding the largest #fish contours in all contours.
- Involved parameters: 
+ Involved parameters:
 	1.Threshold for contour size,
 	2.Moments of contours
 Scheme for fish positions in arena
@@ -59,7 +59,7 @@ TODO:
 
 void ArenaData::initialize(
 	vector<string> fishIDs, // unique fish IDs
-	int fishAge, 
+	int fishAge,
 	vector<int> yDivs
 	)
 {
@@ -77,7 +77,7 @@ bool ArenaData::findAllFish()
 	bool fishFlag = true;
 	// outer contours are counter clockwise
 	vector<vector<Point>> contours;
-	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE); 
+	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
 
 	// record largest contour of each quadratile and its index
 	// with initial values of -1 (not found)
@@ -143,7 +143,7 @@ bool ArenaData::findAllFish()
 
 
 	return fishFlag;
-	
+
 }
 /*
 	Find the head, center, tail and headingAngle of the fish
@@ -154,12 +154,12 @@ void FishData::findPosition()
 	Vec4f lineVec;
 	fitLine(fishContour, lineVec, CV_DIST_L2, 0, 0.01, 0.1);
 	double stepSize = 100;
-	vector<int> endIdx = findPtsLineIntersectContour(fishContour, 
+	vector<int> endIdx = findPtsLineIntersectContour(fishContour,
 		Point2f(lineVec[2] - stepSize * lineVec[0], lineVec[3] - stepSize * lineVec[1]), // on one side, far from the center point
 		Point2f(lineVec[2] + stepSize * lineVec[0], lineVec[3] + stepSize * lineVec[1]));// on the other side, far from the center point
 
 	Moments M = moments(fishContour); // to find the center
-	
+
 	center = Point(M.m10 / M.m00, M.m01 / M.m00);
 	Point EP1 = fishContour[endIdx[0]];
 	Point EP2 = fishContour[endIdx[1]];
@@ -173,11 +173,11 @@ void FishData::findPosition()
 	}
 	Point C2H = head - center; // tail to head, only applied to small fish
 	headingAngle = atan2(C2H.y, C2H.x) * 180 / PI;
-	
+
 }
 
 /*
-	Determine which side is fish's head 
+	Determine which side is fish's head
 	by measuring the area of each half
 */
 bool FishData::findHeadSide(Point2f* M)
@@ -220,7 +220,7 @@ bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 	/* Give fish a shock whenever it stays in CS area too long */
 	int CStimeThre = 10;
 	shockOn = false;
-    if (pIdx == 2) // blackout 
+    if (pIdx == 2) // blackout
 		return false;
 	if (sElapsed < lastTimeUpdatePattern + thinkingTime)
 		return false;
@@ -261,6 +261,7 @@ bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 	return shockOn;
 }
 
+// TODO: remove this method from this class
 int FishData::updatePatternInTraining(int sElapsed,int pIdx, int ITI) {
 	int NCStimeThre = 48; // seconds
 	if (pIdx == 2)
@@ -293,7 +294,9 @@ int FishData::updatePatternInTraining(int sElapsed,int pIdx, int ITI) {
 	return pIdx;
 }
 
-void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
+// TODO: this.name -> alignImgs
+void ArenaData::alignImgs(int width, int height, int cIdx, uint8_t* buffer) {
+	// TODO: get the width and height from the image
 	Mat rawImg = Mat(width, height,CV_8UC1, buffer);
 	rawImg.copyTo(opencvImg);
 	if (cIdx != 0) {
@@ -302,7 +305,7 @@ void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
 	pMOG->apply(opencvImg, subImg);
 }
 
-// TODO: check whether this for loop necessary 
+// TODO: check whether this for loop necessary
 // I think it is necessary, but I can not confirm now
 void ArenaData::annotateFish() {
 	for (int j = 0; j < numFish; j++)
@@ -333,7 +336,7 @@ vector<ArenaData> initializeAllArenas(vector<vector<int>> yDivs, vector<vector<s
 {
 	vector<ArenaData> allArenas;
 	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
-	
+
 	for (int i = 0; i < fishIDs.size(); i++)
 	{
 		ArenaData arena(binThreList[i], fishIDs[i].size());
@@ -412,7 +415,7 @@ vector<int> findPtsLineIntersectContour(vector<Point>& contour, Point2f A, Point
 		goodIndices[1] = idxList[idxA];
 	}
 
-	
+
 	return goodIndices;
 
 }

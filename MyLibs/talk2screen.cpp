@@ -14,8 +14,8 @@
 * Filename: talk2screen.h
 * Abstract: this file contains all function definitions
 *			used to present visual stimulus to fish
-* 
-* A great portion of code was adapted from learnopengl.com, which is a great 
+*
+* A great portion of code was adapted from learnopengl.com, which is a great
 * website to learn OpenGL
 *
 * Current Version: 2.1
@@ -134,7 +134,7 @@ void AreaData::reverseAllPatches() {
 
 /* Load a texture for one area */
 bool AreaData::loadTextureIntoBuffers(string imgName)
-{	
+{
 	glGenTextures(1, &texture0);
 	glBindTexture(GL_TEXTURE_2D, texture0);
 	// set the texture wrapping parameters
@@ -190,16 +190,17 @@ void ScreenData::updatePattern()
 /* update pattern for specific area */
 void ScreenData::updatePattern(int cIdx)
 {
-	
+
 	AreaData area = allAreas[cIdx];
 	for (int j = 0; j < area.numPatches; j++)
 	{
 		area.allPatches[j].updatePattern();
-	}	
+	}
 
 }
 
 //TODO: update the pattern first.
+// TODO: put experiment-related things in Experiment class
 void ScreenData::updatePatternInTest(int sElapsed) {
 	int testInterval = 30; // seconds, the interval in test is fixed
 	if (sElapsed > lastScreenPatternUpdate + testInterval)
@@ -249,7 +250,7 @@ bool ScreenData::initialize(
 		{ 0.840f, -0.810f, 0.258f, 0.73f },
 		{ -0.668f, -0.810f, 0.258f, 0.73f }
 	};
-	
+
 	//y dividing positions for all patches
 	vector<vector<int>> yPatternDivs =
 	{
@@ -309,7 +310,7 @@ bool ScreenData::init_glfw_window()
 }
 
 /* Initiate glad for using OpenGL functions */
-bool ScreenData::init_glad() 
+bool ScreenData::init_glad()
 {
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -331,8 +332,6 @@ void ScreenData::renderTexture()
 	}
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
-	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move 
+	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move
 
 }
-
-

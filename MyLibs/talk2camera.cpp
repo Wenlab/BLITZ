@@ -35,13 +35,13 @@ using namespace Pylon;
 bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int frameRate)
 {
 	const char* serialNums[MAX_CAMERAS] = { "21552672","22510229","22510230" };
-	const int offSetX[MAX_CAMERAS] = {463, 390, 944};//{ 794, 1112, 944 };
-	const int offSetY[MAX_CAMERAS] = {0, 0, 227};//{ 0, 35, 227 };
-	
-	Pylon::EPixelType pixelFormat = Pylon::EPixelType::PixelType_Mono8;
+	const int offSetX[MAX_CAMERAS] = {463, 390, 944};
+	const int offSetY[MAX_CAMERAS] = {0, 0, 227};
+
+	Pylon::CDeviceInfo di[MAX_CAMERAS]; // TODO: test this change
 	Pylon::PylonInitialize();
 	Pylon::CTlFactory&TlFactory = Pylon::CTlFactory::GetInstance();
-	
+
 	// Make sure cameras are attached in order
 	for (int i = 0; i < numCameras; i++)
 	{
@@ -63,7 +63,7 @@ bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int
 		// Print the model name of the camera.
 		std::cout << "Using camera " << cameras[i].GetDeviceInfo().GetSerialNumber() << std::endl;
 	}
-	formatConverter.OutputPixelFormat = pixelFormat;
+
 	cameras.StartGrabbing();
 
 	cout << "Cameras initialization succeeded." << endl << endl;
@@ -73,6 +73,9 @@ bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int
 /* Grab Pylon image from cameras */
 bool CameraData::grabPylonImg()
 {
+	Pylon::CImageFormatConverter formatConverter;
+	formatConverter.OutputPixelFormat = Pylon::EPixelType::PixelType_Mono8;
+
 	try{
 		cameras.RetrieveResult(5000, ptrGrabResult, TimeoutHandling_ThrowException);
 		if (!ptrGrabResult->GrabSucceeded())
@@ -80,11 +83,6 @@ bool CameraData::grabPylonImg()
 			cout << "Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
 			return false;
 		}
-		// When the cameras in the array are created the camera context value
-		// is set to the index of the camera in the array.
-		// The camera context is a user settable value.
-		// This value is attached to each grab result and can be used
-		// to determine the camera that produced the grab result.
 		cIdx = ptrGrabResult->GetCameraContext();
 		formatConverter.Convert(pylonImg,ptrGrabResult);
 	}

@@ -45,27 +45,33 @@
 #define MAX_CAMERAS 3
 
 /* Define Basler Pylon properties and related methods for a single USB camera */
-class CameraData
+class Cameras
 {
 private:
 	;// nothing for now
 public:
 	// methods
-	CameraData() // constructor
+	Cameras() // constructor
 	{
-	
+
 	}
+
+	// TODO: consider to allow users open any cameras combination
+	// What is user input? ask the opening of each camera in order, middle -> left -> right
+	// the first parameter should be a boolean array that corresponds to each camera status
 	bool initialize(int nCams, int frameWidth, int frameHeight, int frameRate);
 	/* Grab Pylon image from cameras */
 	bool grabPylonImg();
 
 	// properties
-	Pylon::CDeviceInfo di[MAX_CAMERAS];
 	Pylon::CBaslerUsbInstantCameraArray cameras;
 	Pylon::CGrabResultPtr  ptrGrabResult;
 	Pylon::CPylonImage pylonImg;
-	Pylon::CImageFormatConverter formatConverter;
-	intptr_t cIdx;// index of camera where the frame is grabbed from 
+	intptr_t cIdx;// index of camera where the frame is grabbed from
+
+	// TODO: for developers, to have a private parameter list? (e.g., offsets, serialNums, ...)
+
+
 };
 
 

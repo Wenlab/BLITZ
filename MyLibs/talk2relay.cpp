@@ -29,9 +29,9 @@
 
 
 
-bool PortData::initialize(int com_num)
+bool Relay::initialize(int com_num)
 {
-	if (!port.InitPort(com_num))
+	if (!sPort.InitPort(com_num))
 	{
 		std::cout << "SerialPort initiation failed! " << std::endl;
 		return false;
@@ -40,12 +40,17 @@ bool PortData::initialize(int com_num)
 	{
 		std::cout << "SerialPort initiation succeeded! " << std::endl << std::endl;
 	}
-	return true;	
+	return true;
 }
 /* Open channel by index */
-bool PortData::givePulse(int idxChannel)
+bool Relay::givePulse(int idxChannel)
 {
-	bool res = port.WriteData(openCommands[idxChannel], LEN_COMMAND);	
+	bool res = sPort.WriteData(openCommands[idxChannel], LEN_COMMAND);
 	return res;
 }
 
+bool Relay::givePulse(vector<int> channelIndices)
+{
+	// TODO: write the code to open multiple channesl simultaneously,
+	// might need to generate new 16-base code 
+}

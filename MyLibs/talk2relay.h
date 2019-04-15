@@ -33,10 +33,11 @@
 // Include standard libraries
 #include <iostream>
 
+#define COM_NUM 4 // put this into relay module
 #define NUM_CHANNEL 12
 #define LEN_COMMAND 9
 
-class PortData
+class Relay
 {
 private:
 	;
@@ -63,13 +64,19 @@ public:
 
 	/* Initialize the serial port by COM number*/
 	bool initialize(int com_num);
+
 	/* Open channel for several seconds by index */
 	bool givePulse(int idxChannel);
 
+	/* Open multiple channels */
+	bool Relay::givePulse(vector<int> channelIndices);
+
 	// properties
-	CSerialPort port;
+	CSerialPort sPort; // serialPort
 	/* Commands to open specific channel on relay for several seconds*/
 	unsigned char openCommands[NUM_CHANNEL][LEN_COMMAND];
+
+
 
 };
 

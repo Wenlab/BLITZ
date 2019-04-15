@@ -24,9 +24,12 @@
 #ifndef USERINTERFACE_H_DEF
 #define USERINTERFACE_H_DEF
 
-class userInterface
+class UserInterface
 {
-    
+
+  /* Get CSpatterns from the basenames */
+	std::vector<std::string> get_CS_patterns(std::vector<std::string> CS_strs); // TODO: consider to move this into userInterface
+
 }
 
 

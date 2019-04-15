@@ -32,10 +32,12 @@
 #include "talk2camera.h"
 #include "talk2relay.h"
 #include "talk2screen.h"
-#include "writeOutFish.h"
+#include "fileWriter.h"
+#include "userInterface.h"
 
 // User-defined macros
-#define COM_NUM 4
+
+// TODO: make it can deal with the situations that width does not eqaul height
 #define WIDTH 784 // frame width for all cameras and video files
 #define HEIGHT 784 // frame height for all cameras and video files
 #define FRAMERATE 10 // frame rate for all cameras to capture videos
@@ -44,9 +46,7 @@
 class ExperimentData
 {
 private:
-	/* Stands for different experiment phases */
-	enum { baseline = 0, training = 1, blackout = 2, test = 3 };
-	// any usage of this?
+	;
 public:
 	// methods
 	ExperimentData(std::string pName)
@@ -58,9 +58,6 @@ public:
 		msRemElapsed = 0; // TODO: useful for calibrations and plotting, but requires better insulation
 		expPhase = -1;
 		ITI = 0;
-
-		// y division pos for all fish
-
 	}
 	/* Initialize the experiment */
 	bool initialize(); // TODO: make every module can be enabled separately
@@ -83,19 +80,15 @@ public:
 	/* Write out info of a frame to disk */
 	void writeOutFrame();
 
-
-
 	/* Get current time */
 	bool getTime();
 
-    /* Get CSpatterns from the basenames */
-	std::vector<std::string> get_CS_patterns(std::vector<std::string> CS_strs); // TODO: consider to move this into userInterface
-	// properties
+  // properties
 
 	// constant ones
 	std::vector<std::string> CSpatterns; // TODO: move this into the WritOut module
 	const std::string pathName; // TODO: move this into the WritOut module
-	int numCameras;
+	int numCameras; // TODO: change this into openStatus array which allows more flexible options for users
 
 	int idxFrame;
 	int sElapsed;
@@ -106,13 +99,13 @@ public:
 
 
 	// Functional module objects
-	Timer expTimer;
-	CameraData cams; //TODO: CameraData -> Cameras;
+	Timer timerObj; // TODO: consider to add a new class to wrap the 3rd party lib?
+	Cameras camerasObj; //TODO: CameraData -> Cameras;
 	FishAnalysis fishAnalysisObj;
-	ScreenData screen; // TODO: ScreenData -> Screen;
-	PortData thePort; // TODO: PortData -> Port; thePort -> portObj
-	WriteOutData writeOut; // TODO: WriteOutData -> FileWriter
-	// TODO: consider to create a user-interface class which can handle user inputs?
+	Screen screenObj; // TODO: ScreenData -> Screen;
+	Relay relayObj; // TODO: update the lines that use this object.
+	FileWriter fileWriterObj;
+	UserInterface UIobj;
 };
 
 

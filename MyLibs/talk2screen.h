@@ -28,7 +28,7 @@
 #define _GUARD_TALK2SCREEN_H
 
 /* Disable warning to function std::copy */
-#pragma warning(disable : 4996) 
+#pragma warning(disable : 4996)
 
 
 // Include 3rd-party libraries
@@ -50,71 +50,15 @@
 #define VERTEXS_PER_SHADER 4
 #define TRIANGLES_PER_PATCH 2
 
-/* represent pattern changes for a single patch (shader) */
-class PatchData 
-{
-private:
-	; // nothing for now
-public:
-	// methods
-	PatchData(std::vector<float> patchRect, const int patchYdivide,
-			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
-			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
-			: shader(vertexPath, fragmentPath)
-			, rect(patchRect)
-			, yDivide(patchYdivide)
-	{
-		/* Frequent updating variable */
-		pIdx = 0;	
-		shader.use();
-		shader.setInt("yDivide", yDivide);
-		shader.setInt("patternIdx", pIdx);
-	}
-	
-	bool initialize();
-	/* Initialize vertices and their buffers with providing pos(x,y) */
-	void initVertices();
-	/* Update pattern by giving the shader new pattern index */
-	void updatePattern();
-	
-	
-
-	// properties
-	const std::vector<float> rect; // upper-left corner (x, y, width, height)
-	const int yDivide;
-	int pIdx; // pattern index
-	
-	Shader shader;
-	unsigned int VAO, VBO, EBO;
-};
-/* represent pattern changes of an entire local area,
- which consists of many patches
+/*TODO:
+	1. degrade load_image_to_buffers to a method of AreaData
+	2. put all positions and patterns coordinates into ScreenData
+	3. do a similar update to the FishData class.
+	4. reduce unnecessary data-type conversions
+	5. remove unnecessary code
 */
-class AreaData 
-{
-private:
-	; // nothing for now
-public:
-	// methods
-	/* Enquire the number of patches in an arena */
-	AreaData(std::vector<float> areaRect, int n = 1)
-		: rect(areaRect)
-		, numPatches(n)
-	{
-		
-	}
-	bool initialize(std::vector<int> yDivideVec, std::string imgName);
-	bool loadTextureIntoBuffers(std::string imgName);
-	void reverseAllPatches();
-	void renderTexture(int areaIdx);
-	// properties
-	std::vector<PatchData> allPatches;
-	unsigned int texture0; // texture ID 
-	const int numPatches;
-	const std::vector<float> rect; // upper-left corner (x, y, width, height)
-};
 
-class ScreenData 
+class ScreenData
 {
 private: // only used within class
 	GLFWmonitor * * monitors;
@@ -124,7 +68,7 @@ public:
 	// methods
 	ScreenData() // constructor
 	{
-		
+
 	}
 	/* Initilize screen environment and coordinates */
 	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {4,4,4});
@@ -138,8 +82,10 @@ public:
 	void updatePattern();
 	/* Render designed pattern on the screen */
 	void renderTexture();
+
 	/* Update pattern in test experiment */
-	void updatePatternInTest(int sElapsed);
+	void updatePatternInTest(int sElapsed);// TODO: change the name
+	// since test is a thing in experiments, not for screen rendering
 	/* Update pattern in baseline experiment */
 	void updatePatternInBaseline(int sElapsed);
 	/* Update pattern in the blackout experiment */
@@ -160,12 +106,80 @@ public:
 		|		|		|
 	*/
 	std::vector<AreaData> allAreas;
-	
+
 	int numAreas;
 	int lastScreenPatternUpdate;
 	/* Interval for updating pattern in baseline session, which is a random number in range */
 	int baselineInterval;
 };
 
-#endif // !_GUARD_TALK2SCREEN_H
+/* represent pattern changes of an entire local area,
+ which consists of many patches
+*/
+class AreaData
+{
+private:
+	; // nothing for now
+public:
+	// methods
+	/* Enquire the number of patches in an arena */
+	AreaData(std::vector<float> areaRect, int n = 1)
+		: rect(areaRect)
+		, numPatches(n)
+	{
 
+	}
+	bool initialize(std::vector<int> yDivideVec, std::string imgName);
+	bool loadTextureIntoBuffers(std::string imgName);
+	void reverseAllPatches();
+	void renderTexture(int areaIdx);
+	// properties
+	std::vector<PatchData> allPatches;
+	unsigned int texture0; // texture ID
+	const int numPatches;
+	const std::vector<float> rect; // upper-left corner (x, y, width, height)
+};
+
+
+/* represent pattern changes for a single patch (shader) */
+class PatchData
+{
+private:
+	; // nothing for now
+public:
+	// methods
+	PatchData(std::vector<float> patchRect, const int patchYdivide,
+			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
+			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
+			: shader(vertexPath, fragmentPath)
+			, rect(patchRect)
+			, yDivide(patchYdivide)
+	{
+		/* Frequent updating variable */
+		pIdx = 0;
+		shader.use();
+		shader.setInt("yDivide", yDivide);
+		shader.setInt("patternIdx", pIdx);
+	}
+
+	bool initialize();
+	/* Initialize vertices and their buffers with providing pos(x,y) */
+	void initVertices();
+	/* Update pattern by giving the shader new pattern index */
+	void updatePattern();
+
+
+
+	// properties
+	const std::vector<float> rect; // upper-left corner (x, y, width, height)
+	const int yDivide;
+	int pIdx; // pattern index
+
+	Shader shader;
+	unsigned int VAO, VBO, EBO;
+};
+
+
+
+
+#endif // !_GUARD_TALK2SCREEN_H
