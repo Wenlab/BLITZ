@@ -70,12 +70,11 @@ int main()
 
 	while (1)
 	{
-		int timeInSec = expTimer.getElapsedTimeInSec();
+		float timeInSec = expTimer.getElapsedTimeInSec();
 		cout << "Time (s) : " << timeInSec << endl;
-		Board.getTheta(timeInSec * 10.0 / 180 * 3.14);
+		Board.getTheta(timeInSec * 15 / 180 * 3.14);
 		Board.updatePattern();
 		Board.renderTexture();
-		
 	}
 
 }
