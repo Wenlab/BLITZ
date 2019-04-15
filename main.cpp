@@ -40,22 +40,22 @@ using namespace cv;
 
 int main()
 {
-	/*TODO:
-	1. degrade load_image_to_buffers to a method of AreaData
-	2. put all positions and patterns coordinates into ScreenData
-	3. do a similar update to the FishData class.
-	4. reduce unnecessary data-type conversions
-	5. remove unnecessary code
-	*/
-	//vector<const char*> CS_patterns =
-	//{
-	//	"Images/redBlackCheckerboard.jpg",
-	//	"Images/whiteBlackCheckerboard.jpg",
-	//	"Images/fullBlue.jpg"
-	//};
+	string pathName = "F:/FishExpData/";
+	ExperimentData exp(pathName);
+
+	if (!exp.initialize())
+	{
+		cout << "Experiment Initialization Failed." << endl;
+		exit(0);
+	}
+	else {
+		cout << "Experiment initialized." << endl;
+	}
+
+	exp.runOMRtest();
 
 
-	// /// JUST FOR TEST
+	/*JUST FOR TEST
 	Timer expTimer;
 	ScreenData Board;
 	vector<string> CSpattern = 
@@ -72,10 +72,10 @@ int main()
 	{
 		float timeInSec = expTimer.getElapsedTimeInSec();
 		cout << "Time (s) : " << timeInSec << endl;
-		Board.getTheta(timeInSec * 15 / 180 * 3.14);
+		Board.getTheta( timeInSec * 15 / 180 * 3.14);
 		Board.updatePattern();
 		Board.renderTexture();
 	}
-
+	*/
 }
 

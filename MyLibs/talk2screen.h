@@ -77,8 +77,8 @@ public:
 		shader.setFloat("xDis", xDis);
 		shader.setFloat("yDis", yDis);
 		shader.setFloat("theta", theta);
-		shader.setFloat("centerX", 0.5);
-		shader.setFloat("centerY", 0.5);
+		shader.setFloat("centerX", 0.1 );
+		shader.setFloat("centerY", 0.1 );
 	}
 	
 	bool initialize();

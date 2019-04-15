@@ -254,9 +254,9 @@ bool ScreenData::initialize(
 {
 	const vector<vector<float>> allAreaPos =
 	{
-		{ 0.068f, 0.300f, 0.258f, 0.668f },
-		{ 0.840f, -0.810f, 0.258f, 0.73f },
-		{ -0.668f, -0.810f, 0.258f, 0.73f }
+		{ 0.068f, 0.400f, 0.258f, 0.50f },
+		{ 0.840f, -0.670f, 0.258f, 0.50f },
+		{ -0.668f, -0.690f, 0.258f, 0.48f }
 	};
 
 	//y dividing positions for all patches	
@@ -344,6 +344,10 @@ void ScreenData::renderTexture()
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move 
 
 }
+
+
+
+
 
 void ScreenData::getTheta(float theta) 
 {

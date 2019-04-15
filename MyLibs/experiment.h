@@ -76,6 +76,9 @@ public:
 	/* Run unpaired training in the operant learning procedure */
 	void runUnpairedOLexp();
 	
+	/* Run optomotor response test for each fish */
+	void runOMRtest();
+
 	/* Run the entire operant learning procedure */
 	void runOLexp();
 

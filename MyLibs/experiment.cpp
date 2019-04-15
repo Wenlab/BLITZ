@@ -216,6 +216,56 @@ void ExperimentData::runBlueTest()
 
 }
 
+
+void ExperimentData::runOMRtest()
+{
+	const int prepareTime = 1 * 60; // seconnds, default 1 min
+	const int baselineEndTime = 10 * 60; // seconds, default 10 mins
+	const int testEndTime = 30 * 60; // seconds, default 10 mins
+
+	const int expEndTime = testEndTime;
+	const float rotatingRate = 15 / 180 * 3.14; // radians
+
+
+	prepareBgImg(prepareTime);
+	expTimer.start(); // reset timer to 0
+
+	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)// giant grabbing loop
+	{
+
+		cams.grabPylonImg();
+		int cIdx = cams.cIdx;
+		allArenas[cIdx].prepareBgImg(
+			cams.ptrGrabResult->GetWidth(),
+			cams.ptrGrabResult->GetHeight(),
+			cIdx,
+			(uint8_t*)cams.pylonImg.GetBuffer());
+
+		if (!getTime()) {
+			break;
+		}
+		screen.getTheta(float(sElapsed) * rotatingRate); // get the rotating angle
+
+		if (!allArenas[cIdx].findAllFish())
+			cout << "Fish in arena " << cIdx + 1 << " not found." << endl;
+		if (sElapsed < baselineEndTime)
+		{
+			expPhase = 0;             //baseline = 0, training = 1, blackout = 2, test = 3
+			screen.updatePattern();	
+		}
+		else if (sElapsed < expEndTime)
+		{
+			expPhase = 1;
+			screen.updatePattern();
+		}
+		screen.renderTexture();
+		writeOutFrame();
+		annotateFishImgs();
+		displayFishImgs("Display");
+	}
+	cout << "Experiment ended. " << endl;
+}
+
 void ExperimentData::runOLexp()
 {
 	//const int prepareTime = 1 * 60  ; // seconnds, default 1 min
