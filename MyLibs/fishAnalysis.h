@@ -137,8 +137,8 @@ public:
 		, age(fishAge)
 		, yDiv(yDivide)
 	{
-		lastBlackoutStart = -1;
-		lastTimeUpdatePattern = -1;
+		lastBlackoutStart = -1; // TODO: consider to move this to Screen class
+		lastTimeUpdatePattern = -1; // TODO: consider to move this to Screen class
 		lastTimeInCS = -1;
 		lastShockTime = -1;
 		pauseFrames = -1;
@@ -164,12 +164,13 @@ public:
 	// const properties
 	const std::string ID;
 	const int age;
+
+	// TODO: consider to make it const
 	int yDiv; // the division pos between CS and NCS pattern
-
 	int lastBlackoutStart;// TODO: consider to relocate this variable
-
 	int lastTimeUpdatePattern;// TODO: consider to relocate this variable
 
+// status properties
 	int lastTimeInCS;
 	int lastShockTime;
 	int pauseFrames;// TODO: consider to change this variable

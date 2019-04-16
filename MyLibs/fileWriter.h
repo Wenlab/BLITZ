@@ -60,56 +60,8 @@ public:
 	/* initialize yaml- and video- writers */
 	bool initialize(std::string pathName, int width, int height, int frameRate, int x_cut, int y_cut, std::vector<std::vector<int>> yDivs);
 
-	/* Ask the user about the experiment infos */
-	int enquireInfoFromUser();
-
-	/* Get experiment start local time */
-	void get_current_date_time(); // TODO: consider to move this method
-
-	/* Ask the number of cameras to use. */
-	void enquireNumCams();
-
-	/* Ask for what strain of Fish is using */
-	void enquireStrainNames();
-
-	/* Ask for the age for all fish */
-	void enquireFishAge();
-
-	/* Ask for what experiment task for poor fish */
-	void enquireExpTask();
-
-	/* Ask for fish IDs for all arenas */
-	void enquireFishIDs();
-
-	/* Ask for fish IDs in the arena */
-	std::vector<std::string> enquireFishIDs(int arenaIdx);
-
-	/* Get strain names of fish in all arenas */
-	void getStrainNames();
-
-	/* Get strain name of fish in the arena
-	   fishIDs are IDs of fish in one arena */
-	std::string getStrainName(std::vector<std::string> fishIDs);
-
-	/* Get basenames for all output files */
-	void getBasenames();
-
-	/* Get basename for the output files */
-	std::string getBasename(int arenaIdx);
-
-	/* Get all basenames from user */
-	void enquireAllBasenames();
-
-	/* Get basename in one area */
-	std::string enquireBasename(int areaIdx);
-
-	/* Get CS strings for all arena */
-	void get_CS_strings(std::vector<const char*>);
-	/* Get the CS string for the arena */
-	std::string get_CS_string(const char*);
-
 	/* Write out experiment settings as the header for files */
-	void writeOutExpSettings(
+	void writeOutExpSettings( // TODO: reduce number of the variables; also, make it experiment-irrelevant
 		int frameRate,
 		int width,
 		int height,
@@ -138,25 +90,9 @@ public:
 
 	// user input infos
 	int numFiles;
-	int fishAge; // one age for all fish
-	std::string expTask;
-	std::vector<std::vector<std::string>> fishIDs; // fish IDs for all arenas
 
-	// derivated info, such as the strain name
-	std::vector<std::string> strainNames;
-	std::vector<std::string> baseNames; // filenames without extensions
-	std::string timeStr;
-	std::vector<std::string> CSstrs;
 };
 
-/* Show software description and welcome messages to user */
-void showWelcomeMsg();
-
-/* Show the diagram of fish */
-void showFishPosDiagram();
-
-/* Extract the pattern name from the filename */
-std::string extractPatternName(const char*);
 
 /* convert string vector to int-vector like formatted output */
 std::string strVec2str(std::vector<std::string> strVec);

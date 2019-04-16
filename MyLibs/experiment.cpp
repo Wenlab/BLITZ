@@ -58,7 +58,7 @@ bool ExperimentData::initialize()
 	return true;
 }
 
-/* expected method for running a specific experiment
+/* example method for running a specific experiment */
 
 void Experiment::runXXexp()
 {
@@ -70,6 +70,7 @@ void Experiment::runXXexp()
 	const int testEndTime = 15 * 60; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
+	int ITI = 10; // seconds, Inter-trial Interval
 	int lastScreenPatternUpdate = -1; // seconds
 	const int NCStimeThre = 48; // seconds
 	const baselineInterval = 30; // seconds
@@ -78,76 +79,63 @@ void Experiment::runXXexp()
 
 
 	// experimental procedures
-	fishAnalysisObj.prepareBgImg();
-	expTimer.start();
+	for (idxFrame = 0; idxFrame < getIdxFrame(prepareTime, 0); idxFrame) {
+		camerasObj.grabPylonImg(); // grabbing
+		fishAnalysisObj.prepareBgImg((uint8_t*)cams.getPtr2buffer());
+	}
+
+	timerObj.start(); // TODO: add idxFrame to timer class or camera class?
 
 	// TODO: consider to add some abstraction?
-	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)
+	for (idxFrame = 0; idxFrame < getIdxFrame(expEndTime, 0); idxFrame++) // TODO: how to modularize inside this giant grabbing loop.
 	{
 		camerasObj.grabPylonImg(); // grabbing
 		int cIdx = camerasObj.cIdx;
 
-		fishAnalysisObj.alignImgs(cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
+		fishAnalysisObj.alignImgs(cIdx, (uint8_t*)cams.pylonImg.GetBuffer());// TODO: -> cams.getPtr2buffer()
 		timerObj.getTime();
 
 		fishAnalysisObj.findAllFish();
 
 		// run baseline session; TODO: encapsulate the following conditions into a method
-		if (idxFrame < numCameras * baselineEndTime * FRAMERATE)
+		if (idxFrame < getIdxFrame(baselineEndTime, 0)) // add a conversion method that can convert `endTime` to `endFrame`
 		{
 			expPhase = 0;
-			if (sElapsed > lastScreenPatternUpdate + baselineInterval) // TODO: use idxFrame instead?
-			{
-				cout << "Update pattern during baseline session " << endl;
-				lastScreenPatternUpdate = sElapsed;
-
-				screen.reverse(); // top pattern -> bottom; bottom pattern -> top
-			}
-
+			// TODO: replace this following block with screen.reversePeriodically(timeSinceStart,period);
+			screen.reversePeriodically(sElapsed, baselineInterval);//TODO: add this method to screen class
 		}
-		else if (idxFrame < numCameras * trainingEndTime * FRAMERATE)
+		else if (idxFrame < getIdxFrame(trainingEndTime, 0))
 		{
 			expPhase = 1;
 			vector<int> fish2shock = fishAnalysisObj.checkIfGiveShock();
 			relayObj.givePulse(fish2shock);
-
 			// update pattern indices based on shock status, fish positions, and current pattern
 			vector<int> fish2reversePattern = fishAnalysisObj.checkIfReversePattern(); // TODO: is there a better place to put this method?
 			screen.reverse(fish2reversePattern);
-
 		}
-		else if (sElapsed < blackoutEndTime)
+		else if (idxFrame < getIdxFrame(blackoutEndTime, 0))
 		{
 			expPhase = 2;
 			fishAnalysisObj.resetShocksOn();
 			screen.renderBlackPattern();
 		}
-		else if (sElapsed < testEndTime)
+		else if (idxFrame < getIdxFrame(testEndTime, 0))
 		{
 			expPhase = 3;
-			if (sElapsed > lastScreenPatternUpdate + testInterval)
-			{
-				cout << "Update pattern during test" << endl;
-				lastScreenPatternUpdate = sElapsed;
-				screen.reverse();
-			}
+			screen.reversePeriodically(sElapsed-trainingEndTime, testInterval);//TODO: add this method to screen class
 		}
 		screen.renderTexture();
-		writeOutFrame();
+		writeOutFrame();// TODO: consider to have an exp-setting data-struct and a frame data-struct to transfer data to fileWriterObj
 		fishAnalysisObj.annotateImgs();
 		fishAnalysisObj.displayImgs();
-	displayFishImgs("Display");
 	}
 	cout << "Experiment ended. " << endl;
-
-
-
 }
 
 
 
 
-*/
+
 
 
 
@@ -401,6 +389,7 @@ void ExperimentData::trainFish(int cIdx) {
 }
 
 
+// TODO: consider to have a data transfer object
 void ExperimentData::writeOutFrame()
 {
 	int cIdx = cams.cIdx;

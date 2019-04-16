@@ -43,7 +43,7 @@
 #define FRAMERATE 10 // frame rate for all cameras to capture videos
 
 // TODO: rename this class, drop "Data"
-class ExperimentData
+class Experiment
 {
 private:
 	;
@@ -57,10 +57,13 @@ public:
 		sElapsed = -1; // TODO: do we need this, if we already have idxFrame?
 		msRemElapsed = 0; // TODO: useful for calibrations and plotting, but requires better insulation
 		expPhase = -1;
-		ITI = 0;
 	}
 	/* Initialize the experiment */
 	bool initialize(); // TODO: make every module can be enabled separately
+	// TODO: add openStatus boolean array
+
+	/* run a specific experiment */
+	void runXXexp();
 
 	/* Run unpaired training in the operant learning procedure */
 	void runUnpairedOLexp();
@@ -71,17 +74,15 @@ public:
 	/* Run the experiment to do whether fish invisible to the blue pattern */
 	void runBlueTest();
 
-	/* Give the fish a electric pulse */
-	void giveFishShock(int fishIdx); // TODO: think about this abstraction level, is it different from runxxtest?
-
-	/* Experiment during the training period */
-	void trainFish(int cIdx);
-
 	/* Write out info of a frame to disk */
-	void writeOutFrame();
+	void writeOutFrame(); // TODO: consider to move this method to fileWriter class
 
 	/* Get current time */
-	bool getTime();
+	bool getTime(); //TODO: wrap timer class in a new class and move this method to that new class.
+
+
+	/* Get experiment start local time */
+	void get_current_date_time(); // TODO: consider to move this method
 
   // properties
 
@@ -94,7 +95,7 @@ public:
 	int sElapsed;
 	int msRemElapsed;
 	int expPhase;
-	int ITI; // Inter-trial Interval
+
 
 
 

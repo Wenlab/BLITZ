@@ -33,213 +33,9 @@
 #include <algorithm>
 #include <string>
 
-
 using namespace std;
 
-
-bool PatchData::initialize()
-{
-	initVertices();
-	return true;
-}
-
-void PatchData::initVertices()
-{
-	const unsigned int indices[TRIANGLES_PER_PATCH * 3] =
-	{
-		0, 1, 2,
-		0, 3, 2
-	};
-
-	float vertices[32] =
-	{	// positions (0-2)      // colors (3-5)         // texture coordinates (6-7)
-		rect[0], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // top left
-		rect[0], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, rect[3], // bottom left
-		rect[0] - rect[2], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], rect[3], // bottom right
-		rect[0] - rect[2], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], 0.0f // top right
-	};
-
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	// position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	// texture coordinate attribute
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-}
-
-void PatchData::updatePattern()
-{
-	shader.use();
-	shader.setInt("patternIdx", pIdx);
-}
-
-bool AreaData::initialize(vector<int> yDivideVec, string imgName)
-{
-	for (int i = 0; i < numPatches; i++)
-	{
-		vector<float> patchRect = rect;
-		switch (i) {
-		case 0:
-
-			break;// do nothing
-		case 1:
-		{
-			patchRect[0] -= patchRect[2] / 2; // minus half area width
-			break;
-		}
-		case 2:
-		{
-			patchRect[1] += patchRect[3] / 2;
-			break;
-		}
-		case 3:
-		{
-			patchRect[0] -= patchRect[2] / 2;
-			patchRect[1] += patchRect[3] / 2;
-			break;
-		}
-		default:;
-		}
-		patchRect[2] /= 2; // the width of patch is half of area width
-		patchRect[3] /= 2; // the height of patch is half of area width
-		PatchData patch(patchRect, yDivideVec[i]);
-		patch.initialize();
-		allPatches.push_back(patch);
-	}
-	loadTextureIntoBuffers(imgName);
-	return true;
-}
-
-/* Reverse the position of the CS pattern */
-void AreaData::reverseAllPatches() {
-	for (int j = 0; j < numPatches; j++)
-	{
-		allPatches[j].pIdx = !allPatches[j].pIdx;
-		allPatches[j].updatePattern();
-	}
-}
-
-
-/* Load a texture for one area */
-bool AreaData::loadTextureIntoBuffers(string imgName)
-{
-	glGenTextures(1, &texture0);
-	glBindTexture(GL_TEXTURE_2D, texture0);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	// load image, create texture and generate mipmaps
-	int width, height, nrChannels;
-	//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
-	unsigned char *data = stbi_load(imgName.c_str(), &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-		return false;
-	}
-	stbi_image_free(data);
-	return true;
-}
-
-void AreaData::renderTexture(int areaIdx)
-{
-	glActiveTexture(GL_TEXTURE0 + areaIdx);
-	glBindTexture(GL_TEXTURE_2D, texture0);
-	for (int j = 0; j < numPatches; j++)
-	{
-		allPatches[j].shader.use();
-		glUniform1i(glGetUniformLocation(allPatches[j].shader.ID, "texture0"), areaIdx);
-		glBindVertexArray(allPatches[j].VAO);
-		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
-	}
-}
-
-
-void Screen::updatePattern()
-{
-	for (int i = 0; i < allAreas.size(); i++)
-	{
-		AreaData area = allAreas[i];
-		for (int j = 0; j < area.numPatches; j++)
-		{
-			area.allPatches[j].updatePattern();
-		}
-	}
-}
-
-/* update pattern for specific area */
-void ScreenData::updatePattern(int cIdx)
-{
-
-	AreaData area = allAreas[cIdx];
-	for (int j = 0; j < area.numPatches; j++)
-	{
-		area.allPatches[j].updatePattern();
-	}
-
-}
-
-//TODO: update the pattern first.
-// TODO: put experiment-related things in Experiment class
-void ScreenData::updatePatternInTest(int sElapsed) {
-	int testInterval = 30; // seconds, the interval in test is fixed
-	if (sElapsed > lastScreenPatternUpdate + testInterval)
-	{
-		cout << "Update pattern during test" << endl;
-		lastScreenPatternUpdate = sElapsed;
-		for (int i = 0; i < numAreas; i++)
-		{
-			allAreas[i].reverseAllPatches();
-		}
-	}
-}
-
-void ScreenData::updatePatternInBaseline(int sElapsed) {
-	if (sElapsed > lastScreenPatternUpdate + baselineInterval)
-	{
-		cout << "Update pattern during baseline session " << endl;
-		lastScreenPatternUpdate = sElapsed;
-		// uniformly choose a time from 15s to 45s
-		baselineInterval = 30;
-		for (int i = 0; i < numAreas; i++)
-		{
-			allAreas[i].reverseAllPatches();
-		}
-	}
-}
-
-void Screen::renderBlackPattern() {
-	for (int i = 0; i < numAreas; i++)
-	{
-		for (int j = 0; j < allAreas[i].numPatches; j++)
-		{
-			allAreas[i].allPatches[j].pIdx = 2;
-			allAreas[i].allPatches[j].updatePattern();
-		}
-	}
-}
-
-bool ScreenData::initialize(
+bool Screen::initialize(
 	std::vector<string> imgNames, // image file names
 	vector<int> patchesOfAreas
 	)
@@ -282,7 +78,7 @@ bool ScreenData::initialize(
 }
 
 /* Initialize GLFW window */
-bool ScreenData::init_glfw_window()
+bool Screen::init_glfw_window()
 {
 	// glfw: initialize and configure
 	// ------------------------------
@@ -310,7 +106,7 @@ bool ScreenData::init_glfw_window()
 }
 
 /* Initiate glad for using OpenGL functions */
-bool ScreenData::init_glad()
+bool Screen::init_glad()
 {
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -321,7 +117,7 @@ bool ScreenData::init_glad()
 }
 
 /* Render designed pattern on the screen */
-void ScreenData::renderTexture()
+void Screen::renderTexture()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -334,4 +130,178 @@ void ScreenData::renderTexture()
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move
 
+}
+
+bool Area::initialize(vector<int> yDivideVec, string imgName)
+{
+	for (int i = 0; i < numPatches; i++)
+	{
+		vector<float> patchRect = rect;
+		switch (i) {
+			case 0:
+
+				break;// do nothing
+			case 1:
+			{
+				patchRect[0] -= patchRect[2] / 2; // minus half area width
+				break;
+			}
+			case 2:
+			{
+				patchRect[1] += patchRect[3] / 2;
+				break;
+			}
+			case 3:
+			{
+				patchRect[0] -= patchRect[2] / 2;
+				patchRect[1] += patchRect[3] / 2;
+				break;
+			}
+			default:;
+		}
+		patchRect[2] /= 2; // the width of patch is half of area width
+		patchRect[3] /= 2; // the height of patch is half of area width
+		PatchData patch(patchRect, yDivideVec[i]);
+		patch.initialize();
+		allPatches.push_back(patch);
+	}
+	loadTextureIntoBuffers(imgName);
+	return true;
+}
+
+/* Reverse the position of the CS pattern */
+void Area::reverseAllPatches() {
+	for (int j = 0; j < numPatches; j++)
+	{
+		allPatches[j].pIdx = !allPatches[j].pIdx;
+		allPatches[j].updatePattern();
+	}
+}
+
+
+bool Area::loadTextureIntoBuffers(string imgName)
+{
+	glGenTextures(1, &texture0);
+	glBindTexture(GL_TEXTURE_2D, texture0);
+	// set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	// set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// load image, create texture and generate mipmaps
+	int width, height, nrChannels;
+	//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
+	unsigned char *data = stbi_load(imgName.c_str(), &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+		return false;
+	}
+	stbi_image_free(data);
+	return true;
+}
+
+void Area::renderTexture(int areaIdx)
+{
+	glActiveTexture(GL_TEXTURE0 + areaIdx);
+	glBindTexture(GL_TEXTURE_2D, texture0);
+	for (int j = 0; j < numPatches; j++)
+	{
+		allPatches[j].shader.use();
+		glUniform1i(glGetUniformLocation(allPatches[j].shader.ID, "texture0"), areaIdx);
+		glBindVertexArray(allPatches[j].VAO);
+		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
+	}
+}
+
+bool Patch::initialize()
+{
+	initVertices();
+	return true;
+}
+
+void Patch::initVertices()
+{
+	const unsigned int indices[TRIANGLES_PER_PATCH * 3] =
+	{
+		0, 1, 2,
+		0, 3, 2
+	};
+
+	float vertices[32] =
+	{	// positions (0-2)      // colors (3-5)         // texture coordinates (6-7)
+		rect[0], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // top left
+		rect[0], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, rect[3], // bottom left
+		rect[0] - rect[2], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], rect[3], // bottom right
+		rect[0] - rect[2], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], 0.0f // top right
+	};
+
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &EBO);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	// color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	// texture coordinate attribute
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+}
+
+void Patch::updatePattern()
+{
+	shader.use();
+	shader.setInt("patternIdx", pIdx);
+}
+
+
+
+
+void Screen::updatePattern()
+{
+	for (int i = 0; i < allAreas.size(); i++)
+	{
+		AreaData area = allAreas[i];
+		for (int j = 0; j < area.numPatches; j++)
+		{
+			area.allPatches[j].updatePattern();
+		}
+	}
+}
+
+void Screen::updatePattern(int cIdx)
+{
+
+	AreaData area = allAreas[cIdx];
+	for (int j = 0; j < area.numPatches; j++)
+	{
+		area.allPatches[j].updatePattern();
+	}
+
+}
+
+// TODO: to have a Area-level method?
+void Screen::renderBlackPattern() {
+	for (int i = 0; i < numAreas; i++)
+	{
+		for (int j = 0; j < allAreas[i].numPatches; j++)
+		{
+			allAreas[i].allPatches[j].pIdx = 2;
+			allAreas[i].allPatches[j].updatePattern();
+		}
+	}
 }

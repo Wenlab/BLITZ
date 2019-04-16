@@ -43,20 +43,14 @@
 #include <vector>
 #include <iostream>
 
-// User-defined macros
+// User-defined macros; TODO: consider to convert some macros to local variables
 #define NUM_ARENA 3
 #define PATCHES_PER_ARENA 4
 #define NUM_SHADER 12
 #define VERTEXS_PER_SHADER 4
 #define TRIANGLES_PER_PATCH 2
 
-/*TODO:
-	1. degrade load_image_to_buffers to a method of AreaData
-	2. put all positions and patterns coordinates into ScreenData
-	3. do a similar update to the FishData class.
-	4. reduce unnecessary data-type conversions
-	5. remove unnecessary code
-*/
+
 
 class Screen
 {
@@ -86,11 +80,13 @@ public:
 	void reverse();
 	/* Given the indices of patches, reverse patterns on the top and on the bottom */
 	void reverse(std::vector<int> patchIndices);
+	/* Reverse patterns periodically */
+	void reversePeriodically(int sec2start, int period);//TODO: add this method to screen class
 	/* Render black pattern */
 	void renderBlackPattern();
 
 	// properties
-	const GLFWvidmode* mode;
+	const GLFWvidmode* mode; // TODO: consider to make this private
 	std::vector<AreaData> allAreas;
 
 	int numAreas;
@@ -149,8 +145,9 @@ public:
 		shader.setInt("patternIdx", pIdx);
 	}
 
+	/* Initialize memory for patch */
 	bool initialize();
-	/* Initialize vertices and their buffers with providing pos(x,y) */
+	/* Initialize vertices and their buffers with given pos(x,y) */
 	void initVertices();
 	/* Update pattern by giving the shader new pattern index */
 	void updatePattern();

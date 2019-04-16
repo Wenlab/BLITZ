@@ -62,6 +62,9 @@ public:
 	bool initialize(int nCams, int frameWidth, int frameHeight, int frameRate);
 	/* Grab Pylon image from cameras */
 	bool grabPylonImg();
+	/* Get the end index of frames from the end time, start from 0 */
+	int getIdxFrame(int endTime, int idxStart);
+
 
 	// properties
 	Pylon::CBaslerUsbInstantCameraArray cameras;

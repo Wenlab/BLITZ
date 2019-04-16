@@ -26,9 +26,74 @@
 
 class UserInterface
 {
+	// TODO: consider to remove the following variables
+	int fishAge; // one age for all fish
+	std::string expTask;
+	std::vector<std::vector<std::string>> fishIDs; // fish IDs for all arenas
+
+	// derivated info, such as the strain name
+	std::vector<std::string> strainNames;
+	std::vector<std::string> baseNames; // filenames without extensions
+	std::string timeStr;
+	std::vector<std::string> CSstrs;
 
   /* Get CSpatterns from the basenames */
 	std::vector<std::string> get_CS_patterns(std::vector<std::string> CS_strs); // TODO: consider to move this into userInterface
+
+	/* Ask the user about the experiment infos */
+	int enquireInfoFromUser();
+
+	/* Ask the number of cameras to use. */
+	void enquireNumCams();
+
+	/* Ask for what strain of Fish is using */
+	void enquireStrainNames();
+
+	/* Ask for the age for all fish */
+	void enquireFishAge();
+
+	/* Ask for what experiment task for poor fish */
+	void enquireExpTask();
+
+	/* Ask for fish IDs for all arenas */
+	void enquireFishIDs();
+
+	/* Ask for fish IDs in the arena */
+	std::vector<std::string> enquireFishIDs(int arenaIdx);
+
+	/* Get strain names of fish in all arenas */
+	void getStrainNames();
+
+	/* Get strain name of fish in the arena
+	   fishIDs are IDs of fish in one arena */
+	std::string getStrainName(std::vector<std::string> fishIDs);
+
+	/* Get basenames for all output files */
+	void getBasenames();
+
+	/* Get basename for the output files */
+	std::string getBasename(int arenaIdx);
+
+	/* Get all basenames from user */
+	void enquireAllBasenames();
+
+	/* Get basename in one area */
+	std::string enquireBasename(int areaIdx);
+
+	/* Get CS strings for all arena */
+	void get_CS_strings(std::vector<const char*>);
+
+	/* Get the CS string for the arena */
+	std::string get_CS_string(const char*);
+
+	/* Show software description and welcome messages to user */
+	void showWelcomeMsg();
+
+	/* Show the diagram of fish */
+	void showFishPosDiagram();
+
+	/* Extract the pattern name from the filename */
+	std::string extractPatternName(const char*);
 
 }
 
