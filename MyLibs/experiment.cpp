@@ -77,7 +77,6 @@ void Experiment::runXXexp()
 	const testInterval = 30; // seconds
 
 
-
 	// experimental procedures
 	for (idxFrame = 0; idxFrame < getIdxFrame(prepareTime, 0); idxFrame) {
 		camerasObj.grabPylonImg(); // grabbing

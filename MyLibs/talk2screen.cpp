@@ -48,7 +48,7 @@ bool Screen::initialize(
 	};
 
 	//y dividing positions for all patches
-	vector<vector<int>> yPatternDivs =
+	const vector<vector<int>> yPatternDivs =
 	{
 		{ 818, 818, 942, 942 },
 		{ 247, 247, 365, 365 },
@@ -57,8 +57,7 @@ bool Screen::initialize(
 
 	cout << "Initializing the projector screen .. " << endl;
 	/* GLFW initialize and configure */
-	if (!init_glfw_window())
-		return false;
+	init_glfw_window();
 
 	/* glad: load all OpenGL function pointers */
 	if (!init_glad())
@@ -78,10 +77,9 @@ bool Screen::initialize(
 }
 
 /* Initialize GLFW window */
-bool Screen::init_glfw_window()
+void Screen::init_glfw_window() // TODO: consider to make it void by using exception to handle errors.
 {
 	// glfw: initialize and configure
-	// ------------------------------
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -90,19 +88,25 @@ bool Screen::init_glfw_window()
 	int count;
 	monitors = glfwGetMonitors(&count);
 	mode = glfwGetVideoMode(monitors[1]);
+
 	// glfw window creation
-	// --------------------
-	window = glfwCreateWindow(mode->width, mode->height, "VR", monitors[1], NULL);
+	try {
+		window = glfwCreateWindow(mode->width, mode->height, "VR", monitors[1], NULL);
+		if (window == NULL)
+		{
+			glfwTerminate();
+			throw "Failed to create a GLFW window!";
+		}
+	}
+	catch (const char* msg)
+	{
+		cerr << msg << endl;
+	}
+
 	cout << "Screen width: " << mode->width << endl;
 	cout << "Screen height: " << mode->height << endl;
-	if (window == NULL)
-	{
-		std::cout << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return false;
-	}
 	glfwMakeContextCurrent(window);
-	return true;
+
 }
 
 /* Initiate glad for using OpenGL functions */

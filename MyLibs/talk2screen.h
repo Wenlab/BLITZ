@@ -57,9 +57,15 @@ class Screen
 private: // only used within class
 	GLFWmonitor * * monitors;
 	GLFWwindow* window;
+	const GLFWvidmode* mode;
 
 public:
 	// methods
+	/* Basically, there are only 3 kinds of methods
+			1. initiation
+			2. updatePatternIdx
+			3. render
+	*/
 	Screen() // constructor
 	{
 
@@ -67,11 +73,11 @@ public:
 	/* Initilize screen environment and coordinates */
 	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {4,4,4});
 	/* GLFW initialize and configure window */
-	bool init_glfw_window();
+	void init_glfw_window();
 	/* glad: load all OpenGL function pointers */
 	bool init_glad();
 	/* Update pattern for specific area */
-	void updatePattern(int cIdx);
+	void updatePatternIdx(int areaIdx); // TODO: get a better name since it is a little confusing with render
 	/* Update patternIdx for all shaders in the screen */
 	void updatePattern();
 	/* Render designed pattern on the screen */
@@ -86,9 +92,7 @@ public:
 	void renderBlackPattern();
 
 	// properties
-	const GLFWvidmode* mode; // TODO: consider to make this private
 	std::vector<AreaData> allAreas;
-
 	int numAreas;
 	int lastScreenPatternUpdate;
 };

@@ -49,8 +49,12 @@ bool Relay::givePulse(int idxChannel)
 	return res;
 }
 
-bool Relay::givePulse(vector<int> channelIndices)
+bool Relay::givePulse() // TODO: -> 16-bit boolean array, or a 16-bit binary number
 {
 	// TODO: write the code to open multiple channesl simultaneously,
-	// might need to generate new 16-base code 
+	// might need to generate new 16-base code
+
+
+
+
 }

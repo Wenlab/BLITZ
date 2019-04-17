@@ -54,6 +54,7 @@ class FishAnalysis {
 		/* Initialize all arenas will be used in the experiment */
 		std::vector<ArenaData> initializeAllArenas(std::vector<std::vector<int>> yDivs, std::vector<std::vector<std::string>> fishIDs, int fishAge);
 
+
 		/* Prepare background image for MOG subtractor */
 		void prepareBgImg(const int prepareTime); // TODO: move this into fishAnalysis
 
@@ -104,6 +105,11 @@ public:
 	|	2	|	3	|
 	|		|		|
 	*/
+
+	/* getImgFromCamera */
+	bool getImgFromCamera(uint8_t* ptr2buffer);
+
+	/* */
 	bool findAllFish();
 
 	/* Align all images to user's view */
