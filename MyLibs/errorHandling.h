@@ -20,6 +20,9 @@
 
 * Created on: Apr. 15, 2018
 */
+#ifndef ERRORHANDLING_H_DEF
+#define ERRORHANDLING_H_DEF
+
 #include <iostream>
 
 
@@ -28,9 +31,31 @@ class errorHandling()
   // Methods
   void waitUserInput2exit();
 
+  /* catch NULL value with any datatype*/
+  template <typename T>
+  void tryCatchNull(T value, string exceptionString)
+  {
+    if (value == NULL)
+      throw exceptionString;
+  }
 
+  /* catch zeor value with any datatype*/
+  template <typename T>
+  void tryCatchNull(T value, string exceptionString)
+  {
+    if (value == 0)
+      throw exceptionString;
+  }
+
+  /* catch empty value with any datatype; add this method if needed*/
 
   // Properties
 
 
 }
+
+
+
+
+
+#endif // ERRORHANDLING_H_DEF

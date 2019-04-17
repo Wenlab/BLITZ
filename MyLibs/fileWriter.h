@@ -36,6 +36,10 @@
 #ifndef _GUARD_WRITEOUTFISH_H
 #define _GUARD_WRITEOUTFISH_H
 
+// Include user-defined libraries
+#include "errorHandling.h"
+
+
 // Include OpenCV libraries
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>

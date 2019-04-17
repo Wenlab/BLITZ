@@ -28,7 +28,11 @@
 
 #ifndef _GUARD_TALK2CAMERA_H
 #define _GUARD_TALK2CAMERA_H
-// Include files to use the PYLON API.
+
+// Include user-defined libraries
+#include "errorHandling.h"
+
+// Include Basler Pylon libraries
 #include <pylon/PylonIncludes.h>
 #include <pylon/ImageFormatConverter.h>
 #include <pylon/usb/BaslerUsbInstantCameraArray.h>

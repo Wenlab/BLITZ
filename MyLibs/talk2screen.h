@@ -59,6 +59,22 @@ private: // only used within class
 	GLFWwindow* window;
 	const GLFWvidmode* mode;
 
+protected:
+/* the following properties or methods should not be accessed by users,
+but can be accessed by inherited classes */
+	 /* GLFW initialize and configure window,
+	 this method is used in initialize() only */
+	 void init_glfw_window();
+
+	 /* glad: load all OpenGL function pointers,
+	 this method is used in initialize() only */
+	 void init_glad();
+
+	 /* Render designed pattern on the screen
+	 The keyword `render` is reserved for bottom-level rendering,
+	 DO NOT use this word in high level "showPattern" methods */
+	 void renderTexture();
+
 public:
 	// methods
 	/* Basically, there are only 3 kinds of methods
@@ -70,31 +86,36 @@ public:
 	{
 
 	}
+	/* TODO: what if I want to show a single pattern rendering?
+		 write a demo method?
+		 Answer:
+		 Screen screenObj;
+		 // TODO: should I write an overload function to simplify user's work?
+		 screenObj.initialize(string::fileName); or vector<string>::fileName?
+		 // TODO: this is an inconsistent abstraction level, unify it to the screen level
+		 // e.g., screenObj.reversePatternIdx(int interval);
+		 screen.showPattern();
+
+	*/
+
 	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {4,4,4});
-	/* GLFW initialize and configure window */
-	void init_glfw_window();
-	/* glad: load all OpenGL function pointers */
-	void init_glad();
-	/* Update pattern for specific area */
-	void updatePatternIdx(int areaIdx); // TODO: get a better name since it is a little confusing with render
+	void initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {4,4,4});
+	/* Update pattern for a specific area */
+	void showPattern(int areaIdx); // TODO: get a better name since it is a little confusing with render
 	/* Update patternIdx for all shaders in the screen */
 	void updatePattern();
-	/* Render designed pattern on the screen */
-	void renderTexture();
 	/* Reverse patterns on the top and on the bottom */
-	void reverse();
+	void reversePattern();
 	/* Given the indices of patches, reverse patterns on the top and on the bottom */
-	void reverse(std::vector<int> patchIndices);
+	void reversePattern(std::vector<int> patchIndices); // TODO: -> reversePatternIndices, maybe some overload input argument type?
 	/* Reverse patterns periodically */
-	void reversePeriodically(int sec2start, int period);//TODO: add this method to screen class
+	void reversePattern(int sec2start, int period);//TODO: add this method to screen class
 	/* Render black pattern */
-	void renderBlackPattern();
+	void showBlackPattern();
 
 	// properties
 	std::vector<AreaData> allAreas;
 	int numAreas;
-	int lastScreenPatternUpdate;
 };
 
 /* represent pattern changes of an entire local area,
@@ -114,8 +135,8 @@ public:
 
 	}
 	/* TODO: add descriptions */
-	bool initialize(std::vector<int> yDivideVec, std::string imgName);
-	bool loadTextureIntoBuffers(std::string imgName);
+	void initialize(std::vector<int> yDivideVec, std::string imgName);
+	void loadTextureIntoBuffers(std::string imgName);
 	void reverseAllPatches(); // TODO: -> reverse();
 	void renderTexture(int areaIdx);
 
@@ -150,7 +171,7 @@ public:
 	}
 
 	/* Initialize memory for patch */
-	bool initialize();
+	void initialize();
 	/* Initialize vertices and their buffers with given pos(x,y) */
 	void initVertices();
 	/* Update pattern by giving the shader new pattern index */

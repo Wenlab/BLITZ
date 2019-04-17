@@ -27,6 +27,9 @@
 #ifndef _GUARD_TALK2RELAY_H
 #define _GUARD_TALK2RELAY_H
 
+// Include user-defined libraries
+#include "errorHandling.h"
+
 // Include 3rd party libraries
 #include "../3rdPartyLibs/SerialCom/SerialPort.h"
 
@@ -69,7 +72,7 @@ public:
 	bool givePulse(int idxChannel);
 
 	/* Open multiple channels */
-	bool Relay::givePulse(vector<int> channelIndices);//TODO: finish the implementation of this method 
+	bool Relay::givePulse(vector<int> channelIndices);//TODO: finish the implementation of this method
 
 	// properties
 	CSerialPort sPort; // serialPort

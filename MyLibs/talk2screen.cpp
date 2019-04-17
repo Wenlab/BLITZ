@@ -30,15 +30,12 @@
 
 // Include user-defined libraries
 #include "talk2screen.h"
-#include "errorHandling.h"
-
-// Include standard libraries
 #include <algorithm>
 #include <string>
 
 using namespace std;
 
-bool Screen::initialize(
+void Screen::initialize(
 	std::vector<string> imgNames, // image file names
 	vector<int> patchesOfAreas
 	)
@@ -61,8 +58,9 @@ bool Screen::initialize(
 	cout << "Initializing the projector screen .. " << endl;
 	/* GLFW initialize and configure */
 	init_glfw_window();
+
 	/* glad: load all OpenGL function pointers */
-	init_glad()
+	init_glad();
 
 	// Initialize all areas
 	numAreas = imgNames.size();
@@ -74,7 +72,7 @@ bool Screen::initialize(
 		allAreas.push_back(area);
 	}
 	cout << "Screen initialization succeeded." << endl << endl;
-	return true;
+
 }
 
 /* Initialize GLFW window */
@@ -91,18 +89,12 @@ void Screen::init_glfw_window() // TODO: consider to make it void by using excep
 	mode = glfwGetVideoMode(monitors[1]);
 
 	// glfw window creation
-	try
-	{
+	try {
 		window = glfwCreateWindow(mode->width, mode->height, "VR", monitors[1], NULL);
-		if (window == NULL)
-		{
-			glfwTerminate();
-			throw "Failed to create a GLFW window!";
-		}
-	}
-	catch (const char* msg)
-	{
+		tryCatchNull(window, "Failed to create a GLFW window!");
+	} catch (string msg) {
 		cout << msg << endl;
+		glfwTerminate();
 		waitUserInput2exit();
 	}
 
@@ -113,36 +105,72 @@ void Screen::init_glfw_window() // TODO: consider to make it void by using excep
 }
 
 /* Initiate glad for using OpenGL functions */
-void Screen::init_glad()
+bool Screen::init_glad()
 {
-	try {
-		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-			throw "Failed to initialize GLAD!";
-	} catch (const char* msg) {
-		cout << msg << endl;
-		waitUserInput2exit();
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		cout << "Failed to initialize GLAD" << endl;
+		return false;
 	}
-
 	return true;
 }
 
-/* Render designed pattern on the screen */
+void Screen::updatePattern()
+{
+	for (int i = 0; i < allAreas.size(); i++)
+	{
+		AreaData area = allAreas[i];
+		for (int j = 0; j < area.numPatches; j++)
+		{
+			area.allPatches[j].updatePattern();
+		}
+	}
+	renderTexture();
+}
+
+void Screen::updatePattern(int cIdx)
+{
+
+	AreaData area = allAreas[cIdx];
+	for (int j = 0; j < area.numPatches; j++)
+	{
+		area.allPatches[j].updatePattern();
+	}
+	renderTexture();
+}
+
+void Screen::reversePattern()
+{
+
+}
+
+void Screen::showBlackPattern() {
+	for (int i = 0; i < numAreas; i++)
+	{
+		for (int j = 0; j < allAreas[i].numPatches; j++)
+		{
+			allAreas[i].allPatches[j].pIdx = 2;
+			allAreas[i].allPatches[j].updatePattern();
+		}
+	}
+	renderTexture();
+}
+
 void Screen::renderTexture()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	for (int  i = 0; i < allAreas.size(); i++)
-	{
 		allAreas[i].renderTexture(i);
-	}
+
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move
 
 }
 
-bool Area::initialize(vector<int> yDivideVec, string imgName)
+void Area::initialize(vector<int> yDivideVec, string imgName)
 {
 	for (int i = 0; i < numPatches; i++)
 	{
@@ -175,7 +203,6 @@ bool Area::initialize(vector<int> yDivideVec, string imgName)
 		allPatches.push_back(patch);
 	}
 	loadTextureIntoBuffers(imgName);
-	return true;
 }
 
 /* Reverse the position of the CS pattern */
@@ -185,10 +212,11 @@ void Area::reverseAllPatches() {
 		allPatches[j].pIdx = !allPatches[j].pIdx;
 		allPatches[j].updatePattern();
 	}
+
 }
 
 
-bool Area::loadTextureIntoBuffers(string imgName)
+void Area::loadTextureIntoBuffers(string imgName)
 {
 	glGenTextures(1, &texture0);
 	glBindTexture(GL_TEXTURE_2D, texture0);
@@ -200,20 +228,18 @@ bool Area::loadTextureIntoBuffers(string imgName)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// load image, create texture and generate mipmaps
 	int width, height, nrChannels;
-	//stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis
-	unsigned char *data = stbi_load(imgName.c_str(), &width, &height, &nrChannels, 0);
-	if (data)
-	{
+	try{
+		unsigned char *data = stbi_load(imgName.c_str(), &width, &height, &nrChannels, 0);
+		if (!data)
+			throw "Failed to load texture!";
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
+		stbi_image_free(data);
+	} catch (const char* errorMsg) {
+		cout << errorMsg << endl;
+		waitUserInput2exit();
 	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-		return false;
-	}
-	stbi_image_free(data);
-	return true;
+
 }
 
 void Area::renderTexture(int areaIdx)
@@ -275,42 +301,4 @@ void Patch::updatePattern()
 {
 	shader.use();
 	shader.setInt("patternIdx", pIdx);
-}
-
-
-
-
-void Screen::updatePattern()
-{
-	for (int i = 0; i < allAreas.size(); i++)
-	{
-		AreaData area = allAreas[i];
-		for (int j = 0; j < area.numPatches; j++)
-		{
-			area.allPatches[j].updatePattern();
-		}
-	}
-}
-
-void Screen::updatePattern(int cIdx)
-{
-
-	AreaData area = allAreas[cIdx];
-	for (int j = 0; j < area.numPatches; j++)
-	{
-		area.allPatches[j].updatePattern();
-	}
-
-}
-
-// TODO: to have a Area-level method?
-void Screen::renderBlackPattern() {
-	for (int i = 0; i < numAreas; i++)
-	{
-		for (int j = 0; j < allAreas[i].numPatches; j++)
-		{
-			allAreas[i].allPatches[j].pIdx = 2;
-			allAreas[i].allPatches[j].updatePattern();
-		}
-	}
 }

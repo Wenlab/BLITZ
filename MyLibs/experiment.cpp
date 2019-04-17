@@ -123,7 +123,6 @@ void Experiment::runXXexp()
 			expPhase = 3;
 			screen.reversePeriodically(sElapsed-trainingEndTime, testInterval);//TODO: add this method to screen class
 		}
-		screen.renderTexture();
 		writeOutFrame();// TODO: consider to have an exp-setting data-struct and a frame data-struct to transfer data to fileWriterObj
 		fishAnalysisObj.annotateImgs();
 		fishAnalysisObj.displayImgs();

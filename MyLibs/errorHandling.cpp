@@ -28,6 +28,7 @@ void errorHandling::waitUserInput2exit()
   do
 	{
 		cout << '\n' << "Error caught!" << endl <<
-     Check the error message and press a key to exit...";
+     "Please check the error message and press a key to exit...";
 	} while (cin.get() != '\n');
+  exit(0);
 }
