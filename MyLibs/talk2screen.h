@@ -98,8 +98,22 @@ public:
 
 	*/
 
-	/* Initilize screen environment and coordinates */
-	void initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {4,4,4});
+	/* Initilize screen environment and coordinates for a single patch */
+	void initialize(
+		std::string imgName, // name of the image to show
+		std::vector<float> boundBox, // bounding area of the pattern x,y (-1.0f<->1.0f)
+		string renderType /* 1. full: full rendering of a single pattern;
+		2. half: half pattern, half background (pure-color) rendering
+		3. rotation: render rotating pattern with a fixed rotating rate */
+	);
+
+	/* Initilize screen environment and coordinates for multiple patterns */
+	void initialize(
+		std::vector<std::string> filenames, // names of the images to show
+		std::vector<int> patchesOfAreas = {4,4,4} // number of patches in each area
+	);
+
+
 	/* Update pattern for a specific area */
 	void showPattern(int areaIdx); // TODO: get a better name since it is a little confusing with render
 	/* Update patternIdx for all shaders in the screen */
@@ -109,13 +123,16 @@ public:
 	/* Given the indices of patches, reverse patterns on the top and on the bottom */
 	void reversePattern(std::vector<int> patchIndices); // TODO: -> reversePatternIndices, maybe some overload input argument type?
 	/* Reverse patterns periodically */
-	void reversePattern(int sec2start, int period);//TODO: add this method to screen class
+	void reversePattern(
+		int sec2start, // time to the beginning in second
+		int period // the interval between two reversals
+	);
 	/* Render black pattern */
 	void showBlackPattern();
 
 	// properties
 	std::vector<AreaData> allAreas;
-	int numAreas;
+	int numAreas; //TODO: consider to get this via a get method "numAreas = allAreas.size();"
 };
 
 /* represent pattern changes of an entire local area,
@@ -128,13 +145,22 @@ private:
 public:
 	// methods
 	/* Enquire the number of patches in an arena */
-	Area(std::vector<float> areaRect, int n = 1)
-		: rect(areaRect)
+	Area(std::vector<float> rect, int n = 1)
+		: boundBox(rect)
 		, numPatches(n)
 	{
 
 	}
 	/* TODO: add descriptions */
+	void initialize(
+		std::string imgName, // name of the pattern to show
+		std::string renderType, /* 1. full: full rendering of a single pattern;
+		2. half: half pattern, half background (pure-color) rendering
+		3. rotation: render rotating pattern with a fixed rotating rate */
+		int numPatches = 1; // number of patches in the area
+	)
+
+
 	void initialize(std::vector<int> yDivideVec, std::string imgName);
 	void loadTextureIntoBuffers(std::string imgName);
 	void reverseAllPatches(); // TODO: -> reverse();
@@ -145,7 +171,8 @@ public:
 	std::vector<PatchData> allPatches;
 	unsigned int textureID; // texture ID // TODO: update this name in other files (texture0 -> textureID)
 	const int numPatches;
-	const std::vector<float> rect; // upper-left corner (x, y, width, height)
+	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
+	// TODO: -> boundBox
 };
 
 
@@ -153,42 +180,41 @@ public:
 class Patch
 {
 private:
-	; // nothing for now
+	Shader shader;
+	unsigned int VAO, VBO, EBO;
+protected:
+/* the following properties or methods should not be accessed by users,
+but can be accessed by inherited classes */
+	/* Initialize vertices and their buffers with given pos(x,y) */
+	void initVertices();
+
 public:
 	// methods
-	Patch(std::vector<float> patchRect, const int patchYdivide,
-			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
-			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
-			: shader(vertexPath, fragmentPath)
-			, rect(patchRect)
-			, yDivide(patchYdivide)
+	Patch(std::vector<float> patchRect)
+			: boundBox(patchRect)
 	{
 		/* Frequent updating variable */
 		pIdx = 0;
-		shader.use();
-		shader.setInt("yDivide", yDivide);
-		shader.setInt("patternIdx", pIdx);
+		radVelo = 0;
 	}
 
 	/* Initialize memory for patch */
 	void initialize();
-	/* Initialize vertices and their buffers with given pos(x,y) */
-	void initVertices();
+
 	/* Update pattern by giving the shader new pattern index */
-	void updatePattern();
-
-
+	void updatePattern(); // TODO: consider to change the name
 
 	// properties
-	const std::vector<float> rect; // upper-left corner (x, y, width, height)
-	const int yDivide;
+	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
+	const int yDivide; // TODO: calculate this variable from boundBox
 	int pIdx; // pattern index
+	float radVelo; // rotating radian velocity
 
-	Shader shader;
-	unsigned int VAO, VBO, EBO;
+
 };
 
-
-
+// global functions
+// TODO: consider to move this function to error handling class
+bool iequals(const string& a, const string& b);
 
 #endif // !_GUARD_TALK2SCREEN_H

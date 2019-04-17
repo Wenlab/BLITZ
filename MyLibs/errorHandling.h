@@ -39,11 +39,11 @@ class errorHandling()
       throw exceptionString;
   }
 
-  /* catch zeor value with any datatype*/
+  /* catch false value with any datatype*/
   template <typename T>
-  void tryCatchNull(T value, string exceptionString)
+  void tryCatchFalse(T value, string exceptionString)
   {
-    if (value == 0)
+    if (value == false)
       throw exceptionString;
   }
 
