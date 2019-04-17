@@ -76,23 +76,18 @@ bool CameraData::grabPylonImg()
 	Pylon::CImageFormatConverter formatConverter;
 	formatConverter.OutputPixelFormat = Pylon::EPixelType::PixelType_Mono8;
 
+	// Error handling
 	try{
 		cameras.RetrieveResult(5000, ptrGrabResult, TimeoutHandling_ThrowException);
-		if (!ptrGrabResult->GrabSucceeded())
-		{
+		if (!ptrGrabResult->GrabSucceeded()) // TODO: rewrite this part with "throw"
 			cout << "Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
-			return false;
-		}
-		cIdx = ptrGrabResult->GetCameraContext();
-		formatConverter.Convert(pylonImg,ptrGrabResult);
-	}
-	catch (const GenericException &e)
-	{
-		// Error handling
+	} catch (const GenericException &e) {
 		cerr << "An exception occurred." << endl
 			<< e.GetDescription() << endl;
 		return false;
 	}
+	cIdx = ptrGrabResult->GetCameraContext();
+	formatConverter.Convert(pylonImg,ptrGrabResult);
 	return cameras.IsGrabbing();
 }
 

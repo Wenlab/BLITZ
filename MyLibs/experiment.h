@@ -80,7 +80,6 @@ public:
 	/* Get current time */
 	bool getTime(); //TODO: wrap timer class in a new class and move this method to that new class.
 
-
 	/* Get experiment start local time */
 	void get_current_date_time(); // TODO: consider to move this method
 

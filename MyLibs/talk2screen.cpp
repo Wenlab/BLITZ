@@ -30,6 +30,9 @@
 
 // Include user-defined libraries
 #include "talk2screen.h"
+#include "errorHandling.h"
+
+// Include standard libraries
 #include <algorithm>
 #include <string>
 
@@ -58,10 +61,8 @@ bool Screen::initialize(
 	cout << "Initializing the projector screen .. " << endl;
 	/* GLFW initialize and configure */
 	init_glfw_window();
-
 	/* glad: load all OpenGL function pointers */
-	if (!init_glad())
-		return false;
+	init_glad()
 
 	// Initialize all areas
 	numAreas = imgNames.size();
@@ -90,7 +91,8 @@ void Screen::init_glfw_window() // TODO: consider to make it void by using excep
 	mode = glfwGetVideoMode(monitors[1]);
 
 	// glfw window creation
-	try {
+	try
+	{
 		window = glfwCreateWindow(mode->width, mode->height, "VR", monitors[1], NULL);
 		if (window == NULL)
 		{
@@ -100,7 +102,8 @@ void Screen::init_glfw_window() // TODO: consider to make it void by using excep
 	}
 	catch (const char* msg)
 	{
-		cerr << msg << endl;
+		cout << msg << endl;
+		waitUserInput2exit();
 	}
 
 	cout << "Screen width: " << mode->width << endl;
@@ -110,13 +113,16 @@ void Screen::init_glfw_window() // TODO: consider to make it void by using excep
 }
 
 /* Initiate glad for using OpenGL functions */
-bool Screen::init_glad()
+void Screen::init_glad()
 {
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		cout << "Failed to initialize GLAD" << endl;
-		return false;
+	try {
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+			throw "Failed to initialize GLAD!";
+	} catch (const char* msg) {
+		cout << msg << endl;
+		waitUserInput2exit();
 	}
+
 	return true;
 }
 
@@ -143,7 +149,6 @@ bool Area::initialize(vector<int> yDivideVec, string imgName)
 		vector<float> patchRect = rect;
 		switch (i) {
 			case 0:
-
 				break;// do nothing
 			case 1:
 			{

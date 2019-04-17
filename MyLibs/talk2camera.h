@@ -44,7 +44,7 @@
 // User-defined macros
 #define MAX_CAMERAS 3
 
-/* Define Basler Pylon properties and related methods for a single USB camera */
+/* Define Basler Pylon properties and related methods for multiple (or single) USB cameras */
 class Cameras
 {
 private:

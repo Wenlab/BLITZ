@@ -75,7 +75,7 @@ public:
 	/* GLFW initialize and configure window */
 	void init_glfw_window();
 	/* glad: load all OpenGL function pointers */
-	bool init_glad();
+	void init_glad();
 	/* Update pattern for specific area */
 	void updatePatternIdx(int areaIdx); // TODO: get a better name since it is a little confusing with render
 	/* Update patternIdx for all shaders in the screen */
