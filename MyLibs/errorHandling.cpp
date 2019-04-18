@@ -23,7 +23,7 @@
 
 using namespace std;
 
-void errorHandling::waitUserInput2exit()
+void waitUserInput2exit()
 {
   do
 	{

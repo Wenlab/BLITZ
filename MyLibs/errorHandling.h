@@ -25,7 +25,7 @@
 
 #include <iostream>
 
-
+// TODO: Do I need a class for this?
 class errorHandling()
 {
 
