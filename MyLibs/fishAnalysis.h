@@ -164,6 +164,7 @@ public:
 
 	bool ifGiveShock(int pIdx, int sElapsed);
 
+	// TODO: remove this method 
 	int updatePatternInTraining(int sElapsed, int pIdx, int ITI);
 
 	// properties

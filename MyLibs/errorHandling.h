@@ -28,31 +28,31 @@
 
 class errorHandling()
 {
-  // Methods
-  void waitUserInput2exit();
-
-  /* catch NULL value with any datatype*/
-  template <typename T>
-  void tryCatchNull(T value, string exceptionString)
-  {
-    if (value == NULL)
-      throw exceptionString;
-  }
-
-  /* catch false value with any datatype*/
-  template <typename T>
-  void tryCatchFalse(T value, string exceptionString)
-  {
-    if (value == false)
-      throw exceptionString;
-  }
-
-  /* catch empty value with any datatype; add this method if needed*/
 
   // Properties
 
 
 }
+// Methods
+void waitUserInput2exit();
+
+/* catch NULL value with any datatype*/
+template <typename T>
+void tryCatchNull(T value, string exceptionString)
+{
+  if (value == NULL)
+    throw exceptionString;
+}
+
+/* catch false value with any datatype*/
+template <typename T>
+void tryCatchFalse(T value, string exceptionString)
+{
+  if (value == false)
+    throw exceptionString;
+}
+
+/* catch empty value with any datatype; add this method if needed*/
 
 
 

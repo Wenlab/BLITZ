@@ -70,11 +70,6 @@ but can be accessed by inherited classes */
 	 this method is used in initialize() only */
 	 void init_glad();
 
-	 /* Render designed pattern on the screen
-	 The keyword `render` is reserved for bottom-level rendering,
-	 DO NOT use this word in high level "showPattern" methods */
-	 void renderTexture();
-
 public:
 	// methods
 	/* Basically, there are only 3 kinds of methods
@@ -86,49 +81,51 @@ public:
 	{
 
 	}
-	/* TODO: what if I want to show a single pattern rendering?
-		 write a demo method?
-		 Answer:
-		 Screen screenObj;
-		 // TODO: should I write an overload function to simplify user's work?
-		 screenObj.initialize(string::fileName); or vector<string>::fileName?
-		 // TODO: this is an inconsistent abstraction level, unify it to the screen level
-		 // e.g., screenObj.reversePatternIdx(int interval);
-		 screen.showPattern();
-
-	*/
-
-	/* Initilize screen environment and coordinates for a single patch */
+	/* Initilize screen environment and coordinates for a single area */
 	void initialize(
 		std::string imgName, // name of the image to show
 		std::vector<float> boundBox, // bounding area of the pattern x,y (-1.0f<->1.0f)
-		string renderType /* 1. full: full rendering of a single pattern;
-		2. half: half pattern, half background (pure-color) rendering
-		3. rotation: render rotating pattern with a fixed rotating rate */
+		std::string renderType // type of rendering, full, half, rotating
 	);
 
-	/* Initilize screen environment and coordinates for multiple patterns */
+	// TODO: write the implementation
+	/* Initilize screen environment with pre-defined multi-bounding areas */
 	void initialize(
-		std::vector<std::string> filenames, // names of the images to show
-		std::vector<int> patchesOfAreas = {4,4,4} // number of patches in each area
+		std::vector<std::string> imgNames, // name of the images to show
+		std::string renderType, // type of rendering, full, half, rotating
+		std::vector<std::vector<float>> boundBoxes, // bounding boxes of all the areas
+		std::vector<int> patchesInAreas // number of patches in each area
 	);
 
+	/* Show all patterns on the screen */
+	void show();
 
-	/* Update pattern for a specific area */
-	void showPattern(int areaIdx); // TODO: get a better name since it is a little confusing with render
-	/* Update patternIdx for all shaders in the screen */
-	void updatePattern();
-	/* Reverse patterns on the top and on the bottom */
-	void reversePattern();
-	/* Given the indices of patches, reverse patterns on the top and on the bottom */
-	void reversePattern(std::vector<int> patchIndices); // TODO: -> reversePatternIndices, maybe some overload input argument type?
-	/* Reverse patterns periodically */
-	void reversePattern(
+	/* Show pattern for a specific area */
+	void show(int areaIdx);
+
+	/* Render black pattern */
+	void showBlackPattern();
+
+	/* Reverse patterns on the top and on the bottom,
+	 	only for halfSplit rendering */
+	void reverse();
+
+	/* Given the indices of patches, reverse patterns on the top and on the bottom,
+	  only for halfSplit rendering */
+	void reverse(std::vector<std::vector<bool>> patchIndices); // indices to indicate the patches to reverse
+
+	/* Reverse all patterns periodically */
+	void reverse(
 		int sec2start, // time to the beginning in second
 		int period // the interval between two reversals
 	);
-	/* Render black pattern */
-	void showBlackPattern();
+
+	/* Reverse patterns periodically */
+	void reverse(
+		int sec2start, // time to the beginning in second
+		int period, // the interval between two reversals
+		std::vector<std::vector<bool>> patchIndices // indices to indicate the patches to reverse
+	);
 
 	// properties
 	std::vector<AreaData> allAreas;
@@ -141,77 +138,163 @@ public:
 class Area
 {
 private:
-	; // nothing for now
+	string renderType; /* 1. full: full rendering of a single pattern;
+	2. half: half pattern, half background (pure-color) rendering
+	3. rotation: render rotating pattern with a fixed rotating rate */
+	unsigned int textureID; // texture ID
+
+	const int numPatches;
+	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
+
 public:
 	// methods
 	/* Enquire the number of patches in an arena */
-	Area(std::vector<float> rect, int n = 1)
+	Area(
+		std::vector<float> rect,
+		string RT = "full",
+		int n = 1,
+	)
 		: boundBox(rect)
+		, renderType(RT)
 		, numPatches(n)
 	{
 
 	}
-	/* TODO: add descriptions */
-	void initialize(
-		std::string imgName, // name of the pattern to show
-		std::string renderType, /* 1. full: full rendering of a single pattern;
-		2. half: half pattern, half background (pure-color) rendering
-		3. rotation: render rotating pattern with a fixed rotating rate */
-		int numPatches = 1; // number of patches in the area
-	)
+	/* Initialize memory */
+	void initialize( std::string imgName); // name of the pattern to show
 
-
-	void initialize(std::vector<int> yDivideVec, std::string imgName);
+	/* load texture (image) to GPU buffers */
 	void loadTextureIntoBuffers(std::string imgName);
-	void reverseAllPatches(); // TODO: -> reverse();
+
+	/* Update idxCases for all patches in this area,
+	 	only for halfSplit rendering type */
+	void updateIdxCase(int value);
+
+	// TODO: consider to have all manipulation methods at this level?
+	/* Negate idxCases for all patches in this area,
+	 	only for halfSplit rendering type  */
+	void negateIdxCase();
+
+	/* Given idxPatchess, negate idxCases for all patches in this area,
+	 	only for halfSplit rendering type  */
+	void negateIdxCase(int patchIndex);
+
+	/* Render designed pattern on the screen
+	The keyword `render` is reserved for bottom-level rendering,
+	DO NOT use this word in high level "showPattern" methods */
+	/* Render pattern for the entire area via textureID */
 	void renderTexture(int areaIdx);
 
 
 	// properties
 	std::vector<PatchData> allPatches;
-	unsigned int textureID; // texture ID // TODO: update this name in other files (texture0 -> textureID)
-	const int numPatches;
-	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
-	// TODO: -> boundBox
+
 };
 
-
-/* represent pattern changes for a single patch (shader) */
+/* This an example class for inheritances.
+A wrapper class of the Shader class */
 class Patch
 {
-private:
-	Shader shader;
-	unsigned int VAO, VBO, EBO;
 protected:
 /* the following properties or methods should not be accessed by users,
 but can be accessed by inherited classes */
+	// Properties
+	Shader shader;
+	unsigned int VAO, VBO, EBO;
+	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
+
+	// Methods
 	/* Initialize vertices and their buffers with given pos(x,y) */
 	void initVertices();
 
 public:
-	// methods
-	Patch(std::vector<float> patchRect)
-			: boundBox(patchRect)
-	{
-		/* Frequent updating variable */
-		pIdx = 0;
-		radVelo = 0;
-	}
-
 	/* Initialize memory for patch */
 	void initialize();
 
-	/* Update pattern by giving the shader new pattern index */
-	void updatePattern(); // TODO: consider to change the name
+	/* Upload an int variable to GPU from CPU */
+	void uploadInt2GPU(std::string varName, int varValue);
 
+	/* Upload a float variable to GPU from CPU */
+	void uploadFloat2GPU(std::string varName, float varValue);
+};
+
+/* Patch-area to render a full pattern without anything else */
+class FullPatch : public Patch
+{
+
+public:
+	// methods
+	Patch(
+		std::vector<float> patchRect, // bounding box
+		const char vertexPath[] = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
+	)
+	: shader(vertexPath, framentPath)
+	, boundBox(patchRect)
+	{
+
+	}
+
+	/* Initialize memory for patch */
+	// initialize(); inherited from parent class Patch
+}
+
+/* Patch-area to render a half-texture-half-background pattern */
+class HalfSplitPatch : public Patch
+{
+private:
 	// properties
-	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
-	const int yDivide; // TODO: calculate this variable from boundBox
-	int pIdx; // pattern index
+	const int yDivide; // the dividing position in y
+
+public:
+	// Methods
+	HalfSplitPatch(
+		std::vector<float> patchRect, // bounding box
+		yDiv, // the dividing position in y
+		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
+	)
+	: shader(vertexPath, framentPath)
+	, boundBox(patchRect)
+	, yDivide(yDiv)
+	{
+		shader.use();
+		shader.setInt("idxCase",idxCase);
+	}
+
+	// Properties
+	int idxCase; // to select the case in f-shader
+
+}
+
+class RotatingPatch : public Patch
+{
+private:
+	// properties
+	; // nothing for now
+
+public:
+	// Methods
+	RotatingPatch(
+		std::vector<float> patchRect, // bounding box
+		radVelo = 0, // the rotating velocity of the pattern
+		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
+	)
+	: shader(vertexPath, framentPath)
+	, boundBox(patchRect)
+	, yDivide(yDiv)
+	{
+		shader.use();
+		shader.setInt("idxCase",idxCase);
+	}
+
+	// Properties
 	float radVelo; // rotating radian velocity
 
+}
 
-};
+
 
 // global functions
 // TODO: consider to move this function to error handling class

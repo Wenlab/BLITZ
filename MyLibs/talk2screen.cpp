@@ -44,61 +44,14 @@ void Screen::initialize(string imgName, vector<float> boundBox, string renderTyp
 	init_glad();
 
 	// initialize an area object
-	Area areaObj(boundingBox, 1);
-	areaObj.initialize(imgName, renderType);
+	Area areaObj(boundBox, renderType);
+	areaObj.initialize();
 	allAreas.push_back(area);
 
 	cout << "Screen initialization succeeded." << endl << endl;
 
 }
 
-
-
-void Screen::initialize( // TODO: consider to have an overload method to initiate a single patch case
-	vector<string> imgNames,
-	vector<int> patchesOfAreas
-	)
-{
-	const vector<vector<float>> areaBoundBoxes =
-	{
-		{ 0.068f, 0.300f, 0.258f, 0.668f }, // the bounding box of the first area
-		{ 0.840f, -0.810f, 0.258f, 0.73f }, // the bounding box of the second area
-		{ -0.668f, -0.810f, 0.258f, 0.73f } // the bounding box of the third area
-	};
-
-	//y dividing positions for all patches; //TODO: isolate this division concept from this code snippet as a separate function
-	const vector<vector<int>> yPatternDivs =
-	{
-		{ 818, 818, 942, 942 },
-		{ 247, 247, 365, 365 },
-		{ 238, 238, 358, 358 }
-	};
-
-	cout << "Initializing the projector screen .. " << endl;
-	/* GLFW initialize and configure */
-	init_glfw_window();
-
-	/* glad: load all OpenGL function pointers */
-	init_glad();
-
-	// Initialize all areas
-	numAreas = imgNames.size();
-	allAreas.reserve(numAreas);
-
-	for (int i = 0; i < numAreas; i++)
-	{
-		AreaData area(areaBoundBoxes[i], patchesOfAreas[i]);
-		area.initialize(yPatternDivs[i], imgNames[i]);
-		allAreas.push_back(area);
-	}
-
-
-
-	cout << "Screen initialization succeeded." << endl << endl;
-
-}
-
-/* Initialize GLFW window */
 void Screen::init_glfw_window() // TODO: consider to make it void by using exception to handle errors.
 {
 	// glfw: initialize and configure
@@ -127,7 +80,6 @@ void Screen::init_glfw_window() // TODO: consider to make it void by using excep
 
 }
 
-/* Initiate glad for using OpenGL functions */
 void Screen::init_glad()
 {
 	try {
@@ -140,45 +92,7 @@ void Screen::init_glad()
 	}
 }
 
-void Screen::showPattern()
-{
-	for (int i = 0; i < allAreas.size(); i++)
-	{
-		AreaData area = allAreas[i];
-		for (int j = 0; j < area.numPatches; j++)
-			area.allPatches[j].updatePattern(); //TODO: align the abstraction level
-	}
-	renderTexture();
-}
-
-void Screen::updatePattern(int cIdx)
-{
-	AreaData area = allAreas[cIdx];
-	for (int j = 0; j < area.numPatches; j++)
-		area.allPatches[j].updatePattern();//TODO: align the abstraction level
-
-	renderTexture();
-}
-
-void Screen::reversePattern()
-{
-
-}
-
-void Screen::showBlackPattern() {
-	for (int i = 0; i < numAreas; i++)
-	{
-		for (int j = 0; j < allAreas[i].numPatches; j++)
-		{
-		//TODO: align the abstraction level, consider to encapsulate the lines
-			allAreas[i].allPatches[j].pIdx = 2;
-			allAreas[i].allPatches[j].updatePattern();
-		}
-	}
-	renderTexture();
-}
-
-void Screen::renderTexture()
+void Screen::show()
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -191,16 +105,78 @@ void Screen::renderTexture()
 
 }
 
-void Area::initialize(string imgName, string renderType, int numPatches)
+void Screen::show(int cIdx)
 {
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 
+	allAreas[cIdx].renderTexture(cIdx);// TODO: consider to use instance variable instead
+	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+	glfwSwapBuffers(window);
+	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move
+
+}
+
+void Screen::showBlackPattern()
+{
+	for (int i = 0; i < numAreas; i++)
+		allAreas[i].updateIdxCase(2);
+
+	renderTexture();
+}
+
+void Screen::reverse()
+{
+	for (int i = 0; i < numAreas; i++)
+		allAreas[i].negateIdxCase();
+
+	renderTexture();
+}
+
+void Screen::reverse(vector<vector<bool>> patchIndices)
+{
+	for (int i = 0; i < patchIndices.size(); i++)
+	{
+		vector<bool> onstatus = patchIndices[i];
+		for (int j = 0; j < onstatus.size(); j++)
+		{
+			if (onstatus[j])
+				allAreas[i].negateIdxCase(j);
+		}
+	}
+	renderTexture();
+}
+
+void Screen::reverse(int sec2start, int period)
+{
+	// TODO: check this code
+	vector<vector<bool>> patchIndices(numAreas);
+	for (int i = 0; i < numAreas; i++)
+	{// TODO: deal with situation that areas have different patches
+		vector<bool> vec(PATCHES_PER_ARENA,true);
+		patchIndices[i] = vec;
+	}
+	if ((sec2start / period) % 2) // has to be odd-times period to reverse
+		reverse(patchIndices);
+}
+
+void Screen::reverse(int sec2start, int period, vector<vector<bool>> patchIndices)
+{
+	if ((sec2start / period) % 2) // has to be odd-times period to reverse
+		reverse(patchIndices);
+}
+
+
+void Area::initialize(string imgName)
+{
 	// nx - Maximum number of images in a row
 	// ny - Maximum number of images in a column
 	int nx, ny;
 
 	// If the number of patches is lesser than 0 or greater than 4
 	// return without displaying
-	if (numPatches <= 0) {
+	if (numPatches <= 0)
+	{
 		printf("Number of patches too small....\n");
 		return;
 	}
@@ -247,95 +223,30 @@ void Area::initialize(string imgName, string renderType, int numPatches)
 				patchBoundBox[1] += yDivLen;// minus the division length
 				break;
 			}
-			Patch patchObj(patchBoundBox);//Write the implementation of this method
-			patchObj.initialize(renderType);
+			if (iequals(renderType,"full"))
+				FullPatch patchObj(patchBoundBox);
+			else if (iequals(renderType,"half"))
+				HalfSplitPatch patchObj(patchBoundBox);
+			else if (iequals(renderType,"rotation"))
+				RotatingPatch patchObj(patchBoundBox);
+			else {
+				cout << "Unknown renderType! Please select one of the following:\n"
+				<< "full, half, rotation" << endl;
+				waitUserInput2exit(0);
+				exit(0);
+			}
+			patchObj.initialize();
 			allPatches.push_back(patchObj);
 		}
-	}
 	loadTextureIntoBuffers(imgName);
 }
-
-
-void Area::initialize(vector<int> yDivideVec, string imgName)
-{
-	// nx - Maximum number of images in a row
-	// ny - Maximum number of images in a column
-	int nx, ny;
-
-	// If the number of patches is lesser than 0 or greater than 4
-	// return without displaying
-	if (numPatches <= 0) {
-		printf("Number of patches too small....\n");
-		return;
-	}
-	else if (numPatches > 4) {
-		printf("Number of arguments too large, can only handle maximally 4 images at a time ...\n");
-		return;
-	}
-	else if (numPatches == 1) {
-		nx = ny = 1;
-	}
-	else if (numPatches == 2) {
-		nx = 2; ny = 1;
-	}
-	else if (numPatches == 3) {
-		nx = ny = 2;
-	}
-	else if (numPatches == 4) {
-		nx = ny = 2;
-	}
-	float xDivLen = boundBox[2] / nx; // the length of each division in x
-	float yDivLen = boundBox[3] / ny; // the length of each division in y
-
-	for (int i = 0; i < numPatches; i++) // TODO: set the ROI size differently as "numPatches" changes, refer the displaywindow method
-	{
-		vector<float> patchRect = boundBox;
-		patchRect[2] = xDivLen;
-		patchRect[3] = yDivLen;
-		switch (i) {
-			case 0:
-				break;// do nothing
-			case 1:
-			{
-				patchRect[0] -= patchRect[2] / 2; // minus half area width
-				break;
-			}
-			case 2:
-			{
-				patchRect[1] += patchRect[3] / 2;
-				break;
-			}
-			case 3:
-			{
-				patchRect[0] -= patchRect[2] / 2;
-				patchRect[1] += patchRect[3] / 2;
-				break;
-			}
-			default:;
-		}
-
-		Patch patchObj(patchRect, yDivideVec[i]);
-		patchObj.initialize();
-		allPatches.push_back(patchObj);
-	}
-	loadTextureIntoBuffers(imgName);
-}
-
-/* Reverse the position of the CS pattern */
-void Area::reverseAllPatches() {
-	for (int j = 0; j < numPatches; j++)
-	{
-		allPatches[j].pIdx = !allPatches[j].pIdx;
-		allPatches[j].updatePattern();
-	}
-
-}
-
 
 void Area::loadTextureIntoBuffers(string imgName)
 {
-	glGenTextures(1, &texture0);
-	glBindTexture(GL_TEXTURE_2D, texture0);
+	// TODO: turn textureID to a local variable? Test it
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
 	// set the texture wrapping parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
@@ -357,50 +268,77 @@ void Area::loadTextureIntoBuffers(string imgName)
 
 }
 
+void Area::updateIdxCase(int value)
+{
+	// errorHandling
+	try{
+		tryCatchFalse(iequals(renderType,"full"),
+		"Wrong renderType! This method is for full rendering only!");
+	} catch (string errorMsg) {
+		cout << errorMsg << endl;
+		waitUserInput2exit();
+	}
+
+	for (int i = 0; i < numPatches; i++)
+	{
+		allPatches[i].idxCase = value;
+		allPatches[i].uploadInt2GPU("idxCase",idxCase);
+	}
+}
+
+void Area::negateIdxCase()
+{
+	// errorHandling
+	try{
+		tryCatchFalse(iequals(renderType,"full"),
+		"Wrong renderType! This method is for full rendering only!");
+	} catch (string errorMsg) {
+		cout << errorMsg << endl;
+		waitUserInput2exit();
+	}
+
+	for (int i = 0; i < numPatches; i++)
+	{
+		allPatches[i].pIdx = !allPatches[i].pIdx;
+		allPatches[i].uploadInt2GPU("idxCase",idxCase);
+	}
+}
+
+void Area::negateIdxCase(int patchIdx)
+{
+	// errorHandling
+	try{
+		tryCatchFalse(iequals(renderType,"full"),
+		"Wrong renderType! This method is for full rendering only!");
+	} catch (string errorMsg) {
+		cout << errorMsg << endl;
+		waitUserInput2exit();
+	}
+
+	allPatches[patchIdx].pIdx = !allPatches[patchIdx].pIdx;
+	allPatches[patchIdx].uploadInt2GPU("idxCase",idxCase);
+
+}
+
+
 void Area::renderTexture(int areaIdx)
 {
 	glActiveTexture(GL_TEXTURE0 + areaIdx);
-	glBindTexture(GL_TEXTURE_2D, texture0);
+	glBindTexture(GL_TEXTURE_2D, textureID);
 	for (int j = 0; j < numPatches; j++)
 	{
 		allPatches[j].shader.use(); // TODO: align the abstraction level
-		glUniform1i(glGetUniformLocation(allPatches[j].shader.ID, "texture0"), areaIdx);// TODO: make it less shader dependent
+		glUniform1i(glGetUniformLocation(allPatches[j].shader.ID, "textureID"), areaIdx);// TODO: make it less shader dependent
 		glBindVertexArray(allPatches[j].VAO);
 		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
 	}
 }
 
-void Patch::initialize(string renderType)
+
+void Patch::initialize()
 {
-
-	if (isequals(renderType,"full"))
-	{
-		const char* vertexPath[] = "3rdPartyLibs/OpenGL/full.vs";
-		const char* fragmentPath[] = "3rdPartyLibs/OpenGL/full.fs";
-		shader(vertexPath, fragmentPath);
-		shader.use();
-		shader.setInt("patternIdx",pIdx);
-	}
-	else if (isequals(renderType,"half"))
-	{
-		const char* vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs";
-		const char* fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs";
-		shader(vertexPath, fragmentPath);
-		shader.use();
-		shader.setInt("patternIdx",pIdx);
-	}
-	else if (isequals(renderType,"rotation"))
-	{
-		const char* vertexPath[] = "3rdPartyLibs/OpenGL/rotation.vs";
-		const char* fragmentPath[] = "3rdPartyLibs/OpenGL/rotation.fs";
-		shader(vertexPath, fragmentPath);
-		shader.use();
-		shader.setInt("patternIdx",pIdx);
-		shader.setFloat("rotatingRate",radVelo);
-	}
-
-
 	initVertices();
+	// Space for updates
 }
 
 void Patch::initVertices()
@@ -439,11 +377,19 @@ void Patch::initVertices()
 	glEnableVertexAttribArray(2);
 }
 
-void Patch::updatePattern() //TODO: -> updatePatternIdx
+
+void Patch::uploadInt2GPU(string varName, int varValue)
 {
 	shader.use();
-	shader.setInt("patternIdx", pIdx);
+	shader.setInt(varName, varValue);
 }
+
+void Patch::uploadFloat2GPU(string varName, float varValue)
+{
+	shader.use();
+	shader.setFloat(varName, varValue);
+}
+
 
 
 bool iequals(const string& a, const string& b)
