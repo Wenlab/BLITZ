@@ -31,8 +31,26 @@
 using namespace std;
 using namespace Pylon;
 
+//TODO: test this method
+void Cameras::initialize(int frameWidth, int frameHeight, int frameRate)
+{
+	Pylon::PylonInitialize();
+	aCam = CTlFactory::GetInstance().CreateFirstDevice();
+	aCam.initialize();
 
-bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int frameRate)
+	aCam.open();
+	aCam.Width = FRAMEWIDTH;
+	aCam.Height = FRAMEHEIGHT;
+	aCam.AcquisitionFrameRateEnable.SetValue(true);
+	aCam.AcquisitionFrameRate.SetValue(FRAMERATE);
+	std::cout << "Using camera " << aCam.GetDeviceInfo().GetSerialNumber() << std::endl;
+
+	aCam.StartGrabbing();
+
+	cout << "Cameras initialization succeeded." << endl << endl;
+}
+
+void Cameras::initialize(vector<bool> cameras2open, int frameWidth, int frameHeight, int frameRate)
 {
 	const char* serialNums[MAX_CAMERAS] = { "21552672","22510229","22510230" };
 	const int offSetX[MAX_CAMERAS] = {463, 390, 944};
@@ -43,35 +61,41 @@ bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int
 	Pylon::CTlFactory&TlFactory = Pylon::CTlFactory::GetInstance();
 
 	// Make sure cameras are attached in order
-	for (int i = 0; i < numCameras; i++)
-	{
-		di[i].SetDeviceClass(Pylon::BaslerUsbDeviceClass);
-		di[i].SetSerialNumber(serialNums[i]);
+	int numCameras = 0;
+	for (int i = 0; i < MAX_CAMERAS; i++)
+	{ // TODO: consider to improve the code structure
+		if (cameras2open[i])
+		{
+			numCameras++;
+			di[i].SetDeviceClass(Pylon::BaslerUsbDeviceClass);
+			di[i].SetSerialNumber(serialNums[i]);
+		}
 	}
 	cameras.Initialize(numCameras);
 	// Attach devices and set camera parameters
-	for (int i = 0; i < numCameras; i++)
+	for (int i = 0; i < MAX_CAMERAS; i++)
 	{
-		cameras[i].Attach(TlFactory.CreateDevice(di[i]));
-		cameras[i].Open();
-		cameras[i].Width = frameWidth;
-		cameras[i].Height = frameHeight;
-		cameras[i].OffsetX = offSetX[i];
-		cameras[i].OffsetY = offSetY[i];
-		cameras[i].AcquisitionFrameRateEnable.SetValue(true);
-		cameras[i].AcquisitionFrameRate.SetValue(frameRate);
-		// Print the model name of the camera.
-		std::cout << "Using camera " << cameras[i].GetDeviceInfo().GetSerialNumber() << std::endl;
+		if (cameras2open[i])
+		{
+			cameras[i].Attach(TlFactory.CreateDevice(di[i]));
+			cameras[i].Open();
+			cameras[i].Width = FRAMEWIDTH;
+			cameras[i].Height = FRAMEHEIGHT;
+			cameras[i].OffsetX = offSetX[i];
+			cameras[i].OffsetY = offSetY[i];
+			cameras[i].AcquisitionFrameRateEnable.SetValue(true);
+			cameras[i].AcquisitionFrameRate.SetValue(FRAMERATE);
+			// Print the model name of the camera.
+			std::cout << "Using camera " << cameras[i].GetDeviceInfo().GetSerialNumber() << std::endl;
+		}
 	}
 
 	cameras.StartGrabbing();
 
 	cout << "Cameras initialization succeeded." << endl << endl;
-	return true;
 }
 
-/* Grab Pylon image from cameras */
-bool CameraData::grabPylonImg()
+void Cameras::grabPylonImg()
 {
 	Pylon::CImageFormatConverter formatConverter;
 	formatConverter.OutputPixelFormat = Pylon::EPixelType::PixelType_Mono8;
@@ -79,7 +103,7 @@ bool CameraData::grabPylonImg()
 	// Error handling
 	try{
 		cameras.RetrieveResult(5000, ptrGrabResult, TimeoutHandling_ThrowException);
-		if (!ptrGrabResult->GrabSucceeded()) // TODO: rewrite this part with "throw"
+		if (!ptrGrabResult->GrabSucceeded())
 			cout << "Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
 	} catch (const GenericException &e) {
 		cerr << "An exception occurred." << endl
@@ -88,7 +112,13 @@ bool CameraData::grabPylonImg()
 	}
 	cIdx = ptrGrabResult->GetCameraContext();
 	formatConverter.Convert(pylonImg,ptrGrabResult);
-	return cameras.IsGrabbing();
+	try
+	{
+		tryCatchFalse(cameras.IsGrabbing(),"Error! The camera is NOT grabbing!");
+	} catch (string errorMsg) {
+		cout << errorMsg << endl;
+		waitUserInput2exit();
+	}
 }
 
 int getIdxFrame(int endTime, int idxStart)

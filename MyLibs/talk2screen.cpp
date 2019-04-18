@@ -320,7 +320,6 @@ void Area::negateIdxCase(int patchIdx)
 
 }
 
-
 void Area::renderTexture(int areaIdx)
 {
 	glActiveTexture(GL_TEXTURE0 + areaIdx);
@@ -333,7 +332,6 @@ void Area::renderTexture(int areaIdx)
 		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
 	}
 }
-
 
 void Patch::initialize()
 {
@@ -377,7 +375,6 @@ void Patch::initVertices()
 	glEnableVertexAttribArray(2);
 }
 
-
 void Patch::uploadInt2GPU(string varName, int varValue)
 {
 	shader.use();
@@ -389,7 +386,6 @@ void Patch::uploadFloat2GPU(string varName, float varValue)
 	shader.use();
 	shader.setFloat(varName, varValue);
 }
-
 
 
 bool iequals(const string& a, const string& b)

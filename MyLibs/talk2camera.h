@@ -47,6 +47,9 @@
 
 // User-defined macros
 #define MAX_CAMERAS 3
+#define FRAMEWIDTH 800
+#define FRAMEHEIGHT 600
+#define FRAMERATE 10
 
 /* Define Basler Pylon properties and related methods for multiple (or single) USB cameras */
 class Cameras
@@ -63,15 +66,19 @@ public:
 	// TODO: consider to allow users open any cameras combination
 	// What is user input? ask the opening of each camera in order, middle -> left -> right
 	// the first parameter should be a boolean array that corresponds to each camera status
-	bool initialize(int nCams, int frameWidth, int frameHeight, int frameRate);
+	/* Initialize a single camera, device unspecific */
+	void initialize()
+
+	/* Initialize camera array objests */
+	void initialize(std::vector<bool> cameras2open); // status array that indicate whether a camera should be open
+
 	/* Grab Pylon image from cameras */
-	bool grabPylonImg();
-	/* Get the end index of frames from the end time, start from 0 */
-	int getIdxFrame(int endTime, int idxStart);
+	void grabPylonImg();
 
 
 	// properties
 	Pylon::CBaslerUsbInstantCameraArray cameras;
+	Pylon::IPylonDevice* aCam;// a single camera object
 	Pylon::CGrabResultPtr  ptrGrabResult;
 	Pylon::CPylonImage pylonImg;
 	intptr_t cIdx;// index of camera where the frame is grabbed from
@@ -80,7 +87,9 @@ public:
 
 
 };
-
+// Global functions 
+/* Get the end index of frames from the end time, start from 0 */
+int getIdxFrame(int endTime, int idxStart);
 
 
 

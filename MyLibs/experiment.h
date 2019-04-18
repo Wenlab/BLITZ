@@ -37,11 +37,6 @@
 
 // User-defined macros
 
-// TODO: make it can deal with the situations that width does not eqaul height
-#define WIDTH 784 // frame width for all cameras and video files
-#define HEIGHT 784 // frame height for all cameras and video files
-#define FRAMERATE 10 // frame rate for all cameras to capture videos
-
 // TODO: rename this class, drop "Data"
 class Experiment
 {
