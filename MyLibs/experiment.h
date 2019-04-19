@@ -81,6 +81,9 @@ public:
   // properties
 
 	// constant ones
+	// TODO: encapsulate the following variables in a class (data transfer class: struct)
+	// expSettings, frameData, now it is a little bit scattering
+
 	std::vector<std::string> CSpatterns; // TODO: move this into the WritOut module
 	const std::string pathName; // TODO: move this into the WritOut module
 	int numCameras; // TODO: change this into openStatus array which allows more flexible options for users

@@ -132,6 +132,7 @@ public:
 
 
 /* Define related methods and properties for a single fish */
+// Write every frame updated info at here? No! Create another class in fileWriter class 
 class Fish {
 
 private:
@@ -164,9 +165,6 @@ public:
 
 	bool ifGiveShock(int pIdx, int sElapsed);
 
-	// TODO: remove this method 
-	int updatePatternInTraining(int sElapsed, int pIdx, int ITI);
-
 	// properties
 	// const properties
 	const std::string ID;
@@ -182,6 +180,7 @@ public:
 	int lastShockTime;
 	int pauseFrames;// TODO: consider to change this variable
 	bool shockOn;
+	int idxCase; // indicate the situation (e.g., pattern) that fish is in
 
 	// motion parameters
 	std::vector<cv::Point> fishContour;

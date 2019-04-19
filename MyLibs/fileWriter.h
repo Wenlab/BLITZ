@@ -48,6 +48,14 @@
 // Include standard libraries
 #include <iostream>
 
+/* TODO: include fishAnalysis and another class (userInterface?) for experiment settings
+ then pass the header of the objects to function
+ #include "fishAnalysis.h"
+ #include "userInterface.h"
+*/
+
+
+
 
 class FileWriter
 {
@@ -65,7 +73,7 @@ public:
 	bool initialize(std::string pathName, int width, int height, int frameRate, int x_cut, int y_cut, std::vector<std::vector<int>> yDivs);
 
 	/* Write out experiment settings as the header for files */
-	void writeOutExpSettings( // TODO: reduce number of the variables; also, make it experiment-irrelevant
+	void writeOutExpSettings( // TODO: reduce number of the variables; also, make it experiment-irrelevant, write the entire struct
 		int frameRate,
 		int width,
 		int height,
@@ -73,6 +81,12 @@ public:
 		int y_cut,
 		std::vector<std::vector<int>> yDivs
 	);
+
+	/* Write out info that updated every frame to files (YAMLs and videos) */
+	void writeOutFrame( FishAnalysis& fishAnalysisObj )
+	{
+		
+	}
 
 	// template functions
 	/* Write out key value pairs */
@@ -86,7 +100,7 @@ public:
 	void writeKeyValueInline(std::string vName, T var, int idxFile)
 	{
 		yamlVec[idxFile] << "{:" << vName << var << "}";
-	};
+	}
 
 	// properties
 	std::vector<cv::FileStorage> yamlVec;
