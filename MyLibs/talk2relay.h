@@ -32,6 +32,7 @@
 
 // Include standard libraries
 #include <iostream>
+#include <math.h>
 
 #define COM_NUM 4 // put this into relay module
 #define NUM_CHANNEL 12
