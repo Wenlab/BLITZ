@@ -27,6 +27,8 @@
 
 // Include user-defined libraries
 #include "fileWriter.h"
+
+// Include standard libraries
 #include <ctime> // to get the current date and time
 #include <algorithm>  // include the algorithm reverse
 
@@ -73,53 +75,43 @@ void WriteOutData::get_current_date_time()
 	timeStr = buffer;
 }
 
-
-/* Write out experiment settings as the header for files
-	only write once */
-void WriteOutData::writeOutExpSettings(
-	int frameRate,
-	int width,
-	int height,
-	int x_cut,
-	int y_cut,
-	vector<vector<int>> yDivs
-	)
+void FileWriter::writeOutExpSettings(UserInterface& UIobj, Cameras& camerasObj,
+	FishAnalysis& fishAnalysisObj)
 {
 	for (int i = 0; i < numFiles; i++)
 	{
-		writeKeyValuePair("FishIDs", strVec2str(fishIDs[i]), i);
-		writeKeyValuePair("FishAge", fishAge, i);
-		writeKeyValuePair("FishStrain", strainNames[i], i);
+		writeKeyValuePair("FishIDs", strVec2str(UIobj.fishIDs[i]), i);
+		writeKeyValuePair("FishAge", UIobj.fishAge, i);
+		writeKeyValuePair("FishStrain", UIobj.strainNames[i], i);
 		writeKeyValuePair("Arena", i + 1, i); // record which arena is in use
-		writeKeyValuePair("Task", expTask, i);
-		writeKeyValuePair("CSpattern", CSstrs[i], i);
+		writeKeyValuePair("Task", UIobj.expTask, i);
+		writeKeyValuePair("CSpattern", UIobj.CSstrs[i], i);
 		writeKeyValuePair("ExpStartTime", timeStr, i);
-		writeKeyValuePair("FrameRate", frameRate, i);
-		writeKeyValuePair("FrameSize", Size(width, height), i);
-		writeKeyValuePair("xCut", x_cut, i);
-		writeKeyValuePair("yCut", y_cut, i);
-		writeKeyValuePair("yDivide", yDivs[i], i);
+		writeKeyValuePair("FrameRate", FRAMERATE, i);// TODO: is this cross-file used macro a good practice?
+		writeKeyValuePair("FrameSize", Size(FRAMEWIDTH, FRAMEHEIGHT), i);
+		writeKeyValuePair("ImgSeg", Size(fishAnalysisObj.x_cut,fishAnalysisObj.y_cut), i);
+		writeKeyValuePair("yDivide", fishAnalysisObj.yDivs[i], i);
 	}
+
 }
 
-void writeOutFrame(FishAnalysis& fishAnalysisObj, int idxFile)
+void FileWriter::writeOutFrame(ExpTimer& timerObj, FishAnalysis& fishAnalysisObj,
+		int idxFile)
 {
-
+	// TODO: align the abstraction level
 	videoVec[idxFile] << fishAnalysisObj.allArenas[idxFile].opencvImg; // write image to disk
 
 	// write the custom class to disk
 	yamlVec[idxFile] << "Frames" << "[";
 	// Python-like inline compact form
 	// general experimental info
-	writeOut.writeKeyValueInline("FrameNum", idxFrame / numCameras, cIdx);
-	writeOut.writeKeyValueInline("ExpPhase", expPhase, cIdx);
-	writeOut.writeKeyValueInline("sElapsed", sElapsed, cIdx);
-	writeOut.writeKeyValueInline("msRemElapsed", msRemElapsed, cIdx);
+	writeKeyValueInline("FrameNum", timerObj.idxFrame / numFiles, cIdx);
+	writeOut.writeKeyValueInline("ExpPhase", timerObj.expPhase, cIdx);
+	writeOut.writeKeyValueInline("sElapsed", timerObj.sElapsed, cIdx);
+	writeOut.writeKeyValueInline("msRemElapsed", timerObj.msRemElapsed, cIdx);
 
 	// specific fish analysis data
-	vector<FishData> allFish = allArenas[cIdx].allFish;
-	vector<PatchData> allPatches = screen.allAreas[cIdx].allPatches;
-	string fishName;
+	vector<FishData> allFish = fishAnalysisObj.allArenas[cIdx].allFish;
 	for (int i = 0; i < allFish.size(); i++)
 	{
 		writeOut.writeKeyValueInline("FishIdx", i, cIdx);
@@ -128,7 +120,7 @@ void writeOutFrame(FishAnalysis& fishAnalysisObj, int idxFile)
 		writeOut.writeKeyValueInline("Center", allFish[i].center, cIdx);
 		writeOut.writeKeyValueInline("HeadingAngle", allFish[i].headingAngle, cIdx);
 		writeOut.writeKeyValueInline("ShockOn", allFish[i].shockOn, cIdx);
-		writeOut.writeKeyValueInline("PatternIdx", allPatches[i].pIdx, cIdx);
+		writeOut.writeKeyValueInline("PatternIdx", allFish[i].idxCase, cIdx);
 	}
 	writeOut.yamlVec[cIdx] << "]";
 }

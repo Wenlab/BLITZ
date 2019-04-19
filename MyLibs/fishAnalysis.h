@@ -132,7 +132,7 @@ public:
 
 
 /* Define related methods and properties for a single fish */
-// Write every frame updated info at here? No! Create another class in fileWriter class 
+// Write every frame updated info at here? No! Create another class in fileWriter class
 class Fish {
 
 private:

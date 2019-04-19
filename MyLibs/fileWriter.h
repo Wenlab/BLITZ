@@ -38,7 +38,9 @@
 
 // Include user-defined libraries
 #include "errorHandling.h"
-
+#include "fishAnalysis.h"
+#include "talk2camera.h"
+#include "userInterface.h"
 
 // Include OpenCV libraries
 #include <opencv2/core/core.hpp>
@@ -65,7 +67,7 @@
 - ExpStartTime: string, auto-generate from system time
 - FrameRate: int, from cameras class
 - FrameSize: vector<int>? Point(x,y)?, from cameras class
-- imgSeg: vector<int>, from fishAnalysis class
+- ImgSeg: vector<int>, from fishAnalysis class
 - yDivide: vector<int>, from fishAnalysis class
 
 
@@ -103,21 +105,20 @@ public:
 	/* initialize yaml- and video- writers */
 	bool initialize(std::string pathName, int width, int height, int frameRate, int x_cut, int y_cut, std::vector<std::vector<int>> yDivs);
 
-	/* Write out experiment settings as the header for files */
-	void writeOutExpSettings( // TODO: reduce number of the variables; also, make it experiment-irrelevant, write the entire struct
-		int frameRate,
-		int width,
-		int height,
-		int x_cut,
-		int y_cut,
-		std::vector<std::vector<int>> yDivs
-	);
+	/* Write out experiment settings as the header for files
+		only write once */
+	void FileWriter::writeOutExpSettings(
+		UserInterface& UIobj, // object that contains user's input
+		Cameras& camerasObj, // object that contains cameras' info (e.g., FRAMERATE)
+		FishAnalysis& fishAnalysisObj // object that contains image processing info
+		)
 
 	/* Write out info that updated every frame to files (YAMLs and videos) */
-	void writeOutFrame( FishAnalysis& fishAnalysisObj )
-	{
-
-	}
+	void FileWriter::writeOutFrame(
+		ExpTimer& timerObj, // object that counts time and index of frames
+		FishAnalysis& fishAnalysisObj, // object that contains image processing info
+		int idxFile // which file to write
+		)
 
 	// template functions
 	/* Write out key value pairs */
