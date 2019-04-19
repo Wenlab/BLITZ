@@ -22,6 +22,10 @@
 
 */
 
+// Include 3rd party libraries
+#include "../3rdPartyLibs/Utilities/Timer.h"
+
+
 class ExpTimer : public Timer
 {
 private:

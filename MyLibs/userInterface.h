@@ -24,85 +24,84 @@
 #ifndef USERINTERFACE_H_DEF
 #define USERINTERFACE_H_DEF
 
+// Include standard libraries
+#include <ctime> // to get the current date and time
+
+
+#define MAX_CAMERAS 3
+
+
+
+
 class UserInterface
 {
-	// TODO: consider to remove the following variables
-	int fishAge; // one age for all fish
-	std::string expTask;
-	std::vector<std::vector<std::string>> fishIDs; // fish IDs for all arenas
-
-	// derivated info, such as the strain name
-	std::vector<std::string> strainNames;
-	std::vector<std::string> baseNames; // filenames without extensions
-	std::string timeStr;
-	std::vector<std::string> CSstrs;
-
-  /* Get CSpatterns from the basenames */
-	std::vector<std::string> get_CS_patterns(std::vector<std::string> CS_strs); // TODO: consider to move this into userInterface
+private:
+	; //nothing for now
+public:
+	UserInterface()
+	{
+		numOpenCameras = 0;
+		cameras2open(MAX_CAMERAS);
+	}
 
 	/* Ask the user about the experiment infos */
-	int enquireInfoFromUser();
+	void enquireInfoFromUser();
 
-	/* Ask the number of cameras to use. */
-	void enquireNumCams();
+	/* Ask which cameras to use. */
+	void enquireCameras2use();
 
-	/* Ask for what strain of Fish is using */
-	void enquireStrainNames();
+	/* Ask how many fish under a camera */
+	int enquireNumFishForACam(int idxCamera);
 
-	/* Ask for the age for all fish */
+	/* Generate fish IDs for all fish */
+	std::vector<int> generateFishIDs(int numFish);
+
+	/* Ask for what strain of Fish is using,
+	 	 assume all fish are the same strain */
+	void enquireFishStrain();
+
+	/* Ask for the age for all fish,
+	 	assume all fish are at the same age */
 	void enquireFishAge();
 
 	/* Ask for what experiment task for poor fish */
 	void enquireExpTask();
 
-	/* Ask for fish IDs for all arenas */
-	void enquireFishIDs();
 
-	/* Ask for fish IDs in the arena */
-	std::vector<std::string> enquireFishIDs(int arenaIdx);
-
-	/* Get strain names of fish in all arenas */
-	void getStrainNames();
-
-	/* Get strain name of fish in the arena
-	   fishIDs are IDs of fish in one arena */
-	std::string getStrainName(std::vector<std::string> fishIDs);
-
-	/* Get basenames for all output files */
-	void getBasenames();
 
 	/* Get basename for the output files */
-	std::string getBasename(int arenaIdx);
+	std::string getBasename(int idxFile);
 
-	/* Get all basenames from user */
-	void enquireAllBasenames();
 
-	/* Get basename in one area */
-	std::string enquireBasename(int areaIdx);
-
-	/* Get CS strings for all arena */
-	void get_CS_strings(std::vector<const char*>);
-
-	/* Get the CS string for the arena */
-	std::string get_CS_string(const char*);
-
-	/* Show software description and welcome messages to user */
-	void showWelcomeMsg();
-
-	/* Show the diagram of fish */
-	void showFishPosDiagram();
-
-	/* Extract the pattern name from the filename */
-	std::string extractPatternName(const char*);
+	// Properties
+	// TODO: get the number of cameras and pass it to fileWriterObj
+	std::vector<bool> cameras2open; // status array to indicate which cameras to open
+	// TODO: consider to generate fishIDs automatically, combine some time info
+	std::vector<std::vector<std::string>> fishIDs; // fish IDs for all arenas
+	int fishAge; // one age for all fish
+	std::string strainName; // TODO: consider to have a single strain name
+	std::vector<int> arenaIDs; // which arena the fish is in
+	std::string expTask; // task to run for animals
+	std::vector<std::string> CSstrs; // CS patterns
+	std::string startTimeStr; // string of the start time of an experiment, YYYYMMDD-HHMM
+	int numOpenCameras;
 
 }
 
 
+// Global functions
+/* Show software description and welcome messages to user */
+void showWelcomeMsg();
 
+/* Show the diagram of fish */
+void showFishPosDiagram();
 
+/* Get string vector from command line */
+std::vector<std::string> getStrVecFromCMD();
 
-
-
+//TODO: write a better description and note the dependencies
+/* Get current date and time string from chrono system clock */
+string getCurDateTime();
 
 
 

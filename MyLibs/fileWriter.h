@@ -105,6 +105,7 @@ public:
 	/* initialize yaml- and video- writers */
 	void initialize(UserInterface& UIobj); // object that contains user's input
 
+
 	/* Write out experiment settings as the header for files
 		only write once */
 	void writeOutExpSettings(
@@ -120,8 +121,7 @@ public:
 		int idxFile // which file to write
 		)
 
-	/* Get current date and time string from chrono system clock */
-	void getCurDateTime();
+	
 	// template functions
 	/* Write out key value pairs */
 	template <typename T>

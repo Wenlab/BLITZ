@@ -36,25 +36,34 @@
 using namespace std;
 using namespace cv;
 
-bool FileWriter::initialize(UserInterface& UIobj)
+void FileWriter::initialize(UserInterface& UIobj)
 {
 	for (int i = 0; i < numFiles; i++)
 	{
-		string videoName = pathName + baseNames[i] + ".avi";
-		string yamlName = pathName + baseNames[i] + ".yaml";
+		string basename = UIobj.getBasename(i);
+		string videoName = path2save + basename + ".avi";
+		string yamlName = path2save + basename + ".yaml";
+
 		FileStorage fObj(yamlName, FileStorage::WRITE);
-		if (!fObj.isOpened())
-			return false;
+		try {
+			tryCatchFalse(fObj.isOpened(), "YAML file writer CANNOT be opened!");
+		} catch (string errorMsg) {
+			cout << errorMsg << endl;
+			waitUserInput2exit();
+		}
 		yamlVec.push_back(fObj);
+
+
 		VideoWriter vObj(videoName, CV_FOURCC('D', 'I', 'V', 'X'), frameRate, Size(width, height), false);
-		if (!vObj.isOpened())
-			return false;
+		try {
+			tryCatchFalse(vObj.isOpened(), "Video file writer CANNOT be opened!");
+		} catch (string errorMsg) {
+			cout << errorMsg << endl;
+			waitUserInput2exit();
+		}
 		videoVec.push_back(vObj);
 
 	}
-
-
-	return true;
 
 }
 
@@ -108,24 +117,6 @@ void FileWriter::writeOutFrame(ExpTimer& timerObj, FishAnalysis& fishAnalysisObj
 	writeOut.yamlVec[cIdx] << "]";
 }
 
-void FileWriter::getCurDateTime()
-{
-	// Get system time
-	time_t rawtime;
-	struct tm timeinfo;
-	char buffer[80];
-
-	time(&rawtime);
-
-	int errCode = localtime_s(&timeinfo, &rawtime);
-	strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M", &timeinfo);
-	timeStr = buffer;
-}
-
-
-
-
-/* convert string vector to int-vector like formatted output */
 string strVec2str(vector<string> strVec)
 {
 	if (strVec.empty()) // vector is empty, return empty string
@@ -139,7 +130,6 @@ string strVec2str(vector<string> strVec)
 	//str += "]";
 	return str;
 }
-
 
 bool iequals(const string& a, const string& b)
 {

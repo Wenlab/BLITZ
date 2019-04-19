@@ -22,70 +22,128 @@
 */
 
 /* Ask the user about the experiment infos */
-int WriteOutData::enquireInfoFromUser()
+void UserInterface::enquireInfoFromUser()
 {
 	showWelcomeMsg();
-	get_current_date_time();
-	enquireNumCams();
-	enquireAllBasenames();
-	enquireStrainNames();
+	enquireCameras2use();
+	for (int i = 0; i < cameras2open.size(); i++)
+	{
+		if (cameras2open(i))
+		{
+			numOpenCameras++;
+			enquirePattern2use();
+			int numFish = enquireNumFishForACam(i);
+			fishIDs.push_back(generateFishIDs(numFish));
+			arenaIDs.push_back(i);
+		}
+
+	}
+	enquireFishStrain();
 	enquireFishAge();
 	enquireExpTask();
-	// Enquire fish IDs for all arenas
-	enquireFishIDs();
-	//get_strainNames();
-	getBasenames();
 
-	return numFiles;
+	startTimeStr = getCurDateTime();
+	generateBasenames();
 }
 
-/* Ask for the number of cameras to use in the experiment */
-void WriteOutData::enquireNumCams()
+
+
+void UserInterface::enquireCameras2use()
 {
-	cout << "Number of cameras to use? (3, 2, 1)" << endl;
-	cin >> numFiles;
+	cout << "How would you use the middle, left, and right cameras?" << endl
+		<< "Enter an array to tell the system" << endl
+		<< "(e.g., '0,1,1' to open the left and right cameras, but not the middle one.)" << endl;
+
+	vector<string> tempStrVec = getStrVecFromCMD();
+	for (int i = 0; i < tempStrVec.size(); i++)
+	{ // TODO: find the exact implementation of str2int
+		cameras2open[i] = str2int(tempStrVec[i]);
+	}
+
+
 	cout << endl; // separated with an empty line
 }
 
-/* Ask for CS strs in the screen */
-void WriteOutData::enquireAllBasenames()
+int UserInterface::enquireNumFishForACam(int idxCamera)
 {
-	showFishPosDiagram();
-	for (int i = 0; i < numFiles; i++)
+	string camPos;
+	if (idxCamera == 0)
 	{
-		CSstrs.push_back(enquireBasename(i));
+		camPos = "Middle";
 	}
-}
+	else if (idxCamera == 1)
+	{
+		camPos = "Left";
+	}
+	else if (idxCamera == 2)
+	{
+		camPos = "Right";
+	}
+	else{
+		cout << "Invalid input for idxCamera!" << endl;
+		waitUserInput2exit();
+	}
 
-/* get CS str in the area */
-string WriteOutData::enquireBasename(int areaIdx)
-{
-	cout << "Enter the pattern used in the Arena " << areaIdx + 1 << endl;
-	string basename;
-	cin >> basename;
-    // separated with an empty line
+	cout << "How many fish are under the " << camPos
+	<< " camera? (e.g., 4)" << endl;
+	int numFish; // TODO: add errorHandling over the wrong datatype
+	cin >> numFish;
 	cout << endl;
-	return basename;
+
+	return numFish;
+}
+
+void UserInterface::enquirePattern2use()
+{
+	// TODO: reduce the code duplication
+	// duplicated with the 'enquireNumFishForACam'
+	string camPos;
+	if (idxCamera == 0)
+	{
+		camPos = "Middle";
+	}
+	else if (idxCamera == 1)
+	{
+		camPos = "Left";
+	}
+	else if (idxCamera == 2)
+	{
+		camPos = "Right";
+	}
+	else{
+		cout << "Invalid input for idxCamera!" << endl;
+		waitUserInput2exit();
+	}
+
+	cout << "Enter the pattern to use under the "
+	<< camPos << " camera? (e.g., fullBlue)" << endl;
+
+	string CSpattern;
+	cin >> CSpattern;
+
+	CSstrs.push_back(CSpattern);
 
 }
 
-/* Ask for what strain of Fish is using */
-void WriteOutData::enquireStrainNames()
+vector<int> UserInterface::generateFishIDs(int numFish)
+{
+	vector<int> fishIDs;
+	for (int i = 0; i < numFish; i++)
+		fishIDs.push_back(i+1);
+}
+
+void UserInterface::enquireFishStrain()
 {
 	cout << "Enter the strain name for all fish. (A number, e.g. GCaMP6f)" << endl;
 	cout << "(Assume they are the same strain)" << endl;
 
-	string strainName;
 	cin >> strainName;
 
-	for (int i = 0; i < numFiles; i++)
-	{
-		strainNames.push_back(strainName);
-	}
+	cout << endl; // leave an empty line
+
 }
 
-/* Ask for the age for all fish */
-void WriteOutData::enquireFishAge()
+void UserInterface::enquireFishAge()
 {
 	cout << "Enter age for all fish. (A number, e.g. 9)" << endl;
 	cout << "(Assume they are at the same age)" << endl;
@@ -100,10 +158,7 @@ void WriteOutData::enquireFishAge()
 	cout << endl; // separated with an empty line
 }
 
-
-
-/* Ask for what experiment task for poor fish */
-void WriteOutData::enquireExpTask()
+void UserInterface::enquireExpTask()
 {
 	cout << "Enter task for all fish (e.g. OLcontrol, OLexp)" << endl;
 	cin >> expTask;
@@ -117,6 +172,11 @@ void WriteOutData::enquireExpTask()
 	{
 		cout << "Make sure the OUTPUT button is" << endl
 			<< "ON (on the power source)" << endl;
+	}
+	else if (iequals(expTask, "BlueTest"))
+	{
+		cout << "Make sure the `fullBlue` pattern" << endl
+			<< "is using." << endl;
 	}
 	else {
 		cout << "Unrecognized expType" << endl;
@@ -137,145 +197,22 @@ void WriteOutData::enquireExpTask()
 
 }
 
-/* Ask for fish IDs for all arenas */
-void WriteOutData::enquireFishIDs()
-{
-	for (int i = 0; i < numFiles; i++)
-		fishIDs.push_back(enquireFishIDs(i));
-}
-
-
-
-/* Ask for fish IDs in the arena */
-vector<string> WriteOutData::enquireFishIDs(int arenaIdx)
-{
-
-	showFishPosDiagram();
-	cout << "Enter fishIDs used in the Arena " << arenaIdx + 1 << endl;
-	cout << "Enter all fishIDs with ',' as separator. (e.g. G11,G14)" << endl;
-
-	string inputStr;
-	getline(cin, inputStr);
-	cout << endl; // separated with an empty line
-	vector<string> fishIDs;
-
-	istringstream ss;
-	ss.clear();
-	ss.str(inputStr);
-	while (ss.good())
-	{
-		string subStr;
-		getline(ss, subStr, ',');
-		fishIDs.push_back(subStr);
-	}
-
-	return fishIDs;
-}
-
-/* Get strain names of fish in all arenas */
-void WriteOutData::get_strainNames()
-{
-	for (int i = 0; i < numFiles; i++)
-	{
-		strainNames.push_back(get_strainName(fishIDs[i]));
-	}
-}
-/* Get strain name of fish in the arena */
-string WriteOutData::get_strainName(vector<string> fishIDs)
-{
-	char firstChar = fishIDs[0][0];
-	string strainName;
-	if (firstChar == 'G' || firstChar == 'g') // GCaMP fish
-		strainName += "GCaMP";
-	else if (firstChar == 'S' || firstChar == 's')
-		strainName += "WT";
-	return strainName;
-}
-
-
 
 /* Get basename for the output files */
-void WriteOutData::getBasenames()
+string UserInterface::getBasename(int idxFile)
 {
-	for (int i = 0; i < numFiles; i++)
-		baseNames.push_back(getBasename(i));
-}
-
-/* Get basename for the output files */
-string WriteOutData::getBasename(int arenaIdx)
-{
-
 	string baseName =
-		timeStr + "_" + "Arena" + to_string(arenaIdx + 1)
+		timeStr + "_" + "Arena" + to_string(arenaIDs[idxFile])
 		+ "_" + strainNames[arenaIdx] + "_"
 		+ to_string(fishAge)+ "dpf_"
-		+ expTask + "_" + CSstrs[arenaIdx];
+		+ expTask;
 	return baseName;
 }
 
-/* Get CS strings for all arena */
-void WriteOutData::get_CS_strings(vector<const char*> CSpatterns)
-{
-	for (int i = 0; i < CSpatterns.size(); i++)
-	{
-		CSstrs.push_back(get_CS_string(CSpatterns[i]));
-	}
-}
-
-/* Get CS string to append to the filenames of yaml and video files */
-string WriteOutData::get_CS_string(const char* CSpattern)
-{
-
-	string patternStr = extractPatternName(CSpattern);
-	string CSstr;
-	if (patternStr.compare("redBlackCheckerboard") == 0)
-		CSstr = "RBC";
-	else if (patternStr.compare("whiteBlackCheckerboard") == 0)
-		CSstr = "WBC";
-	else if (patternStr.compare("pureBlack") == 0)
-		CSstr = "PB";
-	else
-	{
-		CSstr = patternStr;
-		cout << "CS pattern is: " << CSstr << endl;
-
-	}
-	return CSstr;
-
-}
-
-
-/* Extract the pattern name from the filename
- by erasing all lower-case alphabetas
-*/
-string extractPatternName(const char* fileName)
-{
-	int startIdx, endIdx;
-	string s(fileName);
-	std::reverse(s.begin(), s.end());
-	int foundIdx = s.find('/');
-	if (foundIdx != string::npos)
-		startIdx = s.size() - foundIdx;
-	else
-		startIdx = 0;
-
-	foundIdx = s.find('.');
-	if (foundIdx != string::npos)
-		endIdx = s.size() - foundIdx;
-	else {
-		cout << "Wrong input pattern directory!" << endl;
-		cout << "Please check!" << endl;
-		exit(0);
-	}
-
-	std::reverse(s.begin(), s.end()); // reverse back
-	string patternName = s.substr(startIdx , endIdx - startIdx - 1);
-	return patternName;
-}
 
 
 
-/* Show software description and welcome messages to user */
+
 void showWelcomeMsg()
 {
 	/*
@@ -303,16 +240,6 @@ void showWelcomeMsg()
 
 }
 
-/*
-Diagram of fish positions in arena
-|		|		|
-|	0   |   1	|
-|		|		|
-|---------------|
-|		|		|
-|	2   |   3	|
-|		|		|
-*/
 void showFishPosDiagram()
 {
 	const int numSpaces = 3;
@@ -326,4 +253,42 @@ void showFishPosDiagram()
 	cout << spaces << "2" << spaces << "|" << spaces << "3" << spaces << endl;
 	cout << cutLineL << endl;
 	cout << endl; // separated with an empty line
+}
+
+vector<string> getStrVecFromCMD()
+{
+	vector<string> strVec;
+
+	string inputStr;
+	getline(cin, inputStr);
+	cout << endl; // separated with an empty line
+	vector<string> strVec;
+
+	istringstream ss;
+	ss.clear();
+	ss.str(inputStr);
+	while (ss.good())
+	{
+		string subStr;
+		getline(ss, subStr, ',');
+		strVec.push_back(subStr);
+	}
+
+	return strVec;
+}
+
+string getCurDateTime()
+{
+	// Get system time
+	time_t rawtime;
+	struct tm timeinfo;
+	char buffer[80];
+
+	time(&rawtime);
+
+	string timeStr;
+	int errCode = localtime_s(&timeinfo, &rawtime);
+	strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M", &timeinfo);
+	timeStr = buffer;
+	return timeStr;
 }

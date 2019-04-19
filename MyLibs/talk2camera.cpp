@@ -108,7 +108,7 @@ void Cameras::grabPylonImg()
 	} catch (const GenericException &e) {
 		cerr << "An exception occurred." << endl
 			<< e.GetDescription() << endl;
-		return false;
+
 	}
 	cIdx = ptrGrabResult->GetCameraContext();
 	formatConverter.Convert(pylonImg,ptrGrabResult);

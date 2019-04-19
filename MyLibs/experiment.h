@@ -25,8 +25,7 @@
 
 #ifndef _GUARD_EXPERIMENT_H
 #define _GUARD_EXPERIMENT_H
-// Include 3rd party libraries
-#include "../3rdPartyLibs/Utilities/Timer.h"
+
 // Include user-defined libraries
 #include "fishAnalysis.h"
 #include "talk2camera.h"
@@ -34,6 +33,7 @@
 #include "talk2screen.h"
 #include "fileWriter.h"
 #include "userInterface.h"
+#include "expTimer.h"
 
 // User-defined macros
 
@@ -44,7 +44,7 @@ private:
 	;
 public:
 	// methods
-	ExperimentData()
+	ExperimentData(std::string pName)
 	{
 
 	}
