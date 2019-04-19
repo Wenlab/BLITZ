@@ -44,7 +44,7 @@ private:
 	;
 public:
 	// methods
-	ExperimentData(std::string pName)
+	ExperimentData()
 	{
 
 	}
@@ -64,18 +64,7 @@ public:
 	/* Run the experiment to do whether fish invisible to the blue pattern */
 	void runBlueTest();
 
-	/* Write out info of a frame to disk */
-	void writeOutFrame(); // TODO: consider to move this method to fileWriter class
-
-	/* Get current time */
-	bool getTime(); //TODO: wrap timer class in a new class and move this method to that new class.
-
-	/* Get experiment start local time */
-	void get_current_date_time(); // TODO: consider to move this method
-
   // properties
-
-	// constant ones
 
 	// Functional module objects
 	ExpTimer timerObj; // TODO: consider to add a new class to wrap the 3rd party lib?

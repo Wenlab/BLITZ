@@ -98,28 +98,30 @@ public:
 	// methods
 	FileWriter()
 	{
-
+		path2save = "F:/FishExpData/";
 	}
 	// methods
 
 	/* initialize yaml- and video- writers */
-	bool initialize(std::string pathName, int width, int height, int frameRate, int x_cut, int y_cut, std::vector<std::vector<int>> yDivs);
+	void initialize(UserInterface& UIobj); // object that contains user's input
 
 	/* Write out experiment settings as the header for files
 		only write once */
-	void FileWriter::writeOutExpSettings(
+	void writeOutExpSettings(
 		UserInterface& UIobj, // object that contains user's input
 		Cameras& camerasObj, // object that contains cameras' info (e.g., FRAMERATE)
 		FishAnalysis& fishAnalysisObj // object that contains image processing info
 		)
 
 	/* Write out info that updated every frame to files (YAMLs and videos) */
-	void FileWriter::writeOutFrame(
+	void writeOutFrame(
 		ExpTimer& timerObj, // object that counts time and index of frames
 		FishAnalysis& fishAnalysisObj, // object that contains image processing info
 		int idxFile // which file to write
 		)
 
+	/* Get current date and time string from chrono system clock */
+	void getCurDateTime();
 	// template functions
 	/* Write out key value pairs */
 	template <typename T>
@@ -140,9 +142,10 @@ public:
 
 	// user input infos
 	int numFiles;
+	string timeStr;
 
-	std::vector<std::string> CSpatterns; // TODO: move this into the WritOut module
-	const std::string pathName; // TODO: move this into the WritOut module
+	std::vector<std::string> CSpatterns;
+	const std::string path2save;
 
 };
 

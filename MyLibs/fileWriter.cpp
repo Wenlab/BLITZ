@@ -34,9 +34,9 @@
 
 
 using namespace std;
-using namespace cv; // TODO: consider to remove this namespace
+using namespace cv;
 
-bool FileWriter::initialize(string pathName, int width, int height, int frameRate)
+bool FileWriter::initialize(UserInterface& UIobj)
 {
 	for (int i = 0; i < numFiles; i++)
 	{
@@ -56,23 +56,6 @@ bool FileWriter::initialize(string pathName, int width, int height, int frameRat
 
 	return true;
 
-}
-
-
-/* Get current date and time string from chrono system clock */
-// TODO: consider to move this method to another class
-void WriteOutData::get_current_date_time()
-{
-	// Get system time
-	time_t rawtime;
-	struct tm timeinfo;
-	char buffer[80];
-
-	time(&rawtime);
-
-	int errCode = localtime_s(&timeinfo, &rawtime);
-	strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M", &timeinfo);
-	timeStr = buffer;
 }
 
 void FileWriter::writeOutExpSettings(UserInterface& UIobj, Cameras& camerasObj,
@@ -125,6 +108,19 @@ void FileWriter::writeOutFrame(ExpTimer& timerObj, FishAnalysis& fishAnalysisObj
 	writeOut.yamlVec[cIdx] << "]";
 }
 
+void FileWriter::getCurDateTime()
+{
+	// Get system time
+	time_t rawtime;
+	struct tm timeinfo;
+	char buffer[80];
+
+	time(&rawtime);
+
+	int errCode = localtime_s(&timeinfo, &rawtime);
+	strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M", &timeinfo);
+	timeStr = buffer;
+}
 
 
 
