@@ -27,33 +27,69 @@
 // Include user-defined libraries
 #include "talk2relay.h"
 
+using namespace std;
 
-
-bool Relay::initialize(int com_num)
+void Relay::initialize(int com_num)
 {
-	if (!sPort.InitPort(com_num))
-	{
-		std::cout << "SerialPort initiation failed! " << std::endl;
-		return false;
+	try {
+		tryCatchFalse(sPort.InitPort(com_num),"The relay initiation failed!");
+	} catch (string errorMsg) {
+		cout << errorMsg << endl;
+		waitUserInput2exit();
 	}
-	else
-	{
-		std::cout << "SerialPort initiation succeeded! " << std::endl << std::endl;
-	}
-	return true;
+
+	cout << "The relay initiation succeeded! " << endl;
+
 }
 /* Open channel by index */
-bool Relay::givePulse(int idxChannel)
+void Relay::givePulse(int idxChannel)
 {
-	bool res = sPort.WriteData(openCommands[idxChannel], LEN_COMMAND);
-	return res;
+	float openDuration = 0.1; // seconds
+	vector<bool> openStatuses(NUM_CHANNEL, 0);
+	openStatuses[idxChannel] = 1;
+	givePulse(openStatuses, openDuration);
 }
 
-bool Relay::givePulse() // TODO: -> 16-bit boolean array, or a 16-bit binary number
+void Relay::givePulse(vector<bool> channelStatuses, float openDuration) // TODO: -> 16-bit boolean array, or a 16-bit binary number
 {
-	// TODO: write the code to open multiple channesl simultaneously,
-	// might need to generate new 16-base code
+	const unsigned char BIT_1 = 0x00; // default
+	const unsigned char BIT_2 = 0x5A; // device number
+	const unsigned char BIT_3 = 0x60; // Board number
+	const unsigned char BIT_4 = 0x01; // address number
+	const unsigned char BIT_5 = 0x12; // operation number
 
+
+	unsigned char sumCh0to7 = 0;
+	unsigned char sumCh8to15 = 0;
+	unsigned char numUnit = ceil(openDuration * 10); // openDuration in unit count; an unit is 0.1s
+
+	try {
+		tryCatchFalse((numUnit > 0), "openDuration should be a positive number!");
+	} catch (string errorMsg) {
+		cout << errorMsg << endl;
+	}
+
+	for (int i = 7; i >= 0; i--)
+	{
+		sumCh0to7 <<= 1;
+		sumCh0to7 += channelStatuses[i];
+	}
+	for (int i = 15; i >= 8; i--)
+	{
+		sumCh8to15 <<= 1;
+		sumCh8to15 += channelStatuses[i];
+	}
+
+	unsigned char sumCheck = BIT_1 + BIT_2 + BIT_3 + BIT_4 + BIT_5 + sumCh0to7 + sumCh8to15 + numUnit;
+	unsigned char openCommand[LEN_COMMAND] = {BIT_1, BIT_2, BIT_3, BIT_4, BIT_5,
+		 sumCh0to7, sumCh8to15, numUnit, sumCheck}
+
+	try {
+		tryCatchFalse(sPort.WriteData(openCommand, LEN_COMMAND),"Cannot write to the relay!")
+	} catch (string errorMsg) {
+		cout << errorMsg << endl;
+		waitUserInput2exit();
+	}
 
 
 

@@ -75,6 +75,13 @@ public:
 	/* Grab Pylon image from cameras */
 	void grabPylonImg();
 
+	/* Get the pointer to image buffer, for a single camera */
+	getPtr2buffer(); //TODO: find out the return type, write the implementation
+
+	/* Get the pointer to image buffer, for a single camera */
+	getPtr2buffer(int idxCamera); //TODO: find out the return type, write the implementation
+
+	
 
 	// properties
 	Pylon::CBaslerUsbInstantCameraArray cameras;

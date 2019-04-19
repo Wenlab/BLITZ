@@ -83,7 +83,7 @@ void Experiment::runXXexp()
 		fishAnalysisObj.prepareBgImg((uint8_t*)cams.getPtr2buffer());
 	}
 
-	timerObj.start(); // TODO: add idxFrame to timer class or camera class?
+	timerObj.start();
 
 	// TODO: consider to add some abstraction?
 	for (timerObj.idxFrame = 0; timerObj.idxFrame < getIdxFrame(expEndTime, 0); timerObj.idxFrame++) // TODO: how to modularize inside this giant grabbing loop.

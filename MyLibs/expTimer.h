@@ -33,7 +33,10 @@ private:
 public:
   ExpTimer()
   {
-
+    idxFrame = -1;
+    expPhase = -1;
+    sElapsed = -1;
+    msRemElapsed = -1;
   }
   /* Inherited the following methods:
   void   start();                             // start timer

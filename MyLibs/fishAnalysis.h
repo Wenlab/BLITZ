@@ -67,7 +67,17 @@ class FishAnalysis {
 		/* Present fish images with annotations. The code is adapted from code in stackfow*/
 		void displayImgs(std::string title); // TODO: consider to move this into fishAnalysis
 
+		/* Check which fish to give shock */
+		// TODO: write the implementation
+		std::vector<bool> checkIfGiveShock();
 
+		/* Check to reverse whose patterns */
+		// TODO: write the implementation
+		std::vector<bool> checkIfReversePattern();
+
+		/* Reset shocksOn to false for all fish */
+		// TODO: write the implementation 
+		void resetShocksOn();
 
 		// Properties
 		std::vector<ArenaData> allArenas; // TODO: consider to create a class to encapsulate this vector and its parameters, such as yDivs?
@@ -109,7 +119,7 @@ public:
 	/* getImgFromCamera */
 	bool getImgFromCamera(uint8_t* ptr2buffer);
 
-	/* */
+	/* Find all fish in this arena */
 	bool findAllFish();
 
 	/* Align all images to user's view */
@@ -144,8 +154,6 @@ public:
 		, age(fishAge)
 		, yDiv(yDivide)
 	{
-		lastBlackoutStart = -1; // TODO: consider to move this to Screen class
-		lastTimeUpdatePattern = -1; // TODO: consider to move this to Screen class
 		lastTimeInCS = -1;
 		lastShockTime = -1;
 		pauseFrames = -1;
@@ -163,6 +171,7 @@ public:
 	/*Determine which side is fish's head by measuring the area of each half*/
 	bool findHeadSide(cv::Point2f* M);
 
+	/* Decide whether to give this fish shock */
 	bool ifGiveShock(int pIdx, int sElapsed);
 
 	// properties
@@ -172,8 +181,6 @@ public:
 
 	// TODO: consider to make it const
 	int yDiv; // the division pos between CS and NCS pattern
-	int lastBlackoutStart;// TODO: consider to relocate this variable
-	int lastTimeUpdatePattern;// TODO: consider to relocate this variable
 
 // status properties
 	int lastTimeInCS;
