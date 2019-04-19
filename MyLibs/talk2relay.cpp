@@ -53,7 +53,8 @@ bool Relay::givePulse(vector<int> channelIndices,double openDuration)
 {
 	// TODO: write the code to open multiple channesl simultaneously,
 	// might need to generate new 16-base code
-	/*通信协议
+	/*16路串口继电器RS232通信协议
+	detail:https://item.taobao.com/item.htm?spm=a1z10.1-c-s.w4004-17114410235.18.f4cf2355YNSEG9&id=16171044415
   信号为一个unsigned char openCommand[9]
   其中每一个元素表示为0（0x00)~255(0xFF)的2位16进制数
   前两字节固定为0x00,0x5A
@@ -93,6 +94,10 @@ bool Relay::givePulse(vector<int> channelIndices,double openDuration)
   */
 	int channelIndices_0_7 = 0, channelIndices_8_15 = 0;
 	int num_01s = ceil(openDuration * 10);
+	if (!num_01s > 0) {
+		cout << "incorrect relay openDuration!" << endl;
+		return false;
+	}
 	for (int i = 7; i >= 0; i--) {
 		channelIndices_0_7 <<= 1;
 		channelIndices_0_7 += channelIndices[i];

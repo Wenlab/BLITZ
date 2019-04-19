@@ -70,7 +70,7 @@ public:
 	bool givePulse(int idxChannel);
 
 	/* Open multiple channels */
-	bool Relay::givePulse(vector<int> channelIndices,double openDuration);//TODO: finish the implementation of this method
+	bool givePulse(vector<int> channelIndices,double openDuration);//TODO: finish the implementation of this method
 
 	// properties
 	CSerialPort sPort; // serialPort
