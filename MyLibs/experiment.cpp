@@ -38,7 +38,7 @@ using namespace std;
 using namespace cv;
 
 // TODO: make each module can be enabled separately
-bool ExperimentData::initialize()
+bool Experiment::initialize()
 {
 	//writeOut.get_CS_strings(CSpatterns);
 	numCameras = writeOut.enquireInfoFromUser(); // TODO: put this function into UserInterface class
@@ -55,6 +55,7 @@ bool ExperimentData::initialize()
 	allArenas = initializeAllArenas(yDivs, writeOut.fishIDs, writeOut.fishAge);
 	// TODO: -> fishAnalysisObj.initialize(UIobj.fishIDs, UIobj.fishAge);
 
+	fileWriterObj.writeOutExpSettings();
 	return true;
 }
 
@@ -78,6 +79,7 @@ void Experiment::runXXexp()
 
 
 	// experimental procedures
+
 	for (timerObj.idxFrame = 0; timerObj.idxFrame < getIdxFrame(FRAMERATE, prepareTime, 0); timerObj.idxFrame++) {
 		camerasObj.grabPylonImg(); // grabbing
 		fishAnalysisObj.prepareBgImg((uint8_t*)cams.getPtr2buffer());
@@ -96,12 +98,11 @@ void Experiment::runXXexp()
 
 		fishAnalysisObj.findAllFish();
 
-		// run baseline session; TODO: encapsulate the following conditions into a method
-		if (idxFrame < getIdxFrame(baselineEndTime, 0)) // add a conversion method that can convert `endTime` to `endFrame`
+		// run baseline session
+		if (idxFrame < getIdxFrame(baselineEndTime, 0))
 		{
 			timerObj.expPhase = 0;
-			// TODO: replace this following block with screen.reversePeriodically(timeSinceStart,period);
-			screen.reversePeriodically(sElapsed, baselineInterval);//TODO: add this method to screen class
+			screen.reverse(sElapsed, baselineInterval);
 		}
 		else if (idxFrame < getIdxFrame(trainingEndTime, 0))
 		{
@@ -121,9 +122,9 @@ void Experiment::runXXexp()
 		else if (idxFrame < getIdxFrame(testEndTime, 0))
 		{
 			timerObj.expPhase = 3;
-			screen.reversePeriodically(sElapsed-trainingEndTime, testInterval);//TODO: add this method to screen class
+			screen.reverse(sElapsed-trainingEndTime, testInterval);
 		}
-		writeOutFrame();// TODO: consider to have an exp-setting data-struct and a frame data-struct to transfer data to fileWriterObj
+		fileWriterObj.writeOutFrame();
 		fishAnalysisObj.annotateImgs();
 		fishAnalysisObj.displayImgs();
 	}
