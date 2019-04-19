@@ -45,13 +45,8 @@ private:
 public:
 	// methods
 	ExperimentData(std::string pName)
-		:pathName(pName)
 	{
-		numCameras = 0;
-		idxFrame = -1;
-		sElapsed = -1; // TODO: do we need this, if we already have idxFrame?
-		msRemElapsed = 0; // TODO: useful for calibrations and plotting, but requires better insulation
-		expPhase = -1;
+
 	}
 	/* Initialize the experiment */
 	bool initialize(); // TODO: make every module can be enabled separately
@@ -81,23 +76,9 @@ public:
   // properties
 
 	// constant ones
-	// TODO: encapsulate the following variables in a class (data transfer class: struct)
-	// expSettings, frameData, now it is a little bit scattering
-
-	std::vector<std::string> CSpatterns; // TODO: move this into the WritOut module
-	const std::string pathName; // TODO: move this into the WritOut module
-	int numCameras; // TODO: change this into openStatus array which allows more flexible options for users
-
-	int idxFrame;
-	int sElapsed;
-	int msRemElapsed;
-	int expPhase;
-
-
-
 
 	// Functional module objects
-	Timer timerObj; // TODO: consider to add a new class to wrap the 3rd party lib?
+	ExpTimer timerObj; // TODO: consider to add a new class to wrap the 3rd party lib?
 	Cameras camerasObj; //TODO: CameraData -> Cameras;
 	FishAnalysis fishAnalysisObj;
 	Screen screenObj; // TODO: ScreenData -> Screen;

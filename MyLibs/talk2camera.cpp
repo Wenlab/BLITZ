@@ -120,9 +120,3 @@ void Cameras::grabPylonImg()
 		waitUserInput2exit();
 	}
 }
-
-int getIdxFrame(int endTime, int idxStart)
-{
-	// int numCameras = cameras.size();
-	return numCameras * FRAMERATE * endTime + idxStart;
-}

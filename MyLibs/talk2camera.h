@@ -87,9 +87,8 @@ public:
 
 
 };
-// Global functions 
-/* Get the end index of frames from the end time, start from 0 */
-int getIdxFrame(int endTime, int idxStart);
+// Global functions
+
 
 
 

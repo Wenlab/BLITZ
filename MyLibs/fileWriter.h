@@ -54,7 +54,38 @@
  #include "userInterface.h"
 */
 
+/* All information to write to files
+## Write once
+- FishIDs: vector<string>, from userInterface
+- FishAge: int, from userInterface
+- FishStrain: string, from userInterface
+- Arena: int, auto-generate from userInterface
+- Task: string, from userInterface
+- CSpattern: string, from userInterface
+- ExpStartTime: string, auto-generate from system time
+- FrameRate: int, from cameras class
+- FrameSize: vector<int>? Point(x,y)?, from cameras class
+- imgSeg: vector<int>, from fishAnalysis class
+- yDivide: vector<int>, from fishAnalysis class
 
+
+## Write every frame
+- FrameNum: int, from experiment, encapsulate in new ExpTimer class
+- ExpPhase: int, from experiment, encapsulate in new ExpTimer class
+- sElapsed: int, from timer, encapsulate in new ExpTimer class
+- msRemElapsed: int, from timer
+- FishIdx: int, from fishAnalysis class
+- Head: cv::Point
+- Tail: cv::Point
+- Center: cv::Point
+- HeadingAngle: int
+- ShockOn: bool
+- idxCase: int
+- ... another fish's data
+
+
+
+*/
 
 
 class FileWriter
@@ -85,7 +116,7 @@ public:
 	/* Write out info that updated every frame to files (YAMLs and videos) */
 	void writeOutFrame( FishAnalysis& fishAnalysisObj )
 	{
-		
+
 	}
 
 	// template functions
@@ -108,6 +139,9 @@ public:
 
 	// user input infos
 	int numFiles;
+
+	std::vector<std::string> CSpatterns; // TODO: move this into the WritOut module
+	const std::string pathName; // TODO: move this into the WritOut module
 
 };
 
