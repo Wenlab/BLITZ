@@ -49,7 +49,7 @@ bool Relay::givePulse(int idxChannel)
 	return res;
 }
 
-bool Relay::givePulse(vector<int> channelIndices,double openDuration)
+bool Relay::givePulse(vector<bool> channelStatuses,double openDuration)
 {
 	// TODO: write the code to open multiple channesl simultaneously,
 	// might need to generate new 16-base code
@@ -94,17 +94,17 @@ bool Relay::givePulse(vector<int> channelIndices,double openDuration)
   */
 	int channelIndices_0_7 = 0, channelIndices_8_15 = 0;
 	int num_01s = ceil(openDuration * 10);
-	if (!num_01s > 0) {
+	if (!(num_01s > 0)) {
 		cout << "incorrect relay openDuration!" << endl;
 		return false;
 	}
 	for (int i = 7; i >= 0; i--) {
 		channelIndices_0_7 <<= 1;
-		channelIndices_0_7 += channelIndices[i];
+		channelIndices_0_7 += channelStatuses[i];
 	}
 	for (int i = 15; i >= 8; i--) {
 		channelIndices_8_15 <<= 1;
-		channelIndices_8_15 += channelIndices[i];
+		channelIndices_8_15 += channelStatuses[i];
 	}
 	int check_relay = 0x00 + 0x5A + 0x60 + 0x01 + 0x12 + channelIndices_0_7 + channelIndices_8_15 + num_01s;
 	unsigned char openCommand[LEN_COMMAND]= { 0x00,0x5A,0x60,0x01,0x12,channelIndices_0_7,channelIndices_8_15,num_01s,check_relay };
