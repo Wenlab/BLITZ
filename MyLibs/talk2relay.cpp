@@ -31,13 +31,8 @@ using namespace std;
 
 void Relay::initialize(int com_num)
 {
-	try {
-		tryCatchFalse(sPort.InitPort(com_num),"The relay initiation failed!");
-	} catch (string errorMsg) {
-		cout << errorMsg << endl;
-		waitUserInput2exit();
-	}
 
+	tryCatchFalse(sPort.InitPort(com_num),"The relay initiation failed!");
 	cout << "The relay initiation succeeded! " << endl;
 
 }
@@ -63,11 +58,7 @@ void Relay::givePulse(vector<bool> channelStatuses, float openDuration) // TODO:
 	unsigned char sumCh8to15 = 0;
 	unsigned char numUnit = ceil(openDuration * 10); // openDuration in unit count; an unit is 0.1s
 
-	try {
-		tryCatchFalse((numUnit > 0), "openDuration should be a positive number!");
-	} catch (string errorMsg) {
-		cout << errorMsg << endl;
-	}
+	tryCatchFalse((numUnit > 0), "openDuration should be a positive number!");
 
 	for (int i = 7; i >= 0; i--)
 	{
@@ -84,13 +75,6 @@ void Relay::givePulse(vector<bool> channelStatuses, float openDuration) // TODO:
 	unsigned char openCommand[LEN_COMMAND] = {BIT_1, BIT_2, BIT_3, BIT_4, BIT_5,
 		 sumCh0to7, sumCh8to15, numUnit, sumCheck}
 
-	try {
-		tryCatchFalse(sPort.WriteData(openCommand, LEN_COMMAND),"Cannot write to the relay!")
-	} catch (string errorMsg) {
-		cout << errorMsg << endl;
-		waitUserInput2exit();
-	}
-
-
+	tryCatchFalse(sPort.WriteData(openCommand, LEN_COMMAND),"Cannot write to the relay!")
 
 }

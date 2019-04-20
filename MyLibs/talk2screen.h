@@ -89,7 +89,7 @@ public:
 	void show();
 
 	/* Show pattern for a specific area */
-	void show(int areaIdx);
+	void show(int idxArea);
 
 	/* Render black pattern */
 	void showBlackPattern();
@@ -175,8 +175,8 @@ public:
 
 
 	// properties
-	std::vector<PatchData> allPatches;
-
+	std::vector<Patch> allPatches;
+	// TODO: test whether this initiation works?
 };
 
 /* This an example class for inheritances.
@@ -194,6 +194,8 @@ but can be accessed by inherited classes */
 	// Methods
 	/* Initialize vertices and their buffers with given pos(x,y) */
 	void initVertices();
+
+
 
 public:
 	/* Initialize memory for patch */

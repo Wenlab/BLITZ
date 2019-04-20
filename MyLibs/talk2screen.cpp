@@ -27,11 +27,12 @@
 * Created on: Jan. 1, 2018
 */
 
-
-// Include user-defined libraries
-#include "talk2screen.h"
+#include <vector> // include range-based for loop
 #include <algorithm>
 #include <string>
+
+#include "talk2screen.h"
+
 
 using namespace std;
 
@@ -52,7 +53,7 @@ void Screen::initialize(string imgName, vector<float> boundBox, string renderTyp
 
 }
 
-void Screen::init_glfw_window() // TODO: consider to make it void by using exception to handle errors.
+void Screen::init_glfw_window()
 {
 	// glfw: initialize and configure
 	glfwInit();
@@ -65,14 +66,8 @@ void Screen::init_glfw_window() // TODO: consider to make it void by using excep
 	mode = glfwGetVideoMode(monitors[1]);
 
 	// glfw window creation
-	try {
-		window = glfwCreateWindow(mode->width, mode->height, "VR", monitors[1], NULL);
-		tryCatchNull(window, "Failed to create a GLFW window!");
-	} catch (string msg) {
-		cout << msg << endl;
-		glfwTerminate();
-		waitUserInput2exit();
-	}
+	window = glfwCreateWindow(mode->width, mode->height, "VR", monitors[1], NULL);
+	tryCatchNull(window, "Failed to create a GLFW window!"); // glfwTerminate(); Check if we need to run this method
 
 	cout << "Screen width: " << mode->width << endl;
 	cout << "Screen height: " << mode->height << endl;
@@ -82,14 +77,8 @@ void Screen::init_glfw_window() // TODO: consider to make it void by using excep
 
 void Screen::init_glad()
 {
-	try {
-		// TODO: check this line
-		tryCatchFalse(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress),
-		"Failed to initialize GLAD!")
-	} catch (string errorMsg) {
-		cout << errorMsg << endl;
-		waitUserInput2exit();
-	}
+	tryCatchFalse(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress),
+	"Failed to initialize GLAD!")
 }
 
 void Screen::show()
@@ -105,12 +94,12 @@ void Screen::show()
 
 }
 
-void Screen::show(int cIdx)
+void Screen::show(int idxArea)
 {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	allAreas[cIdx].renderTexture(cIdx);// TODO: consider to use instance variable instead
+	allAreas[cIdx].renderTexture(idxArea);// TODO: consider to use instance variable instead
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move
@@ -119,16 +108,17 @@ void Screen::show(int cIdx)
 
 void Screen::showBlackPattern()
 {
-	for (int i = 0; i < numAreas; i++)
-		allAreas[i].updateIdxCase(2);
+	int idxBlack = 2;
+	for (Area& area : allAreas)
+		area.updateIdxCase(idxBlack);
 
 	renderTexture();
 }
 
 void Screen::reverse()
 {
-	for (int i = 0; i < numAreas; i++)
-		allAreas[i].negateIdxCase();
+	for (Area& area : allAreas)
+		area.negateIdxCase();
 
 	renderTexture();
 }
@@ -243,8 +233,7 @@ void Area::initialize(string imgName)
 
 void Area::loadTextureIntoBuffers(string imgName)
 {
-	// TODO: turn textureID to a local variable? Test it
-	unsigned int textureID;
+
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	// set the texture wrapping parameters
@@ -255,30 +244,29 @@ void Area::loadTextureIntoBuffers(string imgName)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// load image, create texture and generate mipmaps
 	int width, height, nrChannels;
-	try{
-		unsigned char *data = stbi_load(imgName.c_str(), &width, &height, &nrChannels, 0);
-		tryCatchFalse(data, "Failed to load texture!");
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		stbi_image_free(data);
-	} catch (string errorMsg) {
-		cout << errorMsg << endl;
-		waitUserInput2exit();
-	}
+
+	unsigned char *data = stbi_load(imgName.c_str(), &width, &height, &nrChannels, 0);
+	tryCatchFalse(data, "Failed to load texture!");
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
 
 }
 
 void Area::updateIdxCase(int value)
 {
-	// errorHandling
-	try{
-		tryCatchFalse(iequals(renderType,"full"),
-		"Wrong renderType! This method is for full rendering only!");
-	} catch (string errorMsg) {
-		cout << errorMsg << endl;
-		waitUserInput2exit();
-	}
 
+	tryCatchFalse(iequals(renderType,"full"),
+	"Wrong renderType! This method is for full rendering only!");
+
+	/* TODO: test this range-based loop implementation
+	for (auto patch : allPatches)
+	{
+		patch.idxCase = value; // TODO: consider to have a method?
+		patch.uploadInt2GPU("idxCase",idxCase);
+	}
+	*/
 	for (int i = 0; i < numPatches; i++)
 	{
 		allPatches[i].idxCase = value;
@@ -288,15 +276,11 @@ void Area::updateIdxCase(int value)
 
 void Area::negateIdxCase()
 {
-	// errorHandling
-	try{
-		tryCatchFalse(iequals(renderType,"full"),
-		"Wrong renderType! This method is for full rendering only!");
-	} catch (string errorMsg) {
-		cout << errorMsg << endl;
-		waitUserInput2exit();
-	}
 
+	tryCatchFalse(iequals(renderType,"full"),
+	"Wrong renderType! This method is for full rendering only!");
+
+	// TODO: consider to use range-based loop implementation?
 	for (int i = 0; i < numPatches; i++)
 	{
 		allPatches[i].pIdx = !allPatches[i].pIdx;
@@ -306,14 +290,9 @@ void Area::negateIdxCase()
 
 void Area::negateIdxCase(int patchIdx)
 {
-	// errorHandling
-	try{
-		tryCatchFalse(iequals(renderType,"full"),
-		"Wrong renderType! This method is for full rendering only!");
-	} catch (string errorMsg) {
-		cout << errorMsg << endl;
-		waitUserInput2exit();
-	}
+
+	tryCatchFalse(iequals(renderType,"full"),
+	"Wrong renderType! This method is for full rendering only!");
 
 	allPatches[patchIdx].pIdx = !allPatches[patchIdx].pIdx;
 	allPatches[patchIdx].uploadInt2GPU("idxCase",idxCase);
@@ -324,11 +303,10 @@ void Area::renderTexture(int areaIdx)
 {
 	glActiveTexture(GL_TEXTURE0 + areaIdx);
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	for (int j = 0; j < numPatches; j++)
+	for (int j = 0; j < numPatches; j++) // TODO: consider to use range-based loop implementation?
 	{
-		allPatches[j].shader.use(); // TODO: align the abstraction level
-		glUniform1i(glGetUniformLocation(allPatches[j].shader.ID, "textureID"), areaIdx);// TODO: make it less shader dependent
-		glBindVertexArray(allPatches[j].VAO);
+		allPatches[j].uploadInt2GPU("textureID",areaIdx);
+		glBindVertexArray(allPatches[j].VAO); // TODO: write a method?
 		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
 	}
 }
