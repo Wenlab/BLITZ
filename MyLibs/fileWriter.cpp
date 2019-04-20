@@ -29,7 +29,7 @@
 #include "fileWriter.h"
 
 // Include standard libraries
-#include <ctime> // to get the current date and time
+
 #include <algorithm>  // include the algorithm reverse
 
 
@@ -45,22 +45,13 @@ void FileWriter::initialize(UserInterface& UIobj)
 		string yamlName = path2save + basename + ".yaml";
 
 		FileStorage fObj(yamlName, FileStorage::WRITE);
-		try {
-			tryCatchFalse(fObj.isOpened(), "YAML file writer CANNOT be opened!");
-		} catch (string errorMsg) {
-			cout << errorMsg << endl;
-			waitUserInput2exit();
-		}
+		tryCatchFalse(fObj.isOpened(), "YAML file writer CANNOT be opened!");
+
 		yamlVec.push_back(fObj);
 
-
 		VideoWriter vObj(videoName, CV_FOURCC('D', 'I', 'V', 'X'), frameRate, Size(width, height), false);
-		try {
-			tryCatchFalse(vObj.isOpened(), "Video file writer CANNOT be opened!");
-		} catch (string errorMsg) {
-			cout << errorMsg << endl;
-			waitUserInput2exit();
-		}
+		tryCatchFalse(vObj.isOpened(), "Video file writer CANNOT be opened!");
+
 		videoVec.push_back(vObj);
 
 	}

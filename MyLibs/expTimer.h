@@ -1,10 +1,7 @@
 /*
-* Copyright 2019 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -12,20 +9,20 @@
 * (at your option) any later version.
 *
 * Filename: expTimer.h
-* Abstract: this file contains all function definitions
+* Abstract: this file contains all function declarations that
 *			used to count time and other chronocial variables for
 *     experiments
-* Current Version: 2.0
+*
+* Current Version: 3.0
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Created on: Apr. 19, 2019
-
-
+* Modified on: Apr. 20, 2019
 */
 
-// Include 3rd party libraries
+// Include 3rd party libraries from Song Ho Ahn, check the file for the license
 #include "../3rdPartyLibs/Utilities/Timer.h"
 
-
+/* Class to cout seconds, idxFrame, experimet phase and any other chronocial variables */
 class ExpTimer : public Timer
 {
 private:
@@ -46,6 +43,7 @@ public:
 	double getElapsedTimeInMilliSec();          // get elapsed time in milli-second
 	double getElapsedTimeInMicroSec();          // get elapsed time in micro-second
   */
+
   /* Get both sElapsed and msRemElapsed */
   void getTime();
   // Properties

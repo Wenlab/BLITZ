@@ -1,37 +1,24 @@
 /*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the license, or
 * (at your option) any later version.
 *
-* Filename: writeOutFish.h
-* Abstract: this file contains all classes and functions' declarations
+* Filename: fileWriter.h
+* Abstract: this file contains all function declarations
 *			used to write experiment info and extracted motion parameters
 *			into yaml files and save videos for each camera
 *
-* Current Version: 2.0
+*
+* Current Version: 3.0
 * Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
+* Created on: Jan. 15, 2018
+* Modified on: Apr. 20, 2019
 */
-
-// TODO: redefine this class, think it clear the relationship between
-// this WriteOut class and the ExperimentData class
-// TODO: unify the input from one place (file, script or command window)
-// TODO: create a yaml config file and corresponding functions
-// TODO: rewrite the WriteOutData class as the FileIO class
-// I have to set the level of variables that users can access
-
 
 #ifndef _GUARD_WRITEOUTFISH_H
 #define _GUARD_WRITEOUTFISH_H
@@ -49,12 +36,6 @@
 
 // Include standard libraries
 #include <iostream>
-
-/* TODO: include fishAnalysis and another class (userInterface?) for experiment settings
- then pass the header of the objects to function
- #include "fishAnalysis.h"
- #include "userInterface.h"
-*/
 
 /* All information to write to files
 ## Write once
@@ -85,14 +66,12 @@
 - idxCase: int
 - ... another fish's data
 
-
-
 */
 
-
+/* Class to write out YAMLs and videos with the basic OpenCV methods */
 class FileWriter
 {
-private:
+private: // TODO: set the level of variables that users can access
 	;// nothing for now
 public:
 	// methods
@@ -101,10 +80,8 @@ public:
 		path2save = "F:/FishExpData/";
 	}
 	// methods
-
 	/* initialize yaml- and video- writers */
 	void initialize(UserInterface& UIobj); // object that contains user's input
-
 
 	/* Write out experiment settings as the header for files
 		only write once */
@@ -121,7 +98,6 @@ public:
 		int idxFile // which file to write
 		)
 
-	
 	// template functions
 	/* Write out key value pairs */
 	template <typename T>
@@ -137,19 +113,18 @@ public:
 	}
 
 	// properties
+	// TODO: consider to convert these variables to private
 	std::vector<cv::FileStorage> yamlVec;
 	std::vector<cv::VideoWriter> videoVec;
 
 	// user input infos
+	std::string path2save;
 	int numFiles;
-	string timeStr;
-
-	std::vector<std::string> CSpatterns;
-	const std::string path2save;
+	std::string timeStr;
 
 };
 
-
+// Global functions
 /* convert string vector to int-vector like formatted output */
 std::string strVec2str(std::vector<std::string> strVec);
 

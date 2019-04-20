@@ -1,10 +1,7 @@
 /*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,13 +12,10 @@
 * Abstract: this file contains all classes and functions' declarations
 *			used in serial communication
 *
-* Current Version: 2.0
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
+* Current Version: 3.0
+* Author: Wenbin Yang <bysin7@gmail.com>, Jingyuan Ji also contributed.
+* Created on: Jan. 15, 2018
+* Modified on: Apr. 20, 2019
 */
 
 /*16路串口继电器RS232通信协议
@@ -59,7 +53,7 @@ please feel free to contact me (Wenbin Yang, bysin7@gmail.com).
 常用信号举例：
 { 0x00,0x5A,0x60,0x01,0x12,0x00,0x02,0x01,0xD0 }(10号继电器开0.1s)
 
-ps:实际使用过程中不一定需要使用十六进制表示，0x10与16效果相同
+ps:实际使用过程中不一定需要使用十六进制表示，int型表示有着相同的效果
 */
 
 

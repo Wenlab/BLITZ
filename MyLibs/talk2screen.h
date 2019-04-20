@@ -1,10 +1,7 @@
 /*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -13,15 +10,12 @@
 *
 * Filename: talk2screen.h
 * Abstract: this file contains all classes and functions' declarations
-*			used to present visual stimulus to fish
+*			used to present visual patterns
 *
-* Current Version: 2.0
+* Current Version: 3.0
 * Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
+* Created on: Jan. 15, 2018
+* Modified on: Apr. 20, 2019
 */
 
 #ifndef _GUARD_TALK2SCREEN_H
@@ -51,7 +45,7 @@
 #define TRIANGLES_PER_PATCH 2
 
 
-
+/* Class to set up GLFW-OpenGL environment for rendering patterns */
 class Screen
 {
 private: // only used within class
@@ -71,12 +65,6 @@ but can be accessed by inherited classes */
 	 void init_glad();
 
 public:
-	// methods
-	/* Basically, there are only 3 kinds of methods
-			1. initiation
-			2. updatePatternIdx
-			3. render
-	*/
 	Screen() // constructor
 	{
 
@@ -138,7 +126,7 @@ public:
 class Area
 {
 private:
-	string renderType; /* 1. full: full rendering of a single pattern;
+	std::string renderType; /* 1. full: full rendering of a single pattern;
 	2. half: half pattern, half background (pure-color) rendering
 	3. rotation: render rotating pattern with a fixed rotating rate */
 	unsigned int textureID; // texture ID
@@ -221,7 +209,6 @@ public:
 /* Patch-area to render a full pattern without anything else */
 class FullPatch : public Patch
 {
-
 public:
 	// methods
 	Patch(
@@ -291,13 +278,17 @@ public:
 
 	// Properties
 	float radVelo; // rotating radian velocity
-
+	// TODO: consider to make it private?
 }
 
 
 
 // global functions
-// TODO: consider to move this function to error handling class
+/* Case insensitive comparasion
+Adapted from Timmmm, https://stackoverflow.com/a/4119881
+*/
 bool iequals(const string& a, const string& b);
+//TODO: how to reduce the duplication of this method in both files?
+// Create a new class? move to errorHandling class
 
 #endif // !_GUARD_TALK2SCREEN_H

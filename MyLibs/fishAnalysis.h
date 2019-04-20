@@ -1,10 +1,7 @@
 /*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,14 +13,12 @@
 *			used in analyzing fish behavioral parameters, such as
 *			fish's head, tail and center.
 *
-* Current Version: 2.0
+* Current Version: 3.0
 * Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
+* Created on: Jan. 15, 2018
+* Modified on: Apr. 20, 2019
 */
+
 #ifndef _GUARD_FISHANALYSIS_H
 #define _GUARD_FISHANALYSIS_H
 
@@ -40,32 +35,35 @@
 #define Y_CUT 385 // y position to separate fish 0,1 and 2,3
 
 /* the highest class that encapsulates everything about imaging processing */
-class FishAnalysis {
+class FishAnalysis() {
+public:
+		// Methods
 		// y division pos for all fish
-		yDivs =
-		{
-			{ 200, 200, 558, 558 },
-			{ 223, 223, 588, 588 },
-			{ 223, 223, 588, 588 }
-		}; // TODO: make this variable private
+		FishAnalysis = {
+			yDivs =
+			{
+				{ 200, 200, 558, 558 },
+				{ 223, 223, 588, 588 },
+				{ 223, 223, 588, 588 }
+			}; // TODO: make this variable private
+		}
+
 
 		// Methods
-
 		/* Initialize all arenas will be used in the experiment */
-		std::vector<ArenaData> initializeAllArenas(std::vector<std::vector<int>> yDivs, std::vector<std::vector<std::string>> fishIDs, int fishAge);
-
+		std::vector<ArenaData> initializeAllArenas(std::vector<std::vector<int>> yDivs); // TODO: update the implementation
 
 		/* Prepare background image for MOG subtractor */
-		void prepareBgImg(const int prepareTime); // TODO: move this into fishAnalysis
+		void prepareBgImg(const int prepareTime); // TODO: consider to make `prepareTime` a local variable?
 
-		/* Find all fish for all cameras */
+		/* Find all fish in all arenas */
 		void findAllFish();
 
 		/* Decorate images with fish's heads, tails and visual pattern's info */
-		void annotateImgs(); // TODO: consider to move this into fishAnalysis
+		void annotateImgs(); // TODO: update the implementation
 
-		/* Present fish images with annotations. The code is adapted from code in stackfow*/
-		void displayImgs(std::string title); // TODO: consider to move this into fishAnalysis
+		/* Present fish images with annotations. The code is adapted from code in stackfow. */
+		void displayImgs(std::string title); // TODO: update the implementation
 
 		/* Check which fish to give shock */
 		// TODO: write the implementation
@@ -76,12 +74,14 @@ class FishAnalysis {
 		std::vector<bool> checkIfReversePattern();
 
 		/* Reset shocksOn to false for all fish */
-		// TODO: write the implementation 
+		// TODO: write the implementation
 		void resetShocksOn();
 
 		// Properties
-		std::vector<ArenaData> allArenas; // TODO: consider to create a class to encapsulate this vector and its parameters, such as yDivs?
+		std::vector<ArenaData> allArenas; // TODO: consider to make this private?
+private:
 		std::vector<std::vector<int>> yDivs; 	// TODO: move this into the imaging processing module
+
 
 }
 
@@ -92,10 +92,9 @@ private:
 	;// nothing for now
 public:
 	// methods
-	Arena(int BWthre = 30, int n = 1) // constructor
+	Arena(int n = 1) // constructor
 		: numFish(n)
 	{
-		binThre = BWthre;
 		allFish.reserve(numFish); // allocate memory
 	}
 
@@ -115,25 +114,29 @@ public:
 	|	2	|	3	|
 	|		|		|
 	*/
+	/* Find all fish in this arena */
+	bool findAllFish();
 
 	/* getImgFromCamera */
 	bool getImgFromCamera(uint8_t* ptr2buffer);
 
-	/* Find all fish in this arena */
-	bool findAllFish();
-
 	/* Align all images to user's view */
-	void alignImgs(int width, int height, int cIdx, uint8_t* buffer);
+	void alignImgs(int width, int height, int cIdx, uint8_t* buffer); // TODO: consider to remove width, and height
 
-	void annotateFish();
+	/* Decorate images with fish's heads, tails and visual pattern's info */
+	void annotateFish(); // TODO: engineer the relation between this and the-same-name function in FishAnalysis class
 
+	/* Present fish images with annotations. The code is adapted from code in stackfow. */
+	void displayImgs(std::string title); // TODO: update the implementation
+
+	/* Reset shocksOn to false for all fish */
+	// TODO: write the implementation
 	void resetShocksOn();
 
 	// properties
 	const int numFish;
-	int binThre; // in the future, this might be adjusted in the GUI
 
-	cv::Ptr<cv::BackgroundSubtractor> pMOG; // one pMOG for one arena
+	cv::Ptr<cv::BackgroundSubtractor> pMOG; // background subtractor for detecting moving object
 	cv::Mat opencvImg, HUDSimg, subImg;
 	std::vector<FishData> allFish;
 
@@ -148,8 +151,8 @@ class Fish {
 private:
 	; // nothing for now
 public:
-	// methods
-	Fish(std::string fishID = "", int fishAge = 0, int yDivide = 0) // constructor
+	// methods // TODO: rewrite
+	Fish(int yDivide = 0, std::string fishID = "", int fishAge = 0) // constructor
 		: ID(fishID)
 		, age(fishAge)
 		, yDiv(yDivide)

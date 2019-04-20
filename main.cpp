@@ -1,10 +1,7 @@
 /*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,44 +12,23 @@
 * Abstract: this file contains all functions used in constructing final
 *			behavioral learning experiment in zebrafish
 *
-* Current Version: 2.0
+* Current Version: 3.0
 * Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
+* Modified on: Apr. 20, 2019
 */
-// Include 3rd party libraries
-#include "3rdPartyLibs/Utilities/Timer.h"
 
 // Include user-defined libraries
 #include "MyLibs/experiment.h"
-#include "MyLibs/talk2screen.h"
-#include "MyLibs/talk2camera.h"
-#include "MyLibs/fishAnalysis.h"
-#include <ctime>
-
 
 // Include standard libraries
 #include <iostream>
 
 using namespace std;
-using namespace cv;
 
 int main()
 {
-	string pathName = "F:/FishExpData/";
-	Experiment exp(pathName);
-	try {
-		exp.initialize();
-	}
-	catch (const GenericException &e) // TODO: determine the error type, report useful error message
-	{
-		// Error handling
-		cerr << "An exception occurred." << endl
-			<< e.GetDescription() << endl;
-	}
-
+	Experiment exp();
+	exp.initialize();
 	exp.runXXtest();
-	// TODO: consider to add an end-message and wait for user's input to end the session
+	waitUserInput2exit(); // included in errorHandling.h
 }

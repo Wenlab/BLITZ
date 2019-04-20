@@ -1,10 +1,7 @@
 /*
-* Copyright 2019 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,24 +12,25 @@
 * Abstract: this file contains all function definitions
 *			used to communicate with users through an command line interface
 *
-* Current Version: 2.0
+* Current Version: 3.0
 * Author: Wenbin Yang <bysin7@gmail.com>
-
-* Created on: Apr. 15, 2018
+* Created on: Jan. 15, 2018
+* Modified on: Apr. 20, 2019
 */
 
 #ifndef USERINTERFACE_H_DEF
 #define USERINTERFACE_H_DEF
 
 // Include standard libraries
+#include <iostream>
 #include <ctime> // to get the current date and time
 
-
 #define MAX_CAMERAS 3
+// TODO: reduce the duplication
+// since it is duplicated with the one in talk2camera.h
 
-
-
-
+// TODO: make a GUI
+/* Talk to users via the command line */
 class UserInterface
 {
 private:
@@ -76,10 +74,9 @@ public:
 	// Properties
 	// TODO: get the number of cameras and pass it to fileWriterObj
 	std::vector<bool> cameras2open; // status array to indicate which cameras to open
-	// TODO: consider to generate fishIDs automatically, combine some time info
 	std::vector<std::vector<std::string>> fishIDs; // fish IDs for all arenas
 	int fishAge; // one age for all fish
-	std::string strainName; // TODO: consider to have a single strain name
+	std::string strainName; //
 	std::vector<int> arenaIDs; // which arena the fish is in
 	std::string expTask; // task to run for animals
 	std::vector<std::string> CSstrs; // CS patterns
@@ -100,8 +97,9 @@ void showFishPosDiagram();
 std::vector<std::string> getStrVecFromCMD();
 
 //TODO: write a better description and note the dependencies
-/* Get current date and time string from chrono system clock */
-string getCurDateTime();
+/* Get current date and time string from chrono system clock,
+ 	 depends on <ctime> */
+std::string getCurDateTime();
 
 
 

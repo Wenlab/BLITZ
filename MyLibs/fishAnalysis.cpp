@@ -74,6 +74,7 @@ void ArenaData::initialize(
 
 bool ArenaData::findAllFish()
 {
+	int binThre = 20; // in the future, this might be adjusted in the GUI
 	bool fishFlag = true;
 	// outer contours are counter clockwise
 	vector<vector<Point>> contours;

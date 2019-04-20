@@ -1,10 +1,7 @@
-  /*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+/*
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -14,66 +11,60 @@
 * Filename: experiment.h
 * Abstract: this file contains all classes and function declarations
 *		used in constructing final behavioral learning experiment in zebrafish
-* Current Version: 2.0
+*
+* Current Version: 3.0
 * Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
+* Created on: Jan. 15, 2018
+* Modified on: Apr. 20, 2019
 */
 
 #ifndef _GUARD_EXPERIMENT_H
 #define _GUARD_EXPERIMENT_H
 
 // Include user-defined libraries
-#include "fishAnalysis.h"
-#include "talk2camera.h"
-#include "talk2relay.h"
-#include "talk2screen.h"
-#include "fileWriter.h"
 #include "userInterface.h"
 #include "expTimer.h"
+#include "talk2camera.h"
+#include "fishAnalysis.h"
+#include "talk2screen.h"
+#include "talk2relay.h"
+#include "fileWriter.h"
 
 // User-defined macros
-
-// TODO: rename this class, drop "Data"
 class Experiment
 {
-private:
-	;
 public:
 	// methods
-	ExperimentData(std::string pName)
+	ExperimentData()
 	{
-
+		// empty forever
 	}
 	/* Initialize the experiment */
-	bool initialize(); // TODO: make every module can be enabled separately
-	// TODO: add openStatus boolean array
+	void initialize(); // TODO: make every module can be enabled separately via adding openStatus boolean array
 
 	/* run a specific experiment */
-	void runXXexp();
+	void runXXexp(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
 
 	/* Run unpaired training in the operant learning procedure */
-	void runUnpairedOLexp();
+	void runUnpairedOLexp(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
 
 	/* Run the entire operant learning procedure */
-	void runOLexp();
+	void runOLexp(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
 
 	/* Run the experiment to do whether fish invisible to the blue pattern */
-	void runBlueTest();
+	void runBlueTest(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
 
+private:
   // properties
-
 	// Functional module objects
-	ExpTimer timerObj; // TODO: consider to add a new class to wrap the 3rd party lib?
-	Cameras camerasObj; //TODO: CameraData -> Cameras;
-	FishAnalysis fishAnalysisObj;
-	Screen screenObj; // TODO: ScreenData -> Screen;
-	Relay relayObj; // TODO: update the lines that use this object.
+	UserInterface UIobj; // object that receive user inputs via the command line
+	ExpTimer timerObj; // object that count time and index of frames
+	Cameras camerasObj; //object that captures images from camera
+	FishAnalysis fishAnalysisObj; // object that processes images
+	Screen screenObj; // object that shows pattern via a projector
+	Relay relayObj; // object that controls a 16-channel relay
 	FileWriter fileWriterObj;
-	UserInterface UIobj;
+
 };
 
 

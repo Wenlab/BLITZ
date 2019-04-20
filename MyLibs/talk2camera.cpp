@@ -112,11 +112,7 @@ void Cameras::grabPylonImg()
 	}
 	cIdx = ptrGrabResult->GetCameraContext();
 	formatConverter.Convert(pylonImg,ptrGrabResult);
-	try
-	{
-		tryCatchFalse(cameras.IsGrabbing(),"Error! The camera is NOT grabbing!");
-	} catch (string errorMsg) {
-		cout << errorMsg << endl;
-		waitUserInput2exit();
-	}
+
+	tryCatchFalse(cameras.IsGrabbing(),"Error! The camera is NOT grabbing!");
+
 }
