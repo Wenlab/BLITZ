@@ -42,14 +42,11 @@ public:
 	/* Initialize the experiment */
 	void initialize(); // TODO: make every module can be enabled separately via adding openStatus boolean array
 
-	/* run a specific experiment */
-	void runXXexp(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
+	/* Run the entire operant learning procedure */
+	void runOLexp(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
 
 	/* Run unpaired training in the operant learning procedure */
 	void runUnpairedOLexp(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
-
-	/* Run the entire operant learning procedure */
-	void runOLexp(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
 
 	/* Run the experiment to do whether fish invisible to the blue pattern */
 	void runBlueTest(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
@@ -59,7 +56,7 @@ private:
 	// Functional module objects
 	UserInterface UIobj; // object that receive user inputs via the command line
 	ExpTimer timerObj; // object that count time and index of frames
-	Cameras camerasObj; //object that captures images from camera
+	Cameras camerasObj; //object that captures images from camera, TODO: use generic function to indicate different device?
 	FishAnalysis fishAnalysisObj; // object that processes images
 	Screen screenObj; // object that shows pattern via a projector
 	Relay relayObj; // object that controls a 16-channel relay

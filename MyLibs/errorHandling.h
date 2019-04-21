@@ -28,14 +28,11 @@
 // TODO: Do I need a class for this?
 class errorHandling()
 {
-
   // Properties
-
 }
 // Methods
 void waitUserInput2exit();
 
-// TODO: reconsider whether the name is proper?
 /* catch NULL value with any datatype*/
 template <typename T>
 void tryCatchNull(T value, std::string exceptionString)
@@ -59,7 +56,15 @@ void tryCatchFalse(T value, std::string exceptionString)
 }
 
 /* catch empty value with any datatype; add this method if needed*/
-
+template <typename T>
+void tryCatchEmpty(T value, std::string exceptionString)
+{
+  if (value.size() == 0)
+  {
+    std::cout << errorMsg << std::endl;
+    waitUserInput2exit();
+  }
+}
 
 
 

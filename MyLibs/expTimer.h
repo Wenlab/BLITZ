@@ -30,7 +30,7 @@ private:
 public:
   ExpTimer()
   {
-    idxFrame = -1;
+    count = -1;
     expPhase = -1;
     sElapsed = -1;
     msRemElapsed = -1;
@@ -48,7 +48,7 @@ public:
   void getTime();
   // Properties
 
-  int idxFrame;
+  int count; // count events
   int expPhase; // indicate which experiment phase this frame is
   int sElapsed; // seconds that elapsed
   int msRemElapsed; // remianed mili-seconds that elapsed
@@ -57,3 +57,4 @@ public:
 // Global functions
 /* Get the end index of frames from the end time, start from 0 */
 int getIdxFrame(int frameRate, int endTime, int idxStart=0);
+// TODO: consider to talk2camera and convert to a class method 

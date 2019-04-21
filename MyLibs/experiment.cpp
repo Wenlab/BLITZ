@@ -40,30 +40,25 @@ using namespace cv;
 // TODO: make each module can be enabled separately
 bool Experiment::initialize()
 {
-	//writeOut.get_CS_strings(CSpatterns);
-	numCameras = writeOut.enquireInfoFromUser(); // TODO: put this function into UserInterface class
-	CSpatterns = get_CS_patterns(writeOut.CSstrs); // TODO: this line should be incorperated into the above function.
-	/* Create yaml and video files to write in */
-	if (!writeOut.initialize(pathName, WIDTH, HEIGHT, FRAMERATE,
-		X_CUT, Y_CUT, yDivs))
-		return false;
-	// TODO: consider to improve this error handling with exceptions
+	UIobj.enquireInfoFromUser();
+	// TODO: consider to encapsulate this property with a method
+	if (UIobj.devices2use[0]) // initialize relay
+		relayObj.initialize();
+	else if (UIobj.devices2use[1]) // initialize pattern rendering
+	  screenObj.initialize();
+	else if (UIobj.devices2use[2]) // initialize cameras
+	{
+		camerasObj.initialize(UIobj.cameras2open); // TODO: use method instead
+		fishAnalysisObj.initialize();
+	}
 
-	if (!cams.initialize(numCameras, WIDTH, HEIGHT, FRAMERATE)) // TODO: consider to improve this error handling with exceptions
-		return false;
-
-	allArenas = initializeAllArenas(yDivs, writeOut.fishIDs, writeOut.fishAge);
-	// TODO: -> fishAnalysisObj.initialize(UIobj.fishIDs, UIobj.fishAge);
-
-	fileWriterObj.writeOutExpSettings();
-	return true;
+	fileWriterObj.initialize(UIobj);
+	fileWriterObj.writeOutExpSettings(); //TODO: consider to move this into runXXexp?
+	timerObj.initialize();
 }
 
-/* example method for running a specific experiment */
-
-void Experiment::runXXexp()
+void Experiment::runOperantTraining()
 {
-	// parameters
 	const int prepareTime = 1 * 60; // seconnds, default 1 min
 	const int baselineEndTime = 2 * 60; // seconds, default 10 mins
 	const int trainingEndTime = 8 * 60; // seconds, default 20 mins
@@ -71,40 +66,37 @@ void Experiment::runXXexp()
 	const int testEndTime = 15 * 60; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
 
-	int ITI = 10; // seconds, Inter-trial Interval
-	int lastScreenPatternUpdate = -1; // seconds
-	const int NCStimeThre = 48; // seconds
+	int ITI = 10; // seconds, inter-trial interval, TODO: implement the concept of trials
 	const baselineInterval = 30; // seconds
 	const testInterval = 30; // seconds
 
-
-	// experimental procedures
-
-	for (timerObj.idxFrame = 0; timerObj.idxFrame < getIdxFrame(FRAMERATE, prepareTime, 0); timerObj.idxFrame++) {
-		camerasObj.grabPylonImg(); // grabbing
+	// Preparation before experiment starts
+	// TODO: write the implementations
+	for (timerObj.resetCount(), timerObj.getCount() < camerasObj.getIdxEndFrame(prepareTime), timerObj.addCount()) // TODO: write a macro to encapsulate this `for`
+	{
+		camerasObj.grabPylonImg(); // TODO: update the return type
 		fishAnalysisObj.prepareBgImg((uint8_t*)cams.getPtr2buffer());
 	}
 
-	timerObj.start();
+	timerObj.reset(); //TODO, reset seconds and count
 
-	// TODO: consider to add some abstraction?
-	for (timerObj.idxFrame = 0; timerObj.idxFrame < getIdxFrame(expEndTime, 0); timerObj.idxFrame++) // TODO: how to modularize inside this giant grabbing loop.
+	for (timerObj.resetCount(), timerObj.getCount() < camerasObj.getIdxEndFrame(prepareTime), timerObj.addCount())
 	{
-		camerasObj.grabPylonImg(); // grabbing
-		int cIdx = camerasObj.cIdx;
-
-		fishAnalysisObj.alignImgs(cIdx, (uint8_t*)cams.pylonImg.GetBuffer());// TODO: -> cams.getPtr2buffer()
 		timerObj.getTime();
+		camerasObj.grabPylonImg(); // grabbing
+		int cIdx = camerasObj.getIdxCamera();
+
+		fishAnalysisObj.alignImgs(cIdx, (uint8_t*)cams.getPtr2buffer());
 
 		fishAnalysisObj.findAllFish();
 
 		// run baseline session
-		if (idxFrame < getIdxFrame(baselineEndTime, 0))
+		if (timerObj.getCount() < camerasObj.getIdxEndFrame(baselineEndTime))
 		{
 			timerObj.expPhase = 0;
 			screen.reverse(sElapsed, baselineInterval);
 		}
-		else if (idxFrame < getIdxFrame(trainingEndTime, 0))
+		else if (timerObj.getCount() < camerasObj.getIdxEndFrame(trainingEndTime))
 		{
 			timerObj.expPhase = 1;
 			vector<int> fish2shock = fishAnalysisObj.checkIfGiveShock();
@@ -113,13 +105,7 @@ void Experiment::runXXexp()
 			vector<int> fish2reversePattern = fishAnalysisObj.checkIfReversePattern(); // TODO: is there a better place to put this method?
 			screen.reverse(fish2reversePattern);
 		}
-		else if (idxFrame < getIdxFrame(blackoutEndTime, 0))
-		{
-			timerObj.expPhase = 2;
-			fishAnalysisObj.resetShocksOn();
-			screen.renderBlackPattern();
-		}
-		else if (idxFrame < getIdxFrame(testEndTime, 0))
+		else if (timerObj.getCount() < camerasObj.getIdxEndFrame(trainingEndTime))
 		{
 			timerObj.expPhase = 3;
 			screen.reverse(sElapsed-trainingEndTime, testInterval);
@@ -127,72 +113,10 @@ void Experiment::runXXexp()
 		fileWriterObj.writeOutFrame();
 		fishAnalysisObj.annotateImgs();
 		fishAnalysisObj.displayImgs();
+
 	}
 	cout << "Experiment ended. " << endl;
-}
 
-
-void ExperimentData::runOLexp()
-{
-	const int prepareTime = 1 * 60; // seconnds, default 1 min
-	const int baselineEndTime = 2 * 60; // seconds, default 10 mins
-	const int trainingEndTime = 8 * 60; // seconds, default 20 mins
-	const int blackoutEndTime = 9 * 60; // seconds, default 1 min
-	const int testEndTime = 15 * 60; // seconds, default 18 mins (including memory extinction period)
-	const int expEndTime = testEndTime;
-
-	prepareBgImg(prepareTime); // TODO: -> FishAnalysisObj.prepareBgImg();
-	expTimer.start(); // reset timer to 0
-
-	// TODO: consider to encapsulate FRAMERATE?
-	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)// giant grabbing loop
-	{
-
-		cams.grabPylonImg();
-
-		int cIdx = cams.cIdx;
-		// TODO: encapsulate the following lines to a FishAnalysis method.
-		// e.g., fishAnalysisObj.prepareBgImg(WIDTH, HEIGHT, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
-		// TODO: consider to drop out the first two arguments with global variables
-		allArenas[cIdx].prepareBgImg(
-			cams.ptrGrabResult->GetWidth(),
-			cams.ptrGrabResult->GetHeight(),
-			cIdx,
-			(uint8_t*)cams.pylonImg.GetBuffer());
-
-		if (!getTime()) { // TODO: consider to improve the error handling.
-			break;
-		}
-		if (!allArenas[cIdx].findAllFish()) // TODO: make this line a FishAnalysis method as well as improve error handling
-			cout << "Fish in arena " << cIdx + 1 << " not found."<< endl;
-		// TODO: -> fishAnalysisObj.findAllFish();
-		if (sElapsed < baselineEndTime)
-		{
-			expPhase = 0;             //baseline = 0, training = 1, blackout = 2, test = 3
-			screen.updatePatternInBaseline(sElapsed);
-		}
-		else if (sElapsed < trainingEndTime)
-		{
-			expPhase = 1;
-			trainFish(cIdx);
-		}
-		else if (sElapsed < blackoutEndTime)
-		{
-			expPhase = 2;
-			allArenas[cIdx].resetShocksOn();
-			screen.updatePatternInBlackout();
-		}
-		else if (sElapsed < testEndTime)
-		{
-			expPhase = 3;
-			screen.updatePatternInTest(sElapsed);
-		}
-		screen.renderTexture();
-		writeOutFrame();
-		annotateFishImgs();
-		displayFishImgs("Display");
-	}
-	cout << "Experiment ended. " << endl;
 }
 
 void ExperimentData::runUnpairedOLexp()

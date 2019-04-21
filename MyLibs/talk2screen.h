@@ -149,7 +149,7 @@ public:
 
 	}
 	/* Initialize memory */
-	void initialize( std::string imgName); // name of the pattern to show
+	void initialize(std::string imgName); // name of the pattern to show
 
 	/* load texture (image) to GPU buffers */
 	void loadTextureIntoBuffers(std::string imgName);
@@ -175,7 +175,8 @@ public:
 
 
 	// properties
-	std::vector<Patch> allPatches;
+	template<class P> // test this generic function 
+	std::vector<P> allPatches;
 	// TODO: test whether this initiation works?
 };
 

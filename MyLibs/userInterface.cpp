@@ -25,7 +25,7 @@
 void UserInterface::enquireInfoFromUser()
 {
 	showWelcomeMsg();
-	enquireCameras2use();
+	enquireDevice2use();
 	for (int i = 0; i < cameras2open.size(); i++)
 	{
 		if (cameras2open(i))
@@ -44,6 +44,32 @@ void UserInterface::enquireInfoFromUser()
 
 	startTimeStr = getCurDateTime();
 	generateBasenames();
+}
+
+void enquireDevice2use()
+{
+	cout << "Which devices are you going to use?" << endl
+	<< " Please enter the indices. (1. relay, 2. projector, 3. cameras)" << endl;
+
+	vector<string> strVec = getStrVecFromCMD();
+	for (string s : strVec)
+	{
+		if (iequals(s,'1'))
+			devices2use[0] = 1;
+		else if (iequals(s,'2'))
+			devices2use[1] = 1;
+		else if (iequals(s,'3'))
+		{
+			devices2use[2] = 1;
+			enquireCameras2use();
+		}
+		else
+		{
+			cout << "Invalid input! Please enter again." << endl;
+			waitUserInput2exit();
+		}
+	}
+
 }
 
 

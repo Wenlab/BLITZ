@@ -34,16 +34,22 @@
 class UserInterface
 {
 private:
+	int numDevices;
 	; //nothing for now
 public:
 	UserInterface()
 	{
 		numOpenCameras = 0;
+		numDevices = 3;
+		devices2use(numDevices); // TODO: name this magic number 
 		cameras2open(MAX_CAMERAS);
 	}
 
 	/* Ask the user about the experiment infos */
 	void enquireInfoFromUser();
+
+	/* Ask the user which devices to open */
+	void enquireDevice2use();
 
 	/* Ask which cameras to use. */
 	void enquireCameras2use();
@@ -73,6 +79,8 @@ public:
 
 	// Properties
 	// TODO: get the number of cameras and pass it to fileWriterObj
+	std::vector<bool> devices2use; // status array to indicate which devices to use
+	// 1. relay, 2. projector, 3. cameras
 	std::vector<bool> cameras2open; // status array to indicate which cameras to open
 	std::vector<std::vector<std::string>> fishIDs; // fish IDs for all arenas
 	int fishAge; // one age for all fish

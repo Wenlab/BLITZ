@@ -51,7 +51,7 @@ public:
 
 		// Methods
 		/* Initialize all arenas will be used in the experiment */
-		std::vector<ArenaData> initializeAllArenas(std::vector<std::vector<int>> yDivs); // TODO: update the implementation
+		std::vector<ArenaData> initialize(); // TODO: update the implementation
 
 		/* Prepare background image for MOG subtractor */
 		void prepareBgImg(const int prepareTime); // TODO: consider to make `prepareTime` a local variable?

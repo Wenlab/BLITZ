@@ -36,6 +36,7 @@
 
 using namespace std;
 
+// TODO: decide the renderType after the initialization
 void Screen::initialize(string imgName, vector<float> boundBox, string renderType)
 {
 	cout << "Initializing the projector screen .. " << endl;
