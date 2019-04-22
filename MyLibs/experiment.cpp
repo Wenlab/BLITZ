@@ -72,7 +72,7 @@ void Experiment::runOperantTraining()
 
 	// Preparation before experiment starts
 	// TODO: write the implementations
-	for (timerObj.resetCount(), timerObj.getCount() < camerasObj.getIdxEndFrame(prepareTime), timerObj.addCount()) // TODO: write a macro to encapsulate this `for`
+	for (timerObj.resetCount(); timerObj.getCount() < camerasObj.getIdxEndFrame(prepareTime); timerObj.addCount()) // TODO: write a macro to encapsulate this `for`
 	{
 		camerasObj.grabPylonImg(); // TODO: update the return type
 		fishAnalysisObj.prepareBgImg((uint8_t*)cams.getPtr2buffer());
@@ -80,7 +80,7 @@ void Experiment::runOperantTraining()
 
 	timerObj.reset(); //TODO, reset seconds and count
 
-	for (timerObj.resetCount(), timerObj.getCount() < camerasObj.getIdxEndFrame(prepareTime), timerObj.addCount())
+	for (timerObj.resetCount(); timerObj.getCount() < camerasObj.getIdxEndFrame(prepareTime); timerObj.addCount())
 	{
 		timerObj.getTime();
 		camerasObj.grabPylonImg(); // grabbing

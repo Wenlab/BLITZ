@@ -116,7 +116,7 @@ public:
 	);
 
 	// properties
-	std::vector<AreaData> allAreas;
+	std::vector<Area> allAreas;
 	int numAreas; //TODO: consider to get this via a get method "numAreas = allAreas.size();"
 };
 
@@ -175,7 +175,7 @@ public:
 
 
 	// properties
-	template<class P> // test this generic function 
+	template<class P> // test this generic function
 	std::vector<P> allPatches;
 	// TODO: test whether this initiation works?
 };
