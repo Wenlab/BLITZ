@@ -141,7 +141,7 @@ public:
 private:
 	Pylon::IPylonDevice* cam;// a single camera object
 	// TODO: finish this properties list
-}
+};
 
 // Global functions
 

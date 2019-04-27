@@ -35,7 +35,8 @@
 #define Y_CUT 385 // y position to separate fish 0,1 and 2,3
 
 /* the highest class that encapsulates everything about imaging processing */
-class FishAnalysis() {
+class FishAnalysis
+{
 public:
 		// Methods
 		// y division pos for all fish

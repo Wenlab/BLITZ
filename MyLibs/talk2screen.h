@@ -80,8 +80,8 @@ public:
 	/* Initilize screen environment with pre-defined multi-bounding areas */
 	void initialize(
 		std::vector<std::string> imgNames, // name of the images to show
-		std::string renderType, // type of rendering, full, half, rotating
 		std::vector<std::vector<float>> boundBoxes, // bounding boxes of all the areas
+		std::string renderType, // type of rendering, full, half, rotating
 		std::vector<int> patchesInAreas // number of patches in each area
 	);
 
@@ -127,8 +127,8 @@ class Area
 {
 private:
 	std::string renderType; /* 1. full: full rendering of a single pattern;
-	2. half: half pattern, half background (pure-color) rendering
-	3. rotation: render rotating pattern with a fixed rotating rate */
+							   2. half: half pattern, half background (pure-color) rendering
+							   3. rotation: render rotating pattern with a fixed rotating rate */
 	unsigned int textureID; // texture ID
 
 	const int numPatches;
@@ -199,6 +199,16 @@ but can be accessed by inherited classes */
 
 
 public:
+	Patch(
+		std::vector<float> patchRect, // bounding box
+		const char vertexPath[] = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
+	)
+		: shader(vertexPath, fragmentPath)
+		, boundBox(patchRect)
+	{
+
+	}
 	/* Initialize memory for patch */
 	void initialize();
 
@@ -214,13 +224,7 @@ class FullPatch : public Patch
 {
 public:
 	// methods
-	FullPatch(
-		std::vector<float> patchRect, // bounding box
-		const char vertexPath[] = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
-		const char fragmentPath[] = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
-	)
-	: shader(vertexPath, framentPath)
-	, boundBox(patchRect)
+	FullPatch() : Patch( boundBox ,"3rdPartyLibs/OpenGL/full.vs", "3rdPartyLibs/OpenGL/full.fs")
 	{
 
 	}
@@ -238,15 +242,9 @@ private:
 
 public:
 	// Methods
-	HalfSplitPatch(
-		std::vector<float> patchRect, // bounding box
-		int yDiv, // the dividing position in y
-		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
-		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
-	)
-	: shader(vertexPath, framentPath)
-	, boundBox(patchRect)
-	, yDivide(yDiv)
+	HalfSplitPatch( int yDiv ) 
+		: Patch(boundBox, "3rdPartyLibs/OpenGL/halfSplit.vs", "3rdPartyLibs/OpenGL/halfSplit.fs")
+		, yDivide(yDiv)
 	{
 		shader.use();
 		shader.setInt("idxCase",idxCase);
@@ -265,22 +263,20 @@ private:
 
 public:
 	// Methods
-	RotatingPatch(
-		std::vector<float> patchRect, // bounding box
-		int radVelo = 0, // the rotating velocity of the pattern
-		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
-		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
+	RotatingPatch( 
+		int radVelo = 0 // the rotating velocity of the pattern
 	)
-	: shader(vertexPath, framentPath)
-	, boundBox(patchRect)
-	, yDivide(yDiv)
+	: Patch(boundBox, "3rdPartyLibs/OpenGL/rotating.vs", "3rdPartyLibs/OpenGL/rotating.fs")
 	{
 		shader.use();
 		shader.setInt("idxCase",idxCase);
 	}
 
+
+
 	// Properties
 	float radVelo; // rotating radian velocity
+	int idxCase;
 	// TODO: consider to make it private?
 };
 
