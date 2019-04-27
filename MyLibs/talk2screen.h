@@ -140,7 +140,7 @@ public:
 	Area(
 		std::vector<float> rect,
 		string RT = "full",
-		int n = 1,
+		int n = 1
 	)
 		: boundBox(rect)
 		, renderType(RT)
@@ -214,7 +214,7 @@ class FullPatch : public Patch
 {
 public:
 	// methods
-	Patch(
+	FullPatch(
 		std::vector<float> patchRect, // bounding box
 		const char vertexPath[] = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
 		const char fragmentPath[] = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
@@ -227,7 +227,7 @@ public:
 
 	/* Initialize memory for patch */
 	// initialize(); inherited from parent class Patch
-}
+};
 
 /* Patch-area to render a half-texture-half-background pattern */
 class HalfSplitPatch : public Patch
@@ -240,7 +240,7 @@ public:
 	// Methods
 	HalfSplitPatch(
 		std::vector<float> patchRect, // bounding box
-		yDiv, // the dividing position in y
+		int yDiv, // the dividing position in y
 		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
 		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
 	)
@@ -255,7 +255,7 @@ public:
 	// Properties
 	int idxCase; // to select the case in f-shader
 
-}
+};
 
 class RotatingPatch : public Patch
 {
@@ -267,7 +267,7 @@ public:
 	// Methods
 	RotatingPatch(
 		std::vector<float> patchRect, // bounding box
-		radVelo = 0, // the rotating velocity of the pattern
+		int radVelo = 0, // the rotating velocity of the pattern
 		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
 		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
 	)
@@ -282,7 +282,7 @@ public:
 	// Properties
 	float radVelo; // rotating radian velocity
 	// TODO: consider to make it private?
-}
+};
 
 
 
