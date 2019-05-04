@@ -9,6 +9,22 @@
 using namespace boost::unit_test;
 using namespace std;
 
+string getStrFromCoutStream(void (*f)(void))// pointer to function as the argument
+{
+	string inputStr;
+	// get cout stream buffer
+	ostringstream oss;
+	streambuf* p_cout_streambuf = cout.rdbuf();
+	cout.rdbuf(oss.rdbuf());
+
+	(*f)();
+
+	std::cout.rdbuf(p_cout_streambuf); // restore
+
+	inputStr = oss.str();
+	return inputStr;
+}
+
 class UserInterfaceTestor
 {
 public:
@@ -33,32 +49,32 @@ public:
 		string author = "Wenbin Yang";
 		string email = "bysin7@gmail.com";
 
-		// get cout stream buffer
-		std::ostringstream oss;
-		std::streambuf* p_cout_streambuf = std::cout.rdbuf();
-		std::cout.rdbuf(oss.rdbuf());
 
-		showWelcomeMsg();
+		string inputStr = getStrFromCoutStream(showWelcomeMsg);
+		
 
-		std::cout.rdbuf(p_cout_streambuf); // restore
-
-		BOOST_TEST(string::npos != oss.str().find(name),
-			"Program name not found!");
-		BOOST_TEST(string::npos != oss.str().find(weblink),
-			"Weblink not found!");
-		BOOST_TEST(string::npos != oss.str().find(license),
-			"GNU 3.0 License not found!");
-		BOOST_TEST(string::npos != oss.str().find(citation),
-			"Citation not found!");
-		BOOST_TEST(string::npos != oss.str().find(author),
-			"Author not found!");
-		BOOST_TEST(string::npos != oss.str().find(email),
-			"Author email not found!");
+		BOOST_TEST(string::npos != inputStr.find(name),
+			"Not found the program name: " + name);
+		BOOST_TEST(string::npos != inputStr.find(weblink),
+			"Not found the weblink: " + weblink);
+		BOOST_TEST(string::npos != inputStr.find(license),
+			"Not found the license: " + license);
+		BOOST_TEST(string::npos != inputStr.find(citation),
+			"Not found the citation: " + citation);
+		BOOST_TEST(string::npos != inputStr.find(author),
+			"Not found the author: " + author);
+		BOOST_TEST(string::npos != inputStr.find(email),
+			"Not found the email: " + email);
 
 		cout << "Finished all tests. Press key to exit." << endl;
 		getchar();
 	}
 
+	/* Test whether received device statuses are correct */
+	void testDeviceStatuses()
+	{
+
+	}
 
 	
 private:
@@ -74,6 +90,8 @@ test_suite* init_unit_test_suite(int /*argc*/, char* /*argv*/[])
 	
 	return 0;
 }
+
+
 
 /*
 BOOST_AUTO_TEST_CASE(test_macro_overview)
