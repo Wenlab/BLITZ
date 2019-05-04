@@ -18,7 +18,8 @@
 */
 
 // Include user-defined libraries
-#include "MyLibs/experiment.h"
+#include "3rdPartyLibs/OpenGL/shader_s.h"
+//#include "MyLibs/experiment.h"
 
 // Include standard libraries
 #include <iostream>
@@ -27,8 +28,11 @@ using namespace std;
 
 int main()
 {
-	Experiment exp();
-	exp.initialize();
-	exp.runXXtest();
-	waitUserInput2exit(); // included in errorHandling.h
+	string vPath = "3rdPartyLibs/OpenGL/shader.vs";
+	string fPath = "3rdPartyLibs/OpenGL/shader.fs";
+	Shader aShader(vPath,fPath);
+
+	cout << "Succeeded!" << endl;
+	string str;
+	cin >> str;
 }

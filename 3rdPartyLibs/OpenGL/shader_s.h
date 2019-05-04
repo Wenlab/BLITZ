@@ -15,7 +15,7 @@ public:
 	unsigned int ID;
 	// constructor generates the shader on the fly
 	// ------------------------------------------------------------------------
-	Shader(const char* vertexPath, const char* fragmentPath)
+	Shader(std::string vertexPathStr, std::string fragmentPathStr)
 	{
 		// 1. retrieve the vertex/fragment source code from filePath
 		std::string vertexCode;
@@ -28,6 +28,8 @@ public:
 		try
 		{
 			// open files
+			const char* vertexPath = vertexPathStr.c_str();
+			const char* fragmentPath = fragmentPathStr.c_str();
 			vShaderFile.open(vertexPath);
 			fShaderFile.open(fragmentPath);
 			std::stringstream vShaderStream, fShaderStream;
