@@ -18,21 +18,12 @@
 */
 
 // Include user-defined libraries
-#include "3rdPartyLibs/OpenGL/shader_s.h"
-//#include "MyLibs/experiment.h"
+//#include "3rdPartyLibs/OpenGL/shader_s.h"
 
-// Include standard libraries
-#include <iostream>
 
-using namespace std;
 
-int main()
-{
-	string vPath = "3rdPartyLibs/OpenGL/shader.vs";
-	string fPath = "3rdPartyLibs/OpenGL/shader.fs";
-	Shader aShader(vPath,fPath);
 
-	cout << "Succeeded!" << endl;
-	string str;
-	cin >> str;
-}
+
+
+
+

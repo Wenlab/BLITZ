@@ -21,14 +21,16 @@
 * Created on: Apr. 17, 2018
 */
 
+#include "errorHandling.h"
+
 using namespace std;
 
 void waitUserInput2exit()
 {
   do
 	{
-		cout << '\n' << "Error caught!" << endl <<
-     "Please check the error message and press a key to exit...";
+	  cout << '\n' 
+	  << "Please check the error message and press a key to exit...";
 	} while (cin.get() != '\n');
   exit(0);
 }

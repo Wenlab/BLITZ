@@ -25,13 +25,8 @@
 
 #include <iostream>
 
-// TODO: Do I need a class for this?
-class errorHandling()
-{
-  // Properties
-}
-// Methods
 void waitUserInput2exit();
+
 
 /* catch NULL value with any datatype*/
 template <typename T>
@@ -65,6 +60,7 @@ void tryCatchEmpty(T value, std::string exceptionString)
     waitUserInput2exit();
   }
 }
+
 
 
 

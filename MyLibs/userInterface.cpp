@@ -1,10 +1,7 @@
 /*
-* Copyright 2019 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,16 +16,22 @@
 * Author: Wenbin Yang <bysin7@gmail.com>
 
 * Created on: Apr. 15, 2018
+* Modified on: Apr. 20, 2019
 */
+#include "userInterface.h"
+#include "errorHandling.h"
 
-/* Ask the user about the experiment infos */
+using namespace std;
+
+
+/* 
 void UserInterface::enquireInfoFromUser()
 {
 	showWelcomeMsg();
 	enquireDevice2use();
 	for (int i = 0; i < cameras2open.size(); i++)
 	{
-		if (cameras2open(i))
+		if (cameras2open[i])
 		{
 			numOpenCameras++;
 			enquirePattern2use();
@@ -45,20 +48,23 @@ void UserInterface::enquireInfoFromUser()
 	startTimeStr = getCurDateTime();
 	generateBasenames();
 }
+*/
 
-void enquireDevice2use()
+void UserInterface::enquireDevice2use()
 {
+	const int numDevices = 3;
+	devices2use.resize(numDevices);
 	cout << "Which devices are you going to use?" << endl
 	<< " Please enter the indices. (1. relay, 2. projector, 3. cameras)" << endl;
 
 	vector<string> strVec = getStrVecFromCMD();
 	for (string s : strVec)
 	{
-		if (iequals(s,'1'))
+		if (!s.compare("1"))
 			devices2use[0] = 1;
-		else if (iequals(s,'2'))
+		else if (!s.compare("2"))
 			devices2use[1] = 1;
-		else if (iequals(s,'3'))
+		else if (!s.compare("3"))
 		{
 			devices2use[2] = 1;
 			enquireCameras2use();
@@ -81,13 +87,21 @@ void UserInterface::enquireCameras2use()
 		<< "(e.g., '0,1,1' to open the left and right cameras, but not the middle one.)" << endl;
 
 	vector<string> tempStrVec = getStrVecFromCMD();
-	for (int i = 0; i < tempStrVec.size(); i++)
-	{ // TODO: find the exact implementation of str2int
-		cameras2open[i] = str2int(tempStrVec[i]);
-	}
+	int numCameras = tempStrVec.size();
+	cameras2open.resize(numCameras);
+
+	for (int i = 0; i < numCameras; i++)
+		cameras2open[i] = stoi(tempStrVec[i]);
+	
 
 
 	cout << endl; // separated with an empty line
+}
+
+/*
+void UserInterface::enquirePattern2use()
+{
+
 }
 
 int UserInterface::enquireNumFishForACam(int idxCamera)
@@ -224,8 +238,8 @@ void UserInterface::enquireExpTask()
 }
 
 
-/* Get basename for the output files */
-string UserInterface::getBasename(int idxFile)
+
+string UserInterface::generateBasenames(int idxFile)
 {
 	string baseName =
 		timeStr + "_" + "Arena" + to_string(arenaIDs[idxFile])
@@ -235,7 +249,7 @@ string UserInterface::getBasename(int idxFile)
 	return baseName;
 }
 
-
+*/
 
 
 
@@ -246,23 +260,22 @@ void showWelcomeMsg()
 	BLITZ (Behavioral Learning In The Zebrafish) enables programmatic
 	control in video capture, online image processing, visual stimuli
 	presentation and electric shock delivery, which allow researchers
-	design their custom learning paradigm in zebrafish.
+	design their custom learning paradigms in zebrafish.
 	Most updated code and other resources can be found at
 	https://github.com/Wenlab/BLITZ
 	Please send any feedback and suggestions to my email,
 	bysin7@gmail.com Wenbin Yang.
 	Copyright 2018 Wenbin Yang <bysin7@gmail.com>
 	*/
-	cout << "Welcome to BLITZ (Behavioral Learning In The Zebrafish) ." << endl
+	cout << "Welcome to BLITZ (Behavioral Learning In The Zebrafish)." << endl
+		<< "This program is under GNU 3.0 License." << endl 
 		<< "Most updated code and other resources can be found at " << endl
 		<< "https://github.com/Wenlab/BLITZ" << endl
-		<< "Please send any feedback and suggestions to my email: " << endl
+		<< "Please cite (Wenbin Yang et al., 2019) if you use any portion of this program." << endl
+		<< "Please send any feedback and suggestions to the email: " << endl
 		<< "bysin7@gmail.com Wenbin Yang." << endl
 		<< "Copyright 2018 Wenbin Yang <bysin7@gmail.com>" << endl;
 	cout << endl; // separated with an empty line
-
-	cout << "Please make sure all devices are connected." << endl;
-	cout << "Cameras, the relay, the projector." << endl;
 
 }
 
@@ -284,11 +297,10 @@ void showFishPosDiagram()
 vector<string> getStrVecFromCMD()
 {
 	vector<string> strVec;
-
 	string inputStr;
 	getline(cin, inputStr);
 	cout << endl; // separated with an empty line
-	vector<string> strVec;
+	
 
 	istringstream ss;
 	ss.clear();

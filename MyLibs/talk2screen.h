@@ -139,7 +139,7 @@ public:
 	/* Enquire the number of patches in an arena */
 	Area(
 		std::vector<float> rect,
-		string RT = "full",
+		std::string RT = "full",
 		int n = 1
 	)
 		: boundBox(rect)
@@ -216,8 +216,8 @@ public:
 	// methods
 	FullPatch(
 		std::vector<float> patchRect, // bounding box
-		const char vertexPath[] = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
-		const char fragmentPath[] = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
+		std::string vertexPath = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
+		std::string fragmentPath = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
 	)
 	{
 		shader(vertexPath, framentPath);
@@ -291,6 +291,7 @@ public:
 Adapted from Timmmm, https://stackoverflow.com/a/4119881
 */
 bool iequals(const string& a, const string& b);
+// <string> str.compare()
 //TODO: how to reduce the duplication of this method in both files?
 // Create a new class? move to errorHandling class
 
