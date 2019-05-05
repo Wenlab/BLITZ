@@ -36,25 +36,34 @@
 using namespace std;
 using namespace cv;
 
-void FileWriter::initialize(UserInterface& UIobj)
+void FileWriter::initialize(vector<string> baseNames, Size frameSize, float frameRate = 10)
 {
-	for (int i = 0; i < numFiles; i++)
+	numFiles = baseNames.size();
+	for (string& baseName : baseNames)
 	{
-		string basename = UIobj.getBasename(i);
-		string videoName = path2save + basename + ".avi";
-		string yamlName = path2save + basename + ".yaml";
-
-		FileStorage fObj(yamlName, FileStorage::WRITE);
-		tryCatchFalse(fObj.isOpened(), "YAML file writer CANNOT be opened!");
-
-		yamlVec.push_back(fObj);
-
-		VideoWriter vObj(videoName, CV_FOURCC('D', 'I', 'V', 'X'), frameRate, Size(width, height), false);
-		tryCatchFalse(vObj.isOpened(), "Video file writer CANNOT be opened!");
-
-		videoVec.push_back(vObj);
-
+		initialize(baseName);
+		initialize(baseName, frameSize, frameRate);
 	}
+
+}
+
+void FileWriter::initialize(string baseName)
+{
+	string yamlName = path2save + baseName + ".yaml";
+	FileStorage fObj(yamlName, FileStorage::WRITE);
+	tryCatchFalse(fObj.isOpened(), "YAML file writer CANNOT be opened!");
+
+	yamlVec.push_back(fObj);
+	
+}
+
+void FileWriter::initialize(string baseName, Size frameSize, float frameRate = 10)
+{
+	string videoName = path2save + baseName + ".yaml";
+	VideoWriter vObj(videoName, CV_FOURCC('D', 'I', 'V', 'X'), frameRate, frameSize, false);
+	tryCatchFalse(vObj.isOpened(), "Video file writer CANNOT be opened!");
+
+	videoVec.push_back(vObj);
 
 }
 
@@ -63,12 +72,12 @@ void FileWriter::writeOutExpSettings(UserInterface& UIobj, Cameras& camerasObj,
 {
 	for (int i = 0; i < numFiles; i++)
 	{
-		writeKeyValuePair("FishIDs", strVec2str(UIobj.fishIDs[i]), i);
+		writeKeyValuePair("FishIDs", intVec2str(UIobj.allFishIDs[i]), i);
 		writeKeyValuePair("FishAge", UIobj.fishAge, i);
-		writeKeyValuePair("FishStrain", UIobj.strainNames[i], i);
+		writeKeyValuePair("FishStrain", UIobj.strainName, i);
 		writeKeyValuePair("Arena", i + 1, i); // record which arena is in use
 		writeKeyValuePair("Task", UIobj.expTask, i);
-		writeKeyValuePair("CSpattern", UIobj.CSstrs[i], i);
+		writeKeyValuePair("CSpattern", UIobj.visPattern, i);
 		writeKeyValuePair("ExpStartTime", timeStr, i);
 		writeKeyValuePair("FrameRate", FRAMERATE, i);// TODO: is this cross-file used macro a good practice?
 		writeKeyValuePair("FrameSize", Size(FRAMEWIDTH, FRAMEHEIGHT), i);
@@ -88,24 +97,24 @@ void FileWriter::writeOutFrame(ExpTimer& timerObj, FishAnalysis& fishAnalysisObj
 	yamlVec[idxFile] << "Frames" << "[";
 	// Python-like inline compact form
 	// general experimental info
-	writeKeyValueInline("FrameNum", timerObj.idxFrame / numFiles, cIdx);
-	writeOut.writeKeyValueInline("ExpPhase", timerObj.expPhase, cIdx);
-	writeOut.writeKeyValueInline("sElapsed", timerObj.sElapsed, cIdx);
-	writeOut.writeKeyValueInline("msRemElapsed", timerObj.msRemElapsed, cIdx);
+	writeKeyValueInline("FrameNum", timerObj.count / numFiles, idxFile);
+	writeKeyValueInline("ExpPhase", timerObj.expPhase, idxFile);
+	writeKeyValueInline("sElapsed", timerObj.sElapsed, idxFile);
+	writeKeyValueInline("msRemElapsed", timerObj.msRemElapsed, idxFile);
 
 	// specific fish analysis data
-	vector<FishData> allFish = fishAnalysisObj.allArenas[cIdx].allFish;
+	vector<Fish> allFish = fishAnalysisObj.allArenas[idxFile].allFish;
 	for (int i = 0; i < allFish.size(); i++)
 	{
-		writeOut.writeKeyValueInline("FishIdx", i, cIdx);
-		writeOut.writeKeyValueInline("Head", allFish[i].head, cIdx);
-		writeOut.writeKeyValueInline("Tail", allFish[i].tail, cIdx);
-		writeOut.writeKeyValueInline("Center", allFish[i].center, cIdx);
-		writeOut.writeKeyValueInline("HeadingAngle", allFish[i].headingAngle, cIdx);
-		writeOut.writeKeyValueInline("ShockOn", allFish[i].shockOn, cIdx);
-		writeOut.writeKeyValueInline("PatternIdx", allFish[i].idxCase, cIdx);
+		writeKeyValueInline("FishIdx", i, idxFile);
+		writeKeyValueInline("Head", allFish[i].head, idxFile);
+		writeKeyValueInline("Tail", allFish[i].tail, idxFile);
+		writeKeyValueInline("Center", allFish[i].center, idxFile);
+		writeKeyValueInline("HeadingAngle", allFish[i].headingAngle, idxFile);
+		writeKeyValueInline("ShockOn", allFish[i].shockOn, idxFile);
+		writeKeyValueInline("PatternIdx", allFish[i].idxCase, idxFile);
 	}
-	writeOut.yamlVec[cIdx] << "]";
+	yamlVec[idxFile] << "]";
 }
 
 string strVec2str(vector<string> strVec)
@@ -115,20 +124,23 @@ string strVec2str(vector<string> strVec)
 
 	string str = strVec[0];
 	for (int j = 1; j < strVec.size(); j++)
-	{
 		str += "," + strVec[j];
-	}
+	
 	//str += "]";
 	return str;
 }
 
-bool iequals(const string& a, const string& b)
+string intVec2str(vector<int> intVec)
 {
-	unsigned int sz = a.size();
-	if (b.size() != sz)
-		return false;
-	for (unsigned int i = 0; i < sz; ++i)
-		if (tolower(a[i]) != tolower(b[i]))
-			return false;
-	return true;
+	if (intVec.empty()) // vector is empty, return empty string
+		return "";
+
+	string str = "";
+	for (int& i : intVec)
+		str += to_string(i) + ",";
+	
+	str.erase(str.end()-1,str.end()); // remove the last charactor
+	return str;
 }
+
+

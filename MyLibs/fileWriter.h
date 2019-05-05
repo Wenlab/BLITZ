@@ -20,14 +20,16 @@
 * Modified on: Apr. 20, 2019
 */
 
-#ifndef _GUARD_WRITEOUTFISH_H
-#define _GUARD_WRITEOUTFISH_H
+#ifndef _FILEWRITER_H_DEF
+#define _FILEWRITER_H_DEF
 
 // Include user-defined libraries
 #include "errorHandling.h"
 #include "fishAnalysis.h"
-#include "talk2camera.h"
 #include "userInterface.h"
+#include "expTimer.h"
+#include "talk2camera.h"
+
 
 // Include OpenCV libraries
 #include <opencv2/core/core.hpp>
@@ -36,6 +38,7 @@
 
 // Include standard libraries
 #include <iostream>
+#include <vector>
 
 /* All information to write to files
 ## Write once
@@ -80,8 +83,22 @@ public:
 		path2save = "F:/FishExpData/";
 	}
 	// methods
-	/* initialize yaml- and video- writers */
-	void initialize(UserInterface& UIobj); // object that contains user's input
+	/* initialize multiple OpenCV yaml- and video- writers */
+	void initialize(
+		std::vector<std::string> baseNames, // names of the output files without the file-type fix
+		cv::Size frameSize, // size of frames, set parameters for writing videos
+		float frameRate
+	); 
+
+	/* initialize a single OpenCV yaml-writer */
+	void initialize(std::string baseName);
+
+	/* initialize a single OpenCV video-writer */
+	void initialize(
+		std::string baseName,
+		cv::Size frameSize, // size of frames, set parameters for writing videos
+		float frameRate
+	);
 
 	/* Write out experiment settings as the header for files
 		only write once */
@@ -89,14 +106,14 @@ public:
 		UserInterface& UIobj, // object that contains user's input
 		Cameras& camerasObj, // object that contains cameras' info (e.g., FRAMERATE)
 		FishAnalysis& fishAnalysisObj // object that contains image processing info
-		)
+	);
 
 	/* Write out info that updated every frame to files (YAMLs and videos) */
 	void writeOutFrame(
 		ExpTimer& timerObj, // object that counts time and index of frames
 		FishAnalysis& fishAnalysisObj, // object that contains image processing info
 		int idxFile // which file to write
-		)
+	);
 
 	// template functions
 	/* Write out key value pairs */
@@ -128,9 +145,8 @@ public:
 /* convert string vector to int-vector like formatted output */
 std::string strVec2str(std::vector<std::string> strVec);
 
-/* Case insensitive comparasion
-Adapted from Timmmm, https://stackoverflow.com/a/4119881
-*/
-bool iequals(const std::string& a, const std::string& b);
+/* convert int vector to int-vector like formatted output */
+std::string intVec2str(std::vector<int> intVec);
 
-#endif // !_GUARD_WRITEOUTFISH_H
+
+#endif // !_GUARD_FILEWRITER_H

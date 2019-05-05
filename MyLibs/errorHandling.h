@@ -61,6 +61,10 @@ void tryCatchEmpty(T value, std::string exceptionString)
   }
 }
 
+/* Case insensitive comparasion
+Adapted from Timmmm, https://stackoverflow.com/a/4119881
+*/
+bool iequals(const std::string& a, const std::string& b);
 
 
 

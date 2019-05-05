@@ -35,11 +35,12 @@
 #define Y_CUT 385 // y position to separate fish 0,1 and 2,3
 
 /* the highest class that encapsulates everything about imaging processing */
-class FishAnalysis() {
+class FishAnalysis {
 public:
 		// Methods
 		// y division pos for all fish
-		FishAnalysis = {
+		FishAnalysis()
+		{
 			yDivs =
 			{
 				{ 200, 200, 558, 558 },
@@ -51,7 +52,7 @@ public:
 
 		// Methods
 		/* Initialize all arenas will be used in the experiment */
-		std::vector<ArenaData> initialize(); // TODO: update the implementation
+		std::vector<Arena> initialize(); // TODO: update the implementation
 
 		/* Prepare background image for MOG subtractor */
 		void prepareBgImg(const int prepareTime); // TODO: consider to make `prepareTime` a local variable?
@@ -78,12 +79,12 @@ public:
 		void resetShocksOn();
 
 		// Properties
-		std::vector<ArenaData> allArenas; // TODO: consider to make this private?
+		std::vector<Arena> allArenas; // TODO: consider to make this private?
 private:
 		std::vector<std::vector<int>> yDivs; 	// TODO: move this into the imaging processing module
 
 
-}
+};
 
 /* Define all infos including fish for a single arena */
 class Arena {
@@ -138,7 +139,7 @@ public:
 
 	cv::Ptr<cv::BackgroundSubtractor> pMOG; // background subtractor for detecting moving object
 	cv::Mat opencvImg, HUDSimg, subImg;
-	std::vector<FishData> allFish;
+	std::vector<Fish> allFish;
 
 };
 
