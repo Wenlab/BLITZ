@@ -21,6 +21,9 @@
 #ifndef _GUARD_TALK2CAMERA_H
 #define _GUARD_TALK2CAMERA_H
 
+
+
+
 // Include Basler Pylon libraries
 #include <pylon/PylonIncludes.h>
 #include <pylon/ImageFormatConverter.h>
@@ -29,61 +32,16 @@
 #	include <pylon/PylonGUI.h>
 #endif
 
-// Include user-defined libraries
-#include "errorHandling.h"
-
 // Include standard library
 #include <vector>
 #include <string>
 #include <iostream>
 
-// User-defined macros
-#define MAX_CAMERAS 3
-#define FRAMEWIDTH 800
-#define FRAMEHEIGHT 600
-#define FRAMERATE 10
-
-//TODO: do I need a general camera class for inheritances?
-// Decide after writing up all implementations
-/* Define Basler Pylon properties and related methods for multiple (or single) USB cameras */
-class Cameras
-{
-private:
-	// TODO: for developers, to have a private parameter list? (e.g., offsets, serialNums, ...)
-	;// nothing for now
-public:
-	// methods
-	Cameras() // constructor
-	{
-
-	}
-
-	/* Initialize a single camera, device unspecific */
-	void initialize();
-
-	/* Initialize multiple cameras */
-	void initialize(std::vector<bool> cameras2open); // status array that indicate whether a camera should be open
-
-	/* Grab Pylon image from cameras */
-	void grabPylonImg();
-
-	/* Get the pointer to image buffer */
-	getPtr2buffer(); //TODO: find out the return type, write the implementation
-
-	/* Get the pointer to image buffer, for a single camera */
-	getPtr2buffer(int idxCamera); //TODO: find out the return type, write the implementation
-
-
-	// properties
-	Pylon::CBaslerUsbInstantCameraArray cameras;
-	Pylon::IPylonDevice* aCam;// a single camera object
-	Pylon::CGrabResultPtr  ptrGrabResult;
-	Pylon::CPylonImage pylonImg;
-	intptr_t cIdx;// index of camera where the frame is grabbed from
-};
+// Include user-defined libraries
+#include "errorHandling.h"
 
 /* Multiple USB cameras with a single pointer,
- 	Basler Pylon provides threads control among cameras */
+Basler Pylon provides threads control among cameras */
 class MultiUSBCameras
 {
 public:
@@ -93,23 +51,23 @@ public:
 		frameWidth = 800;
 		frameHeight = 600;
 		serialNums = { "21552672","22510229","22510230" };
-		offSetXs = {463, 390, 944};
-		offSetYs = {0, 0, 227};
+		offSetXs = { 463, 390, 944 };
+		offSetYs = { 0, 0, 227 };
+		pixelFormat = "Mono8";
+		cameraType = "BaslerUsb";
+
 	}
 	/* Initialize multiple cameras, open all cameras by default */
 	void initialize(); // TODO: implement this with the other overload method
 
-	/* Initialize multiple cameras */
+					   /* Initialize multiple cameras */
 	void initialize(std::vector<bool> cameras2open); // status array that indicate whether a camera should be open
 
-	/* Grab Pylon image from cameras */
+													 /* Grab Pylon image from cameras */
 	Pylon::CGrabResultPtr grabPylonImg();
 
 	/* Get the pointer to image buffer */
-	getPtr2buffer(); //TODO: find out the return type, write the implementation
-
-	/* Get the pointer to image buffer, for a specific camera */
-	getPtr2buffer(int idxCamera); //TODO: find out the return type, write the implementation
+	Pylon::CGrabResultPtr getPtr2buffer();
 
 private:
 	int frameRate;
@@ -118,30 +76,49 @@ private:
 	std::vector<std::string> serialNums;
 	std::vector<int> offSetXs;
 	std::vector<int> offSetYs;
+	std::string pixelFormat;
+	std::string cameraType;
 
 	Pylon::CBaslerUsbInstantCameraArray cameras;
 	Pylon::CGrabResultPtr  ptrGrabResult; //TODO: write a public method to get this variable or return it from an old method
-	Pylon::CPylonImage pylonImg;// TODO: do I use this?
 	intptr_t cIdx;// index of camera where the frame is grabbed from
-}
+};
 
 /* Device unspecific single camera */
 class SingleCamera
 {
 public:
+	SingleCamera()
+	{
+		frameRate = 10;
+		frameWidth = 800;
+		frameHeight = 600;
+		offSetX = 0;
+		offSetY = 0;
+		pixelFormat = "Mono8";
+	}
+
 	/* Initialize a single camera, device unspecific */
 	void initialize();
 
 	/* Grab Pylon image from camera */
-	void grabPylonImg();
+	Pylon::CGrabResultPtr grabPylonImg();
 
 	/* Get the pointer to image buffer */
-	getPtr2buffer(); //TODO: find out the return type, write the implementation
+	Pylon::CGrabResultPtr getPtr2buffer();
 
 private:
-	Pylon::IPylonDevice* cam;// a single camera object
+
+	Pylon::CInstantCamera cam;
 	// TODO: finish this properties list
-}
+	int frameRate;
+	int frameWidth;
+	int frameHeight;
+	int offSetX;
+	int offSetY;
+	std::string pixelFormat;
+	Pylon::CGrabResultPtr  ptrGrabResult;
+};
 
 // Global functions
 

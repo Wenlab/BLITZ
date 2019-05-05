@@ -22,6 +22,7 @@
 * Replaced Version: 1.1
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Created on: Jan. 1, 2018
+* Modified on: May. 5, 2019
 */
 
 
@@ -31,63 +32,34 @@
 using namespace std;
 using namespace Pylon;
 
-//TODO: test this method
-void Cameras::initialize(int frameWidth, int frameHeight, int frameRate)
+void MultiUSBCameras::initialize()
 {
-	Pylon::PylonInitialize();
-	aCam = CTlFactory::GetInstance().CreateFirstDevice();
-	aCam.initialize();
-
-	aCam.open();
-	aCam.Width = FRAMEWIDTH;
-	aCam.Height = FRAMEHEIGHT;
-	aCam.AcquisitionFrameRateEnable.SetValue(true);
-	aCam.AcquisitionFrameRate.SetValue(FRAMERATE);
-	std::cout << "Using camera " << aCam.GetDeviceInfo().GetSerialNumber() << std::endl;
-
-	aCam.StartGrabbing();
-
-	cout << "Cameras initialization succeeded." << endl << endl;
-}
-
-void Cameras::initialize(vector<bool> cameras2open, int frameWidth, int frameHeight, int frameRate)
-{
-	const char* serialNums[MAX_CAMERAS] = { "21552672","22510229","22510230" };
-	const int offSetX[MAX_CAMERAS] = {463, 390, 944};
-	const int offSetY[MAX_CAMERAS] = {0, 0, 227};
-
-	Pylon::CDeviceInfo di[MAX_CAMERAS]; // TODO: test this change
+	int maxCameras = 3;
 	Pylon::PylonInitialize();
 	Pylon::CTlFactory&TlFactory = Pylon::CTlFactory::GetInstance();
 
-	// Make sure cameras are attached in order
-	int numCameras = 0;
-	for (int i = 0; i < MAX_CAMERAS; i++)
-	{ // TODO: consider to improve the code structure
-		if (cameras2open[i])
-		{
-			numCameras++;
-			di[i].SetDeviceClass(Pylon::BaslerUsbDeviceClass);
-			di[i].SetSerialNumber(serialNums[i]);
-		}
-	}
-	cameras.Initialize(numCameras);
-	// Attach devices and set camera parameters
-	for (int i = 0; i < MAX_CAMERAS; i++)
+
+	cameras.Initialize(maxCameras);
+
+	for (int i = 0; i < maxCameras; i++)
 	{
-		if (cameras2open[i])
-		{
-			cameras[i].Attach(TlFactory.CreateDevice(di[i]));
-			cameras[i].Open();
-			cameras[i].Width = FRAMEWIDTH;
-			cameras[i].Height = FRAMEHEIGHT;
-			cameras[i].OffsetX = offSetX[i];
-			cameras[i].OffsetY = offSetY[i];
-			cameras[i].AcquisitionFrameRateEnable.SetValue(true);
-			cameras[i].AcquisitionFrameRate.SetValue(FRAMERATE);
-			// Print the model name of the camera.
-			std::cout << "Using camera " << cameras[i].GetDeviceInfo().GetSerialNumber() << std::endl;
-		}
+		Pylon::CDeviceInfo di;
+		di.SetDeviceClass(cameraType.c_str());
+		// TODO: write in OO style
+		di.SetSerialNumber(serialNums[i].c_str());
+
+		// Attach devices and set camera parameters
+		cameras[i].Attach(TlFactory.CreateDevice(di));
+		cameras[i].Open();
+		cameras[i].Width = frameWidth;
+		cameras[i].Height = frameHeight;
+		cameras[i].OffsetX = offSetXs[i];
+		cameras[i].OffsetY = offSetYs[i];
+		cameras[i].AcquisitionFrameRateEnable.SetValue(true);
+		cameras[i].AcquisitionFrameRate.SetValue(frameRate);
+		cameras[i].PixelFormat = pixelFormat.c_str();
+		// Print the model name of the camera.
+		std::cout << "Using camera " << cameras[i].GetDeviceInfo().GetSerialNumber() << std::endl;
 	}
 
 	cameras.StartGrabbing();
@@ -95,24 +67,141 @@ void Cameras::initialize(vector<bool> cameras2open, int frameWidth, int frameHei
 	cout << "Cameras initialization succeeded." << endl << endl;
 }
 
-void Cameras::grabPylonImg()
+
+
+
+void MultiUSBCameras::initialize(vector<bool> cameras2open)
 {
-	Pylon::CImageFormatConverter formatConverter;
-	formatConverter.OutputPixelFormat = Pylon::EPixelType::PixelType_Mono8;
+	const int maxCameras = cameras2open.size();
+	Pylon::PylonInitialize();
+	Pylon::CTlFactory&TlFactory = Pylon::CTlFactory::GetInstance();
+
+	// Make sure cameras are attached in order
+	vector<int> matches;
+	for (int i = 0; i < maxCameras; i++)
+	{
+		if (cameras2open[i])
+			matches.push_back(i);
+	}
+	int numCameras2use = matches.size();
+	cameras.Initialize(numCameras2use);
+
+	for (int i = 0; i < numCameras2use; i++)
+	{
+		int idxCamera = matches[i];
+		Pylon::CDeviceInfo di;
+		di.SetDeviceClass(cameraType.c_str());
+		// TODO: write in OO style
+		di.SetSerialNumber(serialNums[idxCamera].c_str());
+
+		// Attach devices and set camera parameters
+		cameras[i].Attach(TlFactory.CreateDevice(di));
+		cameras[i].Open();
+		cameras[i].Width = frameWidth;
+		cameras[i].Height = frameHeight;
+		cameras[i].OffsetX = offSetXs[idxCamera];
+		cameras[i].OffsetY = offSetYs[idxCamera];
+		cameras[i].AcquisitionFrameRateEnable.SetValue(true);
+		cameras[i].AcquisitionFrameRate.SetValue(frameRate);
+		cameras[i].PixelFormat = pixelFormat.c_str();
+		// Print the model name of the camera.
+		std::cout << "Using camera " << cameras[i].GetDeviceInfo().GetSerialNumber() << std::endl;
+
+	}
+
+	cameras.StartGrabbing();
+
+	cout << "Cameras initialization succeeded." << endl << endl;
+}
+
+Pylon::CGrabResultPtr MultiUSBCameras::grabPylonImg()
+{
 
 	// Error handling
-	try{
+	try {
 		cameras.RetrieveResult(5000, ptrGrabResult, TimeoutHandling_ThrowException);
 		if (!ptrGrabResult->GrabSucceeded())
 			cout << "Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
-	} catch (const GenericException &e) {
+	}
+	catch (const GenericException &e) {
 		cerr << "An exception occurred." << endl
 			<< e.GetDescription() << endl;
 
 	}
 	cIdx = ptrGrabResult->GetCameraContext();
-	formatConverter.Convert(pylonImg,ptrGrabResult);
 
-	tryCatchFalse(cameras.IsGrabbing(),"Error! The camera is NOT grabbing!");
+	tryCatchFalse(cameras.IsGrabbing(), "Error! The camera is NOT grabbing!");
 
+	return ptrGrabResult;
+}
+
+Pylon::CGrabResultPtr MultiUSBCameras::getPtr2buffer()
+{
+	return ptrGrabResult;
+}
+
+
+
+void SingleCamera::initialize()
+{
+	
+	PylonInitialize();
+	// create an instant camera object
+	cam.Attach(CTlFactory::GetInstance().CreateFirstDevice());
+	// Print the model name of the camera.
+	cout << "Using device " << cam.GetDeviceInfo().GetModelName() << endl;
+
+	// Allow all the names in the namespace GenApi to be used without qualification.
+	using namespace GenApi;
+
+	// Get the camera control object.
+	INodeMap &control = cam.GetNodeMap();
+
+	// Get the parameters for setting the image area of interest (Image AOI).
+	const CIntegerPtr camWidth = control.GetNode("Width");
+	const CIntegerPtr camHeight = control.GetNode("Height");
+	const CIntegerPtr camOffsetX = control.GetNode("OffsetX");
+	const CIntegerPtr camOffsetY = control.GetNode("OffsetY");
+	const CIntegerPtr camFrameRate = control.GetNode("FrameRate");// TODO: test this line
+
+	// Set the parameters
+	if (IsWritable(camOffsetX))
+	camOffsetX->SetValue(offSetX);
+	if (IsWritable(camOffsetY))
+	camOffsetY->SetValue(offSetY);
+	camWidth->SetValue(frameWidth);
+	camHeight->SetValue(frameHeight);
+	camFrameRate->SetValue(frameRate);
+
+	// Set the pixel data format.
+	CEnumerationPtr(control.GetNode("PixelFormat"))->FromString(pixelFormat.c_str());
+
+
+	cam.StartGrabbing();
+	cout << "Camera initialization succeeded." << endl << endl;
+	
+}
+
+Pylon::CGrabResultPtr SingleCamera::grabPylonImg()
+{
+	// Error handling
+	try {
+		cam.RetrieveResult(5000, ptrGrabResult, TimeoutHandling_ThrowException);
+		if (!ptrGrabResult->GrabSucceeded())
+			cout << "Error: " << ptrGrabResult->GetErrorCode() << " " << ptrGrabResult->GetErrorDescription() << endl;
+	}
+	catch (const GenericException &e) {
+		cerr << "An exception occurred." << endl
+			<< e.GetDescription() << endl;
+	}
+
+	tryCatchFalse(cam.IsGrabbing(), "Error! The camera is NOT grabbing!");
+
+	return ptrGrabResult;
+}
+
+
+Pylon::CGrabResultPtr SingleCamera::getPtr2buffer()
+{
+	return ptrGrabResult;
 }

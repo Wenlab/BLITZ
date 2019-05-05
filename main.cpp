@@ -24,67 +24,29 @@
 #include <vector>
 
 
-#include "MyLibs/userInterface.h"
+#include "MyLibs/talk2camera.h"
 
 using namespace std;
 
-
-
 int main()
 {
-	UserInterface UIobj;
-
-	UIobj.enquireInfoFromUser();
-
-	// display all the input in the CMD
-	cout << "devices2use: " << endl;
-	vector<bool>& devices2use = UIobj.devices2use;
-	for (int i = 0; i < devices2use.size(); i++)
-		cout << devices2use[i] << endl;
-
-	cout << "cameras2open: " << endl;
-	vector<bool>& cameras2open = UIobj.cameras2open;
-	for (int i = 0; i < cameras2open.size(); i++)
-		cout << cameras2open[i] << endl;
-
-	cout << "allFishIDs: " << endl;
-	std::vector<std::vector<int>> allFishIDs = UIobj.allFishIDs;
-	for (int i = 0; i < allFishIDs.size(); i++)
-	{
-		cout << "Arena " << UIobj.arenaIDs[i] << " :" << endl;
-		vector<int> fishIDs = allFishIDs[i];
-		for (int j = 0; j < fishIDs.size(); j++)
-			cout << fishIDs[j] << endl;
+	
+	CameraData cObj;
+	cObj.initialize(1, 800, 600, 10);
+	int numFrames2grab = 1000;
+	
+	// giant grabbing loop
+	for (int i = 0; i < numFrames2grab; i++)
+	{ 
+		/*
+#ifdef PYLON_WIN_BUILD
+	// Display the grabbed image.
+	Pylon::DisplayImage(1, cObj.grabPylonImg());
+#endif
+*/
 	}
 
-	cout << "fishAge: " << endl;
-	int fishAge = UIobj.fishAge;
-	cout << fishAge << endl;
 
-	cout << "fishStrain: " << endl;
-	string strainName = UIobj.strainName;
-	cout << strainName << endl;
-
-	cout << "expTask: " << endl;
-	string expTask = UIobj.expTask;
-	cout << expTask << endl;
-
-	cout << "visPattern: " << endl;
-	string visPattern = UIobj.visPattern;
-	cout << visPattern << endl;
-
-	cout << "startTimeStr: " << endl;
-	string startTimeStr = UIobj.startTimeStr;
-	cout << startTimeStr << endl;
-
-	cout << "baseNames: " << endl;
-	vector<string> baseNames = UIobj.baseNames;
-	for (int i = 0; i < baseNames.size(); i++)
-		cout << baseNames[i] << endl;
-
-
-	cout << endl << "All tests finished. Press key to exit." << endl;
-	getchar();
 }
 
 

@@ -126,7 +126,6 @@ string strVec2str(vector<string> strVec)
 	for (int j = 1; j < strVec.size(); j++)
 		str += "," + strVec[j];
 	
-	//str += "]";
 	return str;
 }
 
