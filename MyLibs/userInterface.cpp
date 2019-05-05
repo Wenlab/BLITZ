@@ -20,6 +20,7 @@
 */
 #include "userInterface.h"
 #include "errorHandling.h"
+#include <algorithm> // remove all spaces from a string
 
 using namespace std;
 
@@ -29,6 +30,8 @@ void UserInterface::enquireInfoFromUser()
 {
 	showWelcomeMsg();
 	enquireDevice2use();
+	if (devices2use[2])
+		enquireCameras2use(is);
 	for (int i = 0; i < cameras2open.size(); i++)
 	{
 		if (cameras2open[i])
@@ -50,14 +53,15 @@ void UserInterface::enquireInfoFromUser()
 }
 */
 
-void UserInterface::enquireDevice2use()
+void UserInterface::enquireDevice2use(std::istream& is)
 {
 	const int numDevices = 3;
 	devices2use.resize(numDevices);
 	cout << "Which devices are you going to use?" << endl
-	<< " Please enter the indices. (1. relay, 2. projector, 3. cameras)" << endl;
+	<< " Please enter all the indices. (1. relay, 2. projector, 3. cameras)" << endl
+	<< "e.g., '1,2,3' to open all the devices" << endl;
 
-	vector<string> strVec = getStrVecFromCMD();
+	vector<string> strVec = getStrVecFromCMD(is);
 	for (string s : strVec)
 	{
 		if (!s.compare("1"))
@@ -65,10 +69,8 @@ void UserInterface::enquireDevice2use()
 		else if (!s.compare("2"))
 			devices2use[1] = 1;
 		else if (!s.compare("3"))
-		{
 			devices2use[2] = 1;
-			enquireCameras2use();
-		}
+		
 		else
 		{
 			cout << "Invalid input! Please enter again." << endl;
@@ -80,13 +82,13 @@ void UserInterface::enquireDevice2use()
 
 
 
-void UserInterface::enquireCameras2use()
+void UserInterface::enquireCameras2use(std::istream& is)
 {
 	cout << "How would you use the middle, left, and right cameras?" << endl
 		<< "Enter an array to tell the system" << endl
 		<< "(e.g., '0,1,1' to open the left and right cameras, but not the middle one.)" << endl;
 
-	vector<string> tempStrVec = getStrVecFromCMD();
+	vector<string> tempStrVec = getStrVecFromCMD(is);
 	int numCameras = tempStrVec.size();
 	cameras2open.resize(numCameras);
 
@@ -294,11 +296,11 @@ void showFishPosDiagram()
 	cout << endl; // separated with an empty line
 }
 
-vector<string> getStrVecFromCMD()
+vector<string> getStrVecFromCMD(std::istream& is)
 {
 	vector<string> strVec;
 	string inputStr;
-	getline(cin, inputStr);
+	getline(is, inputStr);
 	cout << endl; // separated with an empty line
 	
 
@@ -309,6 +311,8 @@ vector<string> getStrVecFromCMD()
 	{
 		string subStr;
 		getline(ss, subStr, ',');
+		// remove all spaces from a string
+		subStr.erase(remove_if(subStr.begin(), subStr.end(), isspace), subStr.end());
 		strVec.push_back(subStr);
 	}
 

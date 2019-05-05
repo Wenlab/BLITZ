@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 
+
 #define TEST_CLASS UserInterfaceTestor
 #include <boost/test/included/unit_test.hpp>
 #include <boost/bind.hpp>
@@ -11,7 +12,7 @@ using namespace std;
 
 string getStrFromCoutStream(void (*f)(void))// pointer to function as the argument
 {
-	string inputStr;
+	string outputStr;
 	// get cout stream buffer
 	ostringstream oss;
 	streambuf* p_cout_streambuf = cout.rdbuf();
@@ -21,8 +22,20 @@ string getStrFromCoutStream(void (*f)(void))// pointer to function as the argume
 
 	std::cout.rdbuf(p_cout_streambuf); // restore
 
-	inputStr = oss.str();
-	return inputStr;
+	outputStr = oss.str();
+	return outputStr;
+}
+/* Adapted from the code snippet on Stackoverflow: 
+https://stackoverflow.com/a/3797313 
+*/
+void sendStr2CinStream(std::istream& is, string inputStr)
+{
+	// inject 
+	streambuf* backup;
+	istringstream oss(inputStr);
+	backup = is.rdbuf();
+	is.rdbuf(oss.rdbuf());
+
 }
 
 class UserInterfaceTestor
@@ -47,7 +60,7 @@ public:
 		string license = "GNU 3.0 License";
 		string citation = "Wenbin Yang et al., 2019";
 		string author = "Wenbin Yang";
-		string email = "bysin7@gmail.com";
+		string email = "bysin8@gmail.com";
 
 
 		string inputStr = getStrFromCoutStream(showWelcomeMsg);
@@ -66,14 +79,29 @@ public:
 		BOOST_TEST(string::npos != inputStr.find(email),
 			"Not found the email: " + email);
 
-		cout << "Finished all tests. Press key to exit." << endl;
-		getchar();
+		
 	}
 
 	/* Test whether received device statuses are correct */
 	void testDeviceStatuses()
 	{
+		string inputStr = "1, 2, 3";
+		vector<bool> expectedRes = { 1, 1, 1 };
+		streambuf* backup;
+		istringstream oss(inputStr);
+		backup = cin.rdbuf();
+		cin.rdbuf(oss.rdbuf());
 
+		UIobj.enquireDevice2use(cin);
+
+		BOOST_CHECK_EQUAL_COLLECTIONS(
+			UIobj.devices2use.begin(), UIobj.devices2use.end(),
+			expectedRes.begin(), expectedRes.end()
+		);
+		
+		cout << "Finished all tests. Press key to continue/exit." << endl;
+		getchar();
+		
 	}
 
 	
@@ -84,9 +112,14 @@ private:
 test_suite* init_unit_test_suite(int /*argc*/, char* /*argv*/[])
 {
 	boost::shared_ptr<TEST_CLASS> tester(new TEST_CLASS);
-
+	
 	framework::master_test_suite().
 		add(BOOST_TEST_CASE(boost::bind(&TEST_CLASS::testWelcomeMsg, tester)));
+	
+	framework::master_test_suite().
+		add(BOOST_TEST_CASE(boost::bind(&TEST_CLASS::testDeviceStatuses, tester)));
+
+	
 	
 	return 0;
 }

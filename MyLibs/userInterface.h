@@ -41,14 +41,16 @@ public:
 		
 	}
 
+	std::vector<bool> getDevices2use();
+
 	/* Ask the user about the experiment infos */
 	//void enquireInfoFromUser();
 
 	/* Ask the user which devices to open */
-	void enquireDevice2use();
+	void enquireDevice2use(std::istream& is);
 
 	/* Ask which cameras to use. */
-	void enquireCameras2use();
+	void enquireCameras2use(std::istream& is);
 	
 
 	/* Ask which visual pattern to use 
@@ -112,7 +114,7 @@ void showWelcomeMsg();
 void showFishPosDiagram();
 
 /* Get string vector from command line */
-std::vector<std::string> getStrVecFromCMD();
+std::vector<std::string> getStrVecFromCMD(std::istream& is);
 
 //TODO: write a better description and note the dependencies
 /* Get current date and time string from chrono system clock,

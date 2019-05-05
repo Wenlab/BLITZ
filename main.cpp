@@ -19,11 +19,43 @@
 
 // Include user-defined libraries
 //#include "3rdPartyLibs/OpenGL/shader_s.h"
+#include <iostream>
+#include <sstream>
+#include <vector>
 
 
+#include "MyLibs/userInterface.h"
+
+using namespace std;
+
+vector<string> getStrVecFromCMD(std::istream& is)
+{
+	vector<string> strVec;
+	string inputStr;
+	getline(is, inputStr);
+	cout << endl; // separated with an empty line
 
 
+	istringstream ss;
+	ss.clear();
+	ss.str(inputStr);
+	while (ss.good())
+	{
+		string subStr;
+		getline(ss, subStr, ',');
+		strVec.push_back(subStr);
+	}
 
+	return strVec;
+}
+
+int main()
+{
+	vector<string> strVec = getStrVecFromCMD(cin);
+
+	cout << strVec[0] << endl;
+	getchar();
+}
 
 
 
