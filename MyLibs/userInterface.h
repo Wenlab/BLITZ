@@ -41,10 +41,8 @@ public:
 		
 	}
 
-	std::vector<bool> getDevices2use();
-
 	/* Ask the user about the experiment infos */
-	//void enquireInfoFromUser();
+	void enquireInfoFromUser();
 
 	/* Ask the user which devices to open */
 	void enquireDevice2use(std::istream& is);
@@ -53,54 +51,55 @@ public:
 	void enquireCameras2use(std::istream& is);
 	
 
-	/* Ask which visual pattern to use 
-	void enquirePattern2use();
-	*/
+	/* Ask which visual pattern to use */
+	void enquirePattern2use(std::istream& is);
+	
 
-	/* Ask how many fish under a camera
-	int enquireNumFishForACam(int idxCamera);
-	*/
+	/* Ask how many fish under a camera */
+	int enquireNumFishForACam(std::istream& is, int idxCamera);
+	
 
-	/* Generate fish IDs for all fish 
-	std::vector<std::string> generateFishIDs(int numFish);
-	*/
+	/* Generate fish IDs for all fish */
+	std::vector<int> generateFishIDs(int numFish);
+	
 
 
 	/* Ask for what strain of Fish is using,
-	 	 assume all fish are the same strain 
-	void enquireFishStrain();
-	*/
+	 	 assume all fish are the same strain */
+	void enquireFishStrain(std::istream& is);
+	
 
 
 	/* Ask for the age for all fish,
-	 	assume all fish are at the same age 
-	void enquireFishAge();
-	*/
+	 	assume all fish are at the same age */
+	void enquireFishAge(std::istream& is);
+	
 
-	/* Ask for what experiment task for poor fish 
-	void enquireExpTask();
-	*/
+	/* Ask for what experiment task for fish */
+	void enquireExpTask(std::istream& is);
+	
 
-	/* Generate basenames for the output files 
-	std::string generateBasenames();
-	*/
+	/* Generate basenames for all output files */
+	void generateBasenames();
+	
 
-	/* Generate basenames for the output files 
-	std::string generateBasenames(int idxFile);
-	*/
+	/* Generate basenames for the output files */
+	std::string generateBasename(int idxFile);
+	
 
 	// Properties
 	// TODO: get the number of cameras and pass it to fileWriterObj
 	std::vector<bool> devices2use; // status array to indicate which devices to use
 	// 1. relay, 2. projector, 3. cameras
 	std::vector<bool> cameras2open; // status array to indicate which cameras to open
-	std::vector<std::vector<std::string>> fishIDs; // fish IDs for all arenas
+	std::vector<std::vector<int>> allFishIDs; // fish IDs for all arenas
 	int fishAge; // one age for all fish
 	std::string strainName; //
 	std::vector<int> arenaIDs; // which arena the fish is in
 	std::string expTask; // task to run for animals
-	std::vector<std::string> CSstrs; // CS patterns
+	std::string visPattern; // one pattern for all
 	std::string startTimeStr; // string of the start time of an experiment, YYYYMMDD-HHMM
+	std::vector<std::string> baseNames;
 	int numOpenCameras;
 
 };

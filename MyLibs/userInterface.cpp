@@ -25,33 +25,20 @@
 using namespace std;
 
 
-/* 
+/* */
 void UserInterface::enquireInfoFromUser()
 {
 	showWelcomeMsg();
-	enquireDevice2use();
-	if (devices2use[2])
-		enquireCameras2use(is);
-	for (int i = 0; i < cameras2open.size(); i++)
-	{
-		if (cameras2open[i])
-		{
-			numOpenCameras++;
-			enquirePattern2use();
-			int numFish = enquireNumFishForACam(i);
-			fishIDs.push_back(generateFishIDs(numFish));
-			arenaIDs.push_back(i);
-		}
+	enquireDevice2use(cin);
 
-	}
-	enquireFishStrain();
-	enquireFishAge();
-	enquireExpTask();
+	enquireFishStrain(cin);
+	enquireFishAge(cin);
+	enquireExpTask(cin);
 
 	startTimeStr = getCurDateTime();
 	generateBasenames();
 }
-*/
+
 
 void UserInterface::enquireDevice2use(std::istream& is)
 {
@@ -67,10 +54,16 @@ void UserInterface::enquireDevice2use(std::istream& is)
 		if (!s.compare("1"))
 			devices2use[0] = 1;
 		else if (!s.compare("2"))
+		{
 			devices2use[1] = 1;
+			enquirePattern2use(is);
+		}		
 		else if (!s.compare("3"))
+		{
 			devices2use[2] = 1;
-		
+			enquireCameras2use(is);
+		}
+			
 		else
 		{
 			cout << "Invalid input! Please enter again." << endl;
@@ -95,18 +88,29 @@ void UserInterface::enquireCameras2use(std::istream& is)
 	for (int i = 0; i < numCameras; i++)
 		cameras2open[i] = stoi(tempStrVec[i]);
 	
+	for (int i = 0; i < cameras2open.size(); i++)
+	{
+		if (cameras2open[i])
+		{
+			numOpenCameras++;
+			int numFish = enquireNumFishForACam(is, i);
+			allFishIDs.push_back(generateFishIDs(numFish));
+			arenaIDs.push_back(i+1);
+		}
 
+	}
 
 	cout << endl; // separated with an empty line
 }
 
-/*
-void UserInterface::enquirePattern2use()
-{
 
+void UserInterface::enquirePattern2use(std::istream& is)
+{
+	cout << "Enter the pattern to use for all fish. (e.g., fullBlue)" << endl;
+	getline(is, visPattern);
 }
 
-int UserInterface::enquireNumFishForACam(int idxCamera)
+int UserInterface::enquireNumFishForACam(std::istream& is, int idxCamera)
 {
 	string camPos;
 	if (idxCamera == 0)
@@ -135,87 +139,60 @@ int UserInterface::enquireNumFishForACam(int idxCamera)
 	return numFish;
 }
 
-void UserInterface::enquirePattern2use()
-{
-	// TODO: reduce the code duplication
-	// duplicated with the 'enquireNumFishForACam'
-	string camPos;
-	if (idxCamera == 0)
-	{
-		camPos = "Middle";
-	}
-	else if (idxCamera == 1)
-	{
-		camPos = "Left";
-	}
-	else if (idxCamera == 2)
-	{
-		camPos = "Right";
-	}
-	else{
-		cout << "Invalid input for idxCamera!" << endl;
-		waitUserInput2exit();
-	}
 
-	cout << "Enter the pattern to use under the "
-	<< camPos << " camera? (e.g., fullBlue)" << endl;
-
-	string CSpattern;
-	cin >> CSpattern;
-
-	CSstrs.push_back(CSpattern);
-
-}
 
 vector<int> UserInterface::generateFishIDs(int numFish)
 {
 	vector<int> fishIDs;
 	for (int i = 0; i < numFish; i++)
 		fishIDs.push_back(i+1);
+
+	return fishIDs;
 }
 
-void UserInterface::enquireFishStrain()
+
+void UserInterface::enquireFishStrain(std::istream& is)
 {
 	cout << "Enter the strain name for all fish. (A number, e.g. GCaMP6f)" << endl;
 	cout << "(Assume they are the same strain)" << endl;
 
-	cin >> strainName;
+	is >> strainName;
 
 	cout << endl; // leave an empty line
 
 }
 
-void UserInterface::enquireFishAge()
+void UserInterface::enquireFishAge(std::istream& is)
 {
 	cout << "Enter age for all fish. (A number, e.g. 9)" << endl;
 	cout << "(Assume they are at the same age)" << endl;
 
-	while (!(cin >> fishAge)) // wrong input
+	while (!(is >> fishAge)) // wrong input
 	{
 		cout << "Wrong input for fish age" << endl
 			<< "Please enter a number. (e.g. 9)" << endl;
-		cin.clear();
-		cin.ignore(256, '\n');
+		is.clear();
+		is.ignore(256, '\n');
 	}
 	cout << endl; // separated with an empty line
 }
 
-void UserInterface::enquireExpTask()
+void UserInterface::enquireExpTask(std::istream& is)
 {
 	cout << "Enter task for all fish (e.g. OLcontrol, OLexp)" << endl;
-	cin >> expTask;
+	is >> expTask;
 
-	if (iequals(expTask, "OLcontrol"))
+	if (!expTask.compare("OLcontrol"))
 	{
 		cout << "Make sure the OUTPUT button is" << endl
 			<< "OFF (on the power source)" << endl;
 	}
-	else if (iequals(expTask, "OLexp"))
+	else if (!expTask.compare("OLexp"))
 	{
 		cout << "Make sure the OUTPUT button is" << endl
 			<< "ON (on the power source)" << endl;
 	}
-	else if (iequals(expTask, "BlueTest"))
+	else if (!expTask.compare("BlueTest"))
 	{
 		cout << "Make sure the `fullBlue` pattern" << endl
 			<< "is using." << endl;
@@ -240,19 +217,23 @@ void UserInterface::enquireExpTask()
 }
 
 
+void UserInterface::generateBasenames()
+{
+	for (int i = 0; i < numOpenCameras; i++)
+		baseNames.push_back(generateBasename(i));
 
-string UserInterface::generateBasenames(int idxFile)
+}
+
+string UserInterface::generateBasename(int idxFile)
 {
 	string baseName =
-		timeStr + "_" + "Arena" + to_string(arenaIDs[idxFile])
-		+ "_" + strainNames[arenaIdx] + "_"
+		startTimeStr + "_" + "Arena" 
+		+ to_string(arenaIDs[idxFile])
+		+ "_" + strainName + "_"
 		+ to_string(fishAge)+ "dpf_"
 		+ expTask;
 	return baseName;
 }
-
-*/
-
 
 
 void showWelcomeMsg()
