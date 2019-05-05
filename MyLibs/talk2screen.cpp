@@ -32,6 +32,7 @@
 #include <string>
 
 #include "talk2screen.h"
+#include "errorHandling.h"
 
 
 using namespace std;
@@ -47,8 +48,8 @@ void Screen::initialize(string imgName, vector<float> boundBox, string renderTyp
 
 	// initialize an area object
 	Area areaObj(boundBox, renderType);
-	areaObj.initialize();
-	allAreas.push_back(area);
+	areaObj.initialize(imgName);
+	allAreas.push_back(areaObj);
 
 	cout << "Screen initialization succeeded." << endl << endl;
 
@@ -79,7 +80,7 @@ void Screen::init_glfw_window()
 void Screen::init_glad()
 {
 	tryCatchFalse(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress),
-	"Failed to initialize GLAD!")
+		"Failed to initialize GLAD!");
 }
 
 void Screen::show()
@@ -100,7 +101,7 @@ void Screen::show(int idxArea)
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	allAreas[cIdx].renderTexture(idxArea);// TODO: consider to use instance variable instead
+	allAreas[idxArea].renderTexture(idxArea);// TODO: consider to use instance variable instead
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move
@@ -113,7 +114,7 @@ void Screen::showBlackPattern()
 	for (Area& area : allAreas)
 		area.updateIdxCase(idxBlack);
 
-	renderTexture();
+	show();
 }
 
 void Screen::reverse()
@@ -121,7 +122,7 @@ void Screen::reverse()
 	for (Area& area : allAreas)
 		area.negateIdxCase();
 
-	renderTexture();
+	show();
 }
 
 void Screen::reverse(vector<vector<bool>> patchIndices)
@@ -135,7 +136,7 @@ void Screen::reverse(vector<vector<bool>> patchIndices)
 				allAreas[i].negateIdxCase(j);
 		}
 	}
-	renderTexture();
+	show();
 }
 
 void Screen::reverse(int sec2start, int period)
@@ -196,40 +197,41 @@ void Area::initialize(string imgName)
 		patchBoundBox[2] = xDivLen;
 		patchBoundBox[3] = yDivLen;
 		switch (i) {
-			case 0: // the first patch at the upper-left corner
-				break;
-			case 1:
-			{
-				patchBoundBox[0] -= xDivLen;// minus the division length
-				break;
-			}
-			case 2:
-			{
-				patchBoundBox[1] += yDivLen;// minus the division length
-				break;
-			}
-			case 3:
-			{
-				patchBoundBox[0] -= xDivLen;// minus the division length
-				patchBoundBox[1] += yDivLen;// minus the division length
-				break;
-			}
-			if (iequals(renderType,"full"))
-				FullPatch patchObj(patchBoundBox);
-			else if (iequals(renderType,"half"))
-				HalfSplitPatch patchObj(patchBoundBox);
-			else if (iequals(renderType,"rotation"))
-				RotatingPatch patchObj(patchBoundBox);
-			else {
-				cout << "Unknown renderType! Please select one of the following:\n"
-				<< "full, half, rotation" << endl;
-				waitUserInput2exit(0);
-				exit(0);
-			}
-			patchObj.initialize();
-			allPatches.push_back(patchObj);
+		case 0: // the first patch at the upper-left corner
+			break;
+		case 1:
+		{
+			patchBoundBox[0] -= xDivLen;// minus the division length
+			break;
 		}
-	loadTextureIntoBuffers(imgName);
+		case 2:
+		{
+			patchBoundBox[1] += yDivLen;// minus the division length
+			break;
+		}
+		case 3:
+		{
+			patchBoundBox[0] -= xDivLen;// minus the division length
+			patchBoundBox[1] += yDivLen;// minus the division length
+			break;
+		}
+		if (iequals(renderType, "full"))
+			FullPatch patchObj();
+		else if (iequals(renderType, "half"))
+			HalfSplitPatch patchObj();
+		else if (iequals(renderType, "rotation"))
+			RotatingPatch patchObj();
+		else {
+			cout << "Unknown renderType! Please select one of the following:\n"
+				<< "full, half, rotation" << endl;
+			waitUserInput2exit();
+			exit(0);
+		}
+		patchObj.initialize();
+		allPatches.push_back(patchObj);
+		}
+		loadTextureIntoBuffers(imgName);
+	}
 }
 
 void Area::loadTextureIntoBuffers(string imgName)
