@@ -46,6 +46,7 @@
 
 
 /* Class to set up GLFW-OpenGL environment for rendering patterns */
+template <class P>
 class Screen
 {
 private: // only used within class
@@ -116,13 +117,14 @@ public:
 	);
 
 	// properties
-	std::vector<Area> allAreas;
+	std::vector<Area<P>> allAreas;
 	int numAreas; //TODO: consider to get this via a get method "numAreas = allAreas.size();"
 };
 
 /* represent pattern changes of an entire local area,
  which consists of many patches
 */
+template <class P>
 class Area
 {
 private:
@@ -175,7 +177,6 @@ public:
 
 
 	// properties
-	template<class P> // test this generic function
 	std::vector<P> allPatches;
 	// TODO: test whether this initiation works?
 };
@@ -199,6 +200,18 @@ but can be accessed by inherited classes */
 
 
 public:
+	Patch(
+		std::vector<float> patchRect, // bounding box
+		std::string vertexPath, // path to the vertex shader file
+		std::string fragmentPath // path to the vertex fragment file
+	)
+		: boundBox(patchRect)
+		, shader(vertexPath, fragmentPath)
+	{
+
+	}
+
+
 	/* Initialize memory for patch */
 	void initialize();
 
@@ -219,9 +232,8 @@ public:
 		std::string vertexPath = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
 		std::string fragmentPath = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
 	)
+		: Patch(patchRect, vertexPath, fragmentPath)
 	{
-		shader(vertexPath, framentPath);
-		boundBox(patchRect);
 
 	}
 
@@ -244,18 +256,16 @@ public:
 		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
 		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
 	)
-	: shader(vertexPath, framentPath)
-	, boundBox(patchRect)
-	, yDivide(yDiv)
+		: Patch(patchRect, vertexPath, fragmentPath)
+		, yDivide(yDiv)
 	{
-		shader.use();
-		shader.setInt("idxCase",idxCase);
+		
 	}
 
 	// Properties
 	int idxCase; // to select the case in f-shader
 
-}
+};
 
 class RotatingPatch : public Patch
 {
@@ -267,22 +277,20 @@ public:
 	// Methods
 	RotatingPatch(
 		std::vector<float> patchRect, // bounding box
-		radVelo = 0, // the rotating velocity of the pattern
+		float vRadian = 0, // the rotating velocity of the pattern
 		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
 		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
 	)
-	: shader(vertexPath, framentPath)
-	, boundBox(patchRect)
-	, yDivide(yDiv)
+	: Patch(patchRect, vertexPath, fragmentPath)
+	, radVelo(vRadian)
 	{
-		shader.use();
-		shader.setInt("idxCase",idxCase);
+	
 	}
 
 	// Properties
 	float radVelo; // rotating radian velocity
 	// TODO: consider to make it private?
-}
+};
 
 
 

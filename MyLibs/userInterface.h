@@ -28,7 +28,7 @@
 #include <string>
 #include <ctime> // to get the current date and time
 
-// TODO: make a GUI
+// TODO: make a GUI, alternative1: GMU readline command line interface
 /* Talk to users via command line interface */
 class UserInterface
 {

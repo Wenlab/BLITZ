@@ -30,6 +30,7 @@
 // Include standard libraries
 #include <vector>
 
+//TODO: consider to convert the macros to const attributes
 #define MAX_FISH_PER_ARENA 4
 #define X_CUT 385 // x position to separate fish 0,1 and 2,3
 #define Y_CUT 385 // y position to separate fish 0,1 and 2,3
@@ -52,7 +53,7 @@ public:
 
 		// Methods
 		/* Initialize all arenas will be used in the experiment */
-		std::vector<Arena> initialize(); // TODO: update the implementation
+		void initialize(std::vector<std::vector<int>> allFishIDs); // TODO: update the implementation
 
 		/* Prepare background image for MOG subtractor */
 		void prepareBgImg(const int prepareTime); // TODO: consider to make `prepareTime` a local variable?
@@ -64,7 +65,7 @@ public:
 		void annotateImgs(); // TODO: update the implementation
 
 		/* Present fish images with annotations. The code is adapted from code in stackfow. */
-		void displayImgs(std::string title); // TODO: update the implementation
+		void displayImg(std::string title); // TODO: update the implementation
 
 		/* Check which fish to give shock */
 		// TODO: write the implementation
@@ -81,7 +82,7 @@ public:
 		// Properties
 		std::vector<Arena> allArenas; // TODO: consider to make this private?
 private:
-		std::vector<std::vector<int>> yDivs; 	// TODO: move this into the imaging processing module
+		std::vector<std::vector<int>> yDivs; 
 
 
 };
@@ -153,9 +154,8 @@ private:
 	; // nothing for now
 public:
 	// methods // TODO: rewrite
-	Fish(int yDivide = 0, std::string fishID = "", int fishAge = 0) // constructor
+	Fish(int yDivide = 0, std::string fishID = "") // constructor
 		: ID(fishID)
-		, age(fishAge)
 		, yDiv(yDivide)
 	{
 		lastTimeInCS = -1;
@@ -181,7 +181,6 @@ public:
 	// properties
 	// const properties
 	const std::string ID;
-	const int age;
 
 	// TODO: consider to make it const
 	int yDiv; // the division pos between CS and NCS pattern

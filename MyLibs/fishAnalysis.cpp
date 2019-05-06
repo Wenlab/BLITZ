@@ -38,6 +38,30 @@
 using namespace std;
 using namespace cv;
 
+
+void FishAnalysis::initialize(vector<vector<int>> allFishIDs)
+{
+	int numArenas = allFishIDs.size();
+	for (int i = 0; i < numArenas; i++)
+	{
+		vector<int> fishIDs = allFishIDs[i];
+		for (int j = 0; j < fishIDs.size(); j++)
+		{
+			int yDivide = yDivs[i][j];
+			int ID = fishIDs[j];
+			Fish fish(yDivide, to_string(ID));
+		}
+	}
+
+}
+
+
+
+
+
+
+
+
 /* find all fish contours in the arena at the same time
  by finding the largest #fish contours in all contours.
  Involved parameters:
