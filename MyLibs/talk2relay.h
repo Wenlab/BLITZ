@@ -22,10 +22,11 @@
 This part is contributed by Jingyuan Ji. If you need help to translate to English,
 please feel free to contact me (Wenbin Yang, bysin7@gmail.com).
 
-[See more details](https://item.taobao.com/item.htm?spm=a
-1z10.1-c-s.w4004-17114410235.18.f4cf2355YNSEG9&id=16171044415)
+[See more details](https://item.taobao.com/item.htm?spm=a1z10.1-c-s.w4004-17114410235.18.f4cf2355YNSEG9&id=16171044415)
 
 信号为一个unsigned char openCommand[9]
+第一字节：帧首，固定为0x00
+第二字节：帧首，固定为0x5A
 第三字节：设备号，固定为0x60
 第四字节：地址字节，第一张卡为0x01，依此类推
 第五字节：命令字节，第六，七，八为命令参数,共同组成一条命令
@@ -60,17 +61,17 @@ ps:实际使用过程中不一定需要使用十六进制表示，int型表示�
 #ifndef _GUARD_TALK2RELAY_H
 #define _GUARD_TALK2RELAY_H
 
-// Include user-defined libraries
-#include "errorHandling.h"
+
 
 // Include 3rd party libraries
 #include "../3rdPartyLibs/SerialCom/SerialPort.h"
 
 // Include standard libraries
 #include <iostream>
+#include <vector>
 #include <math.h>
 
-#define COM_NUM 4 // put this into relay module
+ // put this into relay module
 #define NUM_CHANNEL 12
 #define LEN_COMMAND 9
 
@@ -80,21 +81,11 @@ private:
 	;
 public:
 	// methods
-	Port()
-		: openCommands{
-			{ 0x00,0x5A,0x60,0x01,0x12,0x01,0x00,0x01,0xCF }, //open the channel 1 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x02,0x00,0x01,0xD0 }, //open the channel 2 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x04,0x00,0x01,0xD2 }, //open the channel 3 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x08,0x00,0x01,0xD6 }, //open the channel 4 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x10,0x00,0x01,0xDE }, //open the channel 5 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x20,0x00,0x01,0xEE }, //open the channel 6 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x40,0x00,0x01,0x0E }, //open the channel 7 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x80,0x00,0x01,0x4E }, //open the channel 8 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x00,0x01,0x01,0xCF }, //open the channel 9 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x00,0x02,0x01,0xD0 }, //open the channel 10 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x00,0x04,0x01,0xD2 }, //open the channel 11 for 0.1 s
-			{ 0x00,0x5A,0x60,0x01,0x12,0x00,0x08,0x01,0xD6 }, //open the channel 12 for 0.1 s
-	}
+	Relay()
+		: BIT_1(0x00)
+		, BIT_2(0x5A)
+		, BIT_3(0x60)
+		, BIT_4(0x01)
 	{
 
 	}
@@ -108,15 +99,30 @@ public:
 	/* Open multiple channels simultaneously */
 	void givePulse(std::vector<bool> channelStatuses, float openDuration);//TODO: finish the implementation of this method
 
+	/* Generate open command: open for a few tenth-seconds.*/
+	unsigned char* generateOpenCommand(std::vector<bool> channelStatuses, float openDuration);
+
+	/* Generate open command: stay open */
+	unsigned char* generateOpenCommand(std::vector<bool> channelStatuses);
+
+private:
 	// properties
 	CSerialPort sPort; // serialPort
-	/* Commands to open specific channel on relay for several seconds*/
-	unsigned char openCommands[NUM_CHANNEL][LEN_COMMAND];
 
+	const unsigned char BIT_1; // address initial, 0x00 as the default
+	const unsigned char BIT_2; // address initial, 0x5A as the default
+	const unsigned char BIT_3; // board number
+	const unsigned char BIT_4; // address number
+	/* unsigned char BIT_5; 
+	 operation number, this is set in methods as a local variable,
+	 since it is changing in the context, not const.
+	 The same to BIT_6, 7, 8, and 9.
+	*/
 
 
 };
 
-
+// global functions
+int binaryAdding(std::vector<bool>::iterator vecBegin, std::vector<bool>::iterator vecEnd);
 
 #endif // !_GUARD_TALK2RELAY_H

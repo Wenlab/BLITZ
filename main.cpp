@@ -31,8 +31,8 @@ using namespace std;
 int main()
 {
 	
-	CameraData cObj;
-	cObj.initialize(1, 800, 600, 10);
+	SingleCamera cObj;
+	cObj.initialize();
 	int numFrames2grab = 1000;
 	
 	// giant grabbing loop

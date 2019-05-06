@@ -21,6 +21,8 @@
 #ifndef _GUARD_EXPERIMENT_H
 #define _GUARD_EXPERIMENT_H
 
+
+
 // Include user-defined libraries
 #include "userInterface.h"
 #include "expTimer.h"
@@ -30,7 +32,13 @@
 #include "talk2relay.h"
 #include "fileWriter.h"
 
+
+
+
 // User-defined macros
+#define COM_NUM 4
+
+
 class Experiment
 {
 public:
