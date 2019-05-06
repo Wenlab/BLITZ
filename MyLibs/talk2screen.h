@@ -123,6 +123,7 @@ public:
 /* represent pattern changes of an entire local area,
  which consists of many patches
 */
+
 class Area
 {
 private:
@@ -175,13 +176,14 @@ public:
 
 
 	// properties
-	template<class P> // test this generic function
+	template<class P>
 	std::vector<P> allPatches;
 	// TODO: test whether this initiation works?
 };
 
 /* This an example class for inheritances.
 A wrapper class of the Shader class */
+
 class Patch
 {
 protected:
@@ -189,9 +191,12 @@ protected:
 but can be accessed by inherited classes */
 	// Properties
 	Shader shader;
+	std::string vertexPathStr; // path to the vertex shader file
+	std::string fragmentPathStr;// path to the vertex fragment file
 	unsigned int VAO, VBO, EBO;
 	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
 
+	int idxCase;
 	// Methods
 	/* Initialize vertices and their buffers with given pos(x,y) */
 	void initVertices();
@@ -200,12 +205,10 @@ but can be accessed by inherited classes */
 
 public:
 	Patch(
-		std::vector<float> patchRect, // bounding box
-		const char vertexPath[] = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
-		const char fragmentPath[] = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
+		std::vector<float> patchRect // bounding box
 	)
-		: shader(vertexPath, fragmentPath)
-		, boundBox(patchRect)
+		:  boundBox(patchRect)
+		//, shader(vertexPathStr,fragmentPathStr)
 	{
 
 	}
@@ -224,13 +227,12 @@ class FullPatch : public Patch
 {
 public:
 	// methods
-	FullPatch() : Patch( boundBox ,"3rdPartyLibs/OpenGL/full.vs", "3rdPartyLibs/OpenGL/full.fs")
+	FullPatch() : Patch( boundBox )
 	{
-
+		vertexPathStr = "3rdPartyLibs/OpenGL/full.vs";
+		fragmentPathStr = "3rdPartyLibs/OpenGL/full.fs";
 	}
 
-	/* Initialize memory for patch */
-	// initialize(); inherited from parent class Patch
 };
 
 /* Patch-area to render a half-texture-half-background pattern */
@@ -243,15 +245,17 @@ private:
 public:
 	// Methods
 	HalfSplitPatch( int yDiv ) 
-		: Patch(boundBox, "3rdPartyLibs/OpenGL/halfSplit.vs", "3rdPartyLibs/OpenGL/halfSplit.fs")
+		: Patch(boundBox)
 		, yDivide(yDiv)
 	{
+		vertexPathStr = "3rdPartyLibs/OpenGL/half.vs";
+		fragmentPathStr = "3rdPartyLibs/OpenGL/half.fs";
 		shader.use();
 		shader.setInt("idxCase",idxCase);
 	}
 
 	// Properties
-	int idxCase; // to select the case in f-shader
+	//int idxCase; // to select the case in f-shader
 
 };
 
@@ -266,8 +270,10 @@ public:
 	RotatingPatch( 
 		int radVelo = 0 // the rotating velocity of the pattern
 	)
-	: Patch(boundBox, "3rdPartyLibs/OpenGL/rotating.vs", "3rdPartyLibs/OpenGL/rotating.fs")
+	: Patch(boundBox)
 	{
+		vertexPathStr = "3rdPartyLibs/OpenGL/rotating.vs";
+		fragmentPathStr = "3rdPartyLibs/OpenGL/rotating.fs";
 		shader.use();
 		shader.setInt("idxCase",idxCase);
 	}
@@ -276,7 +282,7 @@ public:
 
 	// Properties
 	float radVelo; // rotating radian velocity
-	int idxCase;
+	//int idxCase;
 	// TODO: consider to make it private?
 };
 
@@ -286,7 +292,7 @@ public:
 /* Case insensitive comparasion
 Adapted from Timmmm, https://stackoverflow.com/a/4119881
 */
-bool iequals(const string& a, const string& b);
+
 //TODO: how to reduce the duplication of this method in both files?
 // Create a new class? move to errorHandling class
 

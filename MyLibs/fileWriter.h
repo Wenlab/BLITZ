@@ -89,14 +89,14 @@ public:
 		UserInterface& UIobj, // object that contains user's input
 		Cameras& camerasObj, // object that contains cameras' info (e.g., FRAMERATE)
 		FishAnalysis& fishAnalysisObj // object that contains image processing info
-		)
+	);
 
 	/* Write out info that updated every frame to files (YAMLs and videos) */
 	void writeOutFrame(
 		ExpTimer& timerObj, // object that counts time and index of frames
 		FishAnalysis& fishAnalysisObj, // object that contains image processing info
 		int idxFile // which file to write
-		)
+	);
 
 	// template functions
 	/* Write out key value pairs */

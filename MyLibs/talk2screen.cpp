@@ -215,20 +215,21 @@ void Area::initialize(string imgName)
 			patchBoundBox[1] += yDivLen;// minus the division length
 			break;
 		}
-		if (iequals(renderType, "full"))
+		if (renderType.compare("full") == 0) {
 			FullPatch patchObj();
-		else if (iequals(renderType, "half"))
+			patchObj.initialize();
+			allPatches.push_back(patchObj);
+		}
+		else if (renderType.compare("half") == 0)
 			HalfSplitPatch patchObj();
-		else if (iequals(renderType, "rotation"))
+		else if (renderType.compare("rotation") == 0)
 			RotatingPatch patchObj();
 		else {
-			cout << "Unknown renderType! Please select one of the following:\n"
-				<< "full, half, rotation" << endl;
+			cout << "Unknown renderType! Please select one of the following:" << endl;
+			cout << "full, half, rotation" << endl;
 			waitUserInput2exit();
 			exit(0);
 		}
-		patchObj.initialize();
-		allPatches.push_back(patchObj);
 		}
 		loadTextureIntoBuffers(imgName);
 	}
@@ -260,8 +261,8 @@ void Area::loadTextureIntoBuffers(string imgName)
 void Area::updateIdxCase(int value)
 {
 
-	tryCatchFalse(iequals(renderType,"full"),
-	"Wrong renderType! This method is for full rendering only!");
+	tryCatchFalse(!renderType.compare("full"),
+		"Wrong renderType! This method is for full rendering only!");
 
 	/* TODO: test this range-based loop implementation
 	for (auto patch : allPatches)
@@ -280,8 +281,8 @@ void Area::updateIdxCase(int value)
 void Area::negateIdxCase()
 {
 
-	tryCatchFalse(iequals(renderType,"full"),
-	"Wrong renderType! This method is for full rendering only!");
+	tryCatchFalse(!renderType.compare("full"),
+		"Wrong renderType! This method is for full rendering only!");
 
 	// TODO: consider to use range-based loop implementation?
 	for (int i = 0; i < numPatches; i++)
@@ -294,8 +295,8 @@ void Area::negateIdxCase()
 void Area::negateIdxCase(int patchIdx)
 {
 
-	tryCatchFalse(iequals(renderType,"full"),
-	"Wrong renderType! This method is for full rendering only!");
+	tryCatchFalse(!renderType.compare("full"),
+		"Wrong renderType! This method is for full rendering only!");
 
 	allPatches[patchIdx].pIdx = !allPatches[patchIdx].pIdx;
 	allPatches[patchIdx].uploadInt2GPU("idxCase",idxCase);
@@ -317,6 +318,7 @@ void Area::renderTexture(int areaIdx)
 void Patch::initialize()
 {
 	initVertices();
+	shader(vertexPathStr,fragmentPathStr);
 	// Space for updates
 }
 
@@ -369,13 +371,4 @@ void Patch::uploadFloat2GPU(string varName, float varValue)
 }
 
 
-bool iequals(const string& a, const string& b)
-{
-	unsigned int sz = a.size();
-	if (b.size() != sz)
-		return false;
-	for (unsigned int i = 0; i < sz; ++i)
-		if (tolower(a[i]) != tolower(b[i]))
-			return false;
-	return true;
-}
+
