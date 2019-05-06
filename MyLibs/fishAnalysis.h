@@ -52,12 +52,34 @@ public:
 
 
 		// Methods
-		/* Initialize all arenas will be used in the experiment */
-		void initialize(std::vector<std::vector<int>> allFishIDs); // TODO: update the implementation
+		/* Initialize with allFishIDs */
+		void initialize(std::vector<std::vector<std::string>> allFishIDs); // TODO: update the implementation
+
+		/* Initialize all arenas will be used */
+		void initialize(std::vector<int> numFishInArenas);
 
 		/* Prepare background image for MOG subtractor */
 		void prepareBgImg(const int prepareTime); // TODO: consider to make `prepareTime` a local variable?
 
+
+		/* find all fish contours in the arena at the same time
+		by finding the largest #fish contours in all contours.
+		Involved parameters:
+		1.Threshold for contour size,
+		2.Moments of contours
+		Scheme for fish positions in arena
+		|		|		|
+		|	0	|	1	|
+		|		|		|
+		|---------------|
+		|		|		|
+		|	2	|	3	|
+		|		|		|
+
+		TODO:
+		1. Abolish fishFlag?
+		2. Consize the recursive ifs
+		*/
 		/* Find all fish in all arenas */
 		void findAllFish();
 
@@ -81,6 +103,7 @@ public:
 
 		// Properties
 		std::vector<Arena> allArenas; // TODO: consider to make this private?
+		int numArenas;
 private:
 		std::vector<std::vector<int>> yDivs; 
 
@@ -98,9 +121,27 @@ public:
 		: numFish(n)
 	{
 		allFish.reserve(numFish); // allocate memory
+		binThre = 40;
+		historyLen = 2000;
 	}
 
-	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
+	void initialize(std::vector<int> yDivs, std::vector<std::string> fishIDs);
+
+	void initialize(std::vector<int> yDivs);
+
+	/* initialization for common image processing purpose */
+	void initialize();
+
+	/* getImgFromCamera */
+	void getImgFromCamera(int width, int height, uint8_t* buffer);// TODO: consider to remove width, and height
+
+	/* Get image from videos */
+	void getImgFromVideo(cv::VideoCapture cap);
+
+	/* Build background image model with MOG operator */
+	void buildBgImg();
+
+
 
 	/* find all fish contours in the arena at the same time
 	by finding the largest #fish contours in all contours.
@@ -119,11 +160,10 @@ public:
 	/* Find all fish in this arena */
 	bool findAllFish();
 
-	/* getImgFromCamera */
-	bool getImgFromCamera(uint8_t* ptr2buffer);
+	
 
 	/* Align all images to user's view */
-	void alignImgs(int width, int height, int cIdx, uint8_t* buffer); // TODO: consider to remove width, and height
+	void alignImg(int deg2rotate);  // TODO: consider to remove width, and height
 
 	/* Decorate images with fish's heads, tails and visual pattern's info */
 	void annotateFish(); // TODO: engineer the relation between this and the-same-name function in FishAnalysis class
@@ -137,11 +177,13 @@ public:
 
 	// properties
 	const int numFish;
+	int binThre; // binary threshold
+	int historyLen; // used in MOG substractor
 
 	cv::Ptr<cv::BackgroundSubtractor> pMOG; // background subtractor for detecting moving object
 	cv::Mat opencvImg, HUDSimg, subImg;
 	std::vector<Fish> allFish;
-
+	 
 };
 
 
@@ -162,6 +204,7 @@ public:
 		lastShockTime = -1;
 		pauseFrames = -1;
 		shockOn = false;
+		idxCase = 0;
 		head = cv::Point(-1, -1);
 		tail = cv::Point(-1, -1);
 		center = cv::Point(-1, -1);
@@ -172,6 +215,7 @@ public:
 	by finding the end-points of the contour
 	*/
 	void findPosition();
+
 	/*Determine which side is fish's head by measuring the area of each half*/
 	bool findHeadSide(cv::Point2f* M);
 
@@ -204,6 +248,9 @@ public:
 /* TODO: consider to convert the following global functions to methods of FishAnalysis */
 /*Find the closest point on the contour to the reference point*/
 int findClosestPt(std::vector<cv::Point>& contour, cv::Point point);
+
+/* Rotate image with a given angle */
+void rotateImg(cv::Mat src, cv::Mat dst, int deg2rotate);
 /* Rotate the image 90 degrees clockwise */
 void rot90CW(cv::Mat src, cv::Mat dst);
 /* Get the Euclidean distance from point P to line AB */

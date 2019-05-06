@@ -39,19 +39,34 @@ using namespace std;
 using namespace cv;
 
 
-void FishAnalysis::initialize(vector<vector<int>> allFishIDs)
-{
-	int numArenas = allFishIDs.size();
+void FishAnalysis::initialize(vector<vector<string>> allFishIDs)
+{// TODO: consider to remove this attribute?
+	numArenas = allFishIDs.size();
 	for (int i = 0; i < numArenas; i++)
 	{
-		vector<int> fishIDs = allFishIDs[i];
-		for (int j = 0; j < fishIDs.size(); j++)
-		{
-			int yDivide = yDivs[i][j];
-			int ID = fishIDs[j];
-			Fish fish(yDivide, to_string(ID));
-		}
+		vector<string> fishIDs = allFishIDs[i];
+		int numFish = fishIDs.size();
+		Arena arena(numFish);
+		arena.initialize(yDivs[i], fishIDs);
+		allArenas.push_back(arena);
 	}
+
+}
+
+void FishAnalysis::initialize(vector<int> numFishInArenas)
+{
+	numArenas = numFishInArenas.size();
+	for (int i = 0; i < numArenas; i++)
+	{
+		int numFish = numFishInArenas[i];
+		Arena arena(numFish);
+		arena.initialize(yDivs[i]);
+		allArenas.push_back(arena);
+	}
+}
+
+void FishAnalysis::prepareBgImg(const int prepareTime, int frameWidth, int frameHeight, uint8_t* buffer)
+{
 
 }
 
@@ -59,44 +74,58 @@ void FishAnalysis::initialize(vector<vector<int>> allFishIDs)
 
 
 
-
-
-
-/* find all fish contours in the arena at the same time
- by finding the largest #fish contours in all contours.
- Involved parameters:
-	1.Threshold for contour size,
-	2.Moments of contours
-Scheme for fish positions in arena
-|		|		|
-|	0	|	1	|
-|		|		|
-|---------------|
-|		|		|
-|	2	|	3	|
-|		|		|
-
-TODO:
-1. Abolish fishFlag?
-2. Consize the recursive ifs
-*/
-
-void ArenaData::initialize(
-	vector<string> fishIDs, // unique fish IDs
-	int fishAge,
-	vector<int> yDivs
-	)
+void Arena::initialize(vector<int> yDivs, vector<string> fishIDs)
 {
-	const int historyLen = 2000; // used in MOG subtractor
 	pMOG = cv::createBackgroundSubtractorMOG2(historyLen, binThre, false);
 	for (int i = 0; i < numFish; i++)
 	{
-		FishData fish(fishIDs[i], fishAge, yDivs[i]);
+		Fish fish(yDivs[i], fishIDs[i]);
 		allFish.push_back(fish);
 	}
 }
 
-bool ArenaData::findAllFish()
+void Arena::initialize(vector<int> yDivs)
+{
+	pMOG = cv::createBackgroundSubtractorMOG2(historyLen, binThre, false);
+	for (int i = 0; i < numFish; i++)
+	{
+		Fish fish(yDivs[i]);
+		allFish.push_back(fish);
+	}
+}
+
+void Arena::initialize()
+{
+	pMOG = cv::createBackgroundSubtractorMOG2(historyLen, binThre, false);
+	Fish fish;
+	allFish.push_back(fish);
+}
+
+void Arena::getImgFromCamera(int width, int height, uint8_t* buffer)
+{
+	// TODO: get the width and height from the image
+	Mat rawImg = Mat(width, height, CV_8UC1, buffer);
+	rawImg.copyTo(opencvImg);
+}
+
+void Arena::getImgFromVideo(cv::VideoCapture cap)
+{
+	cap >> opencvImg;//TODO: test this usage
+}
+
+// TODO: this.name -> alignImgs
+void Arena::alignImg(int deg2rotate) 
+{
+	Mat rotatedImg;
+	rotateImg(opencvImg, rotatedImg, deg2rotate); //TODO: write the implementation
+}
+
+void Arena::buildBgImg()
+{
+	pMOG->apply(opencvImg, subImg);
+}
+
+bool Arena::findAllFish()
 {
 	int binThre = 20; // in the future, this might be adjusted in the GUI
 	bool fishFlag = true;
@@ -174,7 +203,7 @@ bool ArenaData::findAllFish()
 	Find the head, center, tail and headingAngle of the fish
 	by finding the end-points of the contour
 */
-void FishData::findPosition()
+void Fish::findPosition()
 {
 	Vec4f lineVec;
 	fitLine(fishContour, lineVec, CV_DIST_L2, 0, 0.01, 0.1);
@@ -205,7 +234,7 @@ void FishData::findPosition()
 	Determine which side is fish's head
 	by measuring the area of each half
 */
-bool FishData::findHeadSide(Point2f* M)
+bool Fish::findHeadSide(Point2f* M)
 {
 	vector<int> indices = findPtsLineIntersectContour(fishContour, M[0], M[2]);
 	int idxMidPt = (indices[0] + indices[1]) / 2;
@@ -238,7 +267,7 @@ bool FishData::findHeadSide(Point2f* M)
 	return areas[aIdx] > areas[!aIdx];
 }
 
-bool FishData::ifGiveShock(int pIdx, int sElapsed) {
+bool Fish::ifGiveShock(int pIdx, int sElapsed) {
 	/* Control parameters */
 	int thinkingTime = 7; // seconds, give fish some thinking time
 	int shockCD = 3; // seconds
@@ -286,53 +315,12 @@ bool FishData::ifGiveShock(int pIdx, int sElapsed) {
 	return shockOn;
 }
 
-// TODO: remove this method from this class
-int FishData::updatePatternInTraining(int sElapsed,int pIdx, int ITI) {
-	int NCStimeThre = 48; // seconds
-	if (pIdx == 2)
-	{
-		if (sElapsed > lastBlackoutStart + ITI)
-		{
-			pIdx = rand() % 2;
-		    lastTimeUpdatePattern = sElapsed;
-			lastTimeInCS = sElapsed;
-		}
-	}
-	else {
-		// update lastTimeInCS and lastTimeInNCS of fish
-		if (pIdx) // patternIdx == 1, since patternIdx == 2 is excluded
-		{
-			if (head.y > yDiv)
-				lastTimeInCS = sElapsed;
-		}
-		else {
-			if (head.y < yDiv) // In non-CS area
-				lastTimeInCS = sElapsed;
-		}
 
-		if (sElapsed - lastTimeInCS > NCStimeThre) // if stays too long in non-CS area
-		{
-			pIdx = 2;
-			lastBlackoutStart = sElapsed;
-		}
-	}
-	return pIdx;
-}
 
-// TODO: this.name -> alignImgs
-void ArenaData::alignImgs(int width, int height, int cIdx, uint8_t* buffer) {
-	// TODO: get the width and height from the image
-	Mat rawImg = Mat(width, height,CV_8UC1, buffer);
-	rawImg.copyTo(opencvImg);
-	if (cIdx != 0) {
-		rot90CW(opencvImg, opencvImg);
-	}
-	pMOG->apply(opencvImg, subImg);
-}
 
 // TODO: check whether this for loop necessary
 // I think it is necessary, but I can not confirm now
-void ArenaData::annotateFish() {
+void Arena::annotateFish() {
 	for (int j = 0; j < numFish; j++)
 	{
 		/*
@@ -349,26 +337,11 @@ void ArenaData::annotateFish() {
 	}
 }
 
-void ArenaData::resetShocksOn() {
+void Arena::resetShocksOn() {
 	for (int i = 0; i < numFish; i++)
 	{
 	    allFish[i].shockOn = 0;
 	}
-}
-
-/* Initialize all arenas will be used in the experiment */
-vector<ArenaData> initializeAllArenas(vector<vector<int>> yDivs, vector<vector<string>> fishIDs, int fishAge)
-{
-	vector<ArenaData> allArenas;
-	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
-
-	for (int i = 0; i < fishIDs.size(); i++)
-	{
-		ArenaData arena(binThreList[i], fishIDs[i].size());
-		arena.initialize(fishIDs[i], fishAge, yDivs[i]);
-		allArenas.push_back(arena);
-	}
-	return allArenas;
 }
 
 
@@ -445,9 +418,30 @@ vector<int> findPtsLineIntersectContour(vector<Point>& contour, Point2f A, Point
 
 }
 
+void rotateImg(Mat src, Mat dst, int deg2rotate)
+{
+	if (deg2rotate == 0)
+		dst = src;
+	else if (deg2rotate == 90)
+		transpose(src, dst);
+	else if (deg2rotate == 180)
+		flip(src, dst, -1);
+	else if (deg2rotate == 270)
+	{
+		Mat temp;
+		flip(src, temp, 0);
+		transpose(temp, dst);
+	}
+	else {
+		cout << "Invalid deg2rotate! Only 0, 90, 180, 270 degrees are available!" << endl;
+	}
+}
+
 void rot90CW(Mat src, Mat dst)
 {
 	Mat temp;
 	flip(src, temp, 0);
 	transpose(temp, dst);
 }
+
+

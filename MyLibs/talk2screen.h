@@ -46,7 +46,6 @@
 
 
 /* Class to set up GLFW-OpenGL environment for rendering patterns */
-template <class P>
 class Screen
 {
 private: // only used within class
@@ -117,14 +116,14 @@ public:
 	);
 
 	// properties
-	std::vector<Area<P>> allAreas;
+	std::vector<Area> allAreas;
 	int numAreas; //TODO: consider to get this via a get method "numAreas = allAreas.size();"
 };
 
 /* represent pattern changes of an entire local area,
  which consists of many patches
 */
-template <class P>
+
 class Area
 {
 private:
@@ -177,7 +176,8 @@ public:
 
 
 	// properties
-	std::vector<P> allPatches;
+	template<class P>
+	static std::vector<P> allPatches;
 	// TODO: test whether this initiation works?
 };
 
@@ -253,8 +253,8 @@ public:
 	HalfSplitPatch(
 		std::vector<float> patchRect, // bounding box
 		int yDiv, // the dividing position in y
-		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
-		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
+		std::string vertexPath = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
+		std::string fragmentPath = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
 		, yDivide(yDiv)
@@ -284,12 +284,17 @@ public:
 	: Patch(patchRect, vertexPath, fragmentPath)
 	, radVelo(vRadian)
 	{
-	
+		str = (unsigned char*) malloc(2 * sizeof(unsigned char));
+		str[0] = 'a';
+		str[1] = 'b';
+
 	}
 
 	// Properties
 	float radVelo; // rotating radian velocity
 	// TODO: consider to make it private?
+	static constexpr unsigned char s[2] = { 'a', 'b' };
+	unsigned char* str;
 };
 
 
