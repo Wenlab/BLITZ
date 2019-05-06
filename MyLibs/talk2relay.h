@@ -61,12 +61,14 @@ ps:实际使用过程中不一定需要使用十六进制表示，int型表示�
 #ifndef _GUARD_TALK2RELAY_H
 #define _GUARD_TALK2RELAY_H
 
-
+/* Disable warning to function std::copy */
+#pragma warning(disable : 4996)
 
 // Include 3rd party libraries
 #include "../3rdPartyLibs/SerialCom/SerialPort.h"
 
 // Include standard libraries
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <math.h>
@@ -100,10 +102,17 @@ public:
 	void givePulse(std::vector<bool> channelStatuses, float openDuration);//TODO: finish the implementation of this method
 
 	/* Generate open command: open for a few tenth-seconds.*/
-	unsigned char* generateOpenCommand(std::vector<bool> channelStatuses, float openDuration);
+	void generateOpenCommand(
+		unsigned char* openCommand, // command to the relay
+		std::vector<bool> channelStatuses, // each element stands for on/off state for a channel
+		float openDuration // in seconds
+	);
 
 	/* Generate open command: stay open */
-	unsigned char* generateOpenCommand(std::vector<bool> channelStatuses);
+	void generateOpenCommand(
+		unsigned char* openCommand, // command to the relay
+		std::vector<bool> channelStatuses
+	);
 
 private:
 	// properties

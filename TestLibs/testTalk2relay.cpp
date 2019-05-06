@@ -20,12 +20,22 @@ public:
 	}
 
 	/* Full test for all the functionalities,
-	however, programmer has to check the results in the CMD
-	manually
+	however, programmer has to check the results manually.
+	If everything works, channels 0,2,4,6,9,11,13,15 should be open for 0.3 seconds
 	*/
 	void fullManualTest() //TODO: replace with an automated unit test
 	{
+		int com_num = 4;
+		vector<bool> channelStatuses =
+		{ 1,0,1,0,1,0,1,0,
+			0,1,0,1,0,1,0,1
+		};
+
+		float openDuration = 0.3;
 		
+		rObj.initialize(com_num);
+		rObj.givePulse(channelStatuses, openDuration);
+		getchar();
 
 
 		cout << endl << "All tests finished. Press key to exit." << endl;
@@ -41,11 +51,17 @@ public:
 		};
 
 		float openDuration = 0.3;
-		unsigned char expectedRes[] = {0x00, 0x5A, 0x60, 0x01, 0x12, 0x55, 0xAA, 0x03, 0xC0};
+		unsigned char expectedRes[] = {0x00, 0x5A, 0x60, 0x01, 0x12, 0x55, 0xAA, 0x03, 0xCF};
 
-		unsigned char* openCommand = rObj.generateOpenCommand(channelStatuses, openDuration);
-		BOOST_TEST(openCommand == expectedRes);
+		
 
+		unsigned char* openCommand = new unsigned char[LEN_COMMAND];
+		rObj.generateOpenCommand(openCommand, channelStatuses, openDuration);
+		for (int i = 0; i < LEN_COMMAND; i++) // element-wise comparison
+			BOOST_TEST(openCommand[i] == expectedRes[i]);
+
+		cout << endl << "All tests finished. Press key to exit." << endl;
+		getchar();
 	}
 
 	

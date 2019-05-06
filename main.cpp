@@ -24,13 +24,14 @@
 #include <vector>
 
 
-#include "MyLibs/talk2camera.h"
+#include "MyLibs/talk2relay.h"
 
 using namespace std;
 
 int main()
 {
 	
+	/*
 	SingleCamera cObj;
 	cObj.initialize();
 	int numFrames2grab = 1000;
@@ -38,14 +39,14 @@ int main()
 	// giant grabbing loop
 	for (int i = 0; i < numFrames2grab; i++)
 	{ 
-		/*
+	
 #ifdef PYLON_WIN_BUILD
 	// Display the grabbed image.
 	Pylon::DisplayImage(1, cObj.grabPylonImg());
 #endif
-*/
-	}
 
+	}
+	*/
 
 }
 

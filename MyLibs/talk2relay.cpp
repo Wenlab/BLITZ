@@ -24,6 +24,9 @@
 * Created on: Jan. 1, 2018
 */
 
+
+
+
 // Include user-defined libraries
 #include "talk2relay.h"
 // Include user-defined libraries
@@ -47,15 +50,16 @@ void Relay::givePulse(int idxChannel)
 	givePulse(openStatuses, openDuration);
 }
 
-void Relay::givePulse(vector<bool> channelStatuses, float openDuration) // TODO: -> 16-bit boolean array, or a 16-bit binary number
+void Relay::givePulse(vector<bool> channelStatuses, float openDuration=0.1)
 {
 	tryCatchFalse((openDuration > 0.1), "openDuration should be at least 0.1 second!");
-	unsigned char* openCommand = generateOpenCommand(channelStatuses, openDuration);
+	unsigned char* openCommand = new unsigned char[LEN_COMMAND];
+	generateOpenCommand(openCommand, channelStatuses, openDuration);
 
 	tryCatchFalse(sPort.WriteData(openCommand, LEN_COMMAND),"Cannot write to the relay!");
 }
 
-unsigned char* Relay::generateOpenCommand(vector<bool> channelStatuses, float openDuration)
+void Relay::generateOpenCommand(unsigned char* openCommand, vector<bool> channelStatuses, float openDuration)
 {
 	const unsigned char BIT_5 = 0x12; // operation number
 	unsigned char BIT_6 = binaryAdding(channelStatuses.begin(), channelStatuses.begin() + 8);
@@ -63,14 +67,14 @@ unsigned char* Relay::generateOpenCommand(vector<bool> channelStatuses, float op
 	unsigned char BIT_8 = ceil(openDuration * 10); // openDuration in unit count; an unit is 0.1s
 
 	unsigned char sumCheck = BIT_1 + BIT_2 + BIT_3 + BIT_4 + BIT_5 + BIT_6 + BIT_7 + BIT_8;
-	unsigned char openCommand[LEN_COMMAND] = { BIT_1, BIT_2, BIT_3, BIT_4, BIT_5,
+	unsigned char command[] = { BIT_1, BIT_2, BIT_3, BIT_4, BIT_5,
 		BIT_6, BIT_7, BIT_8, sumCheck };
 
-	return openCommand;
+	std::copy(std::begin(command), std::end(command), openCommand);
 
 }
 
-unsigned char* Relay::generateOpenCommand(vector<bool> channelStatuses)
+void Relay::generateOpenCommand(unsigned char* openCommand, vector<bool> channelStatuses)
 {
 	const unsigned char BIT_5 = 0x01; // operation number
 	unsigned char BIT_6 = binaryAdding(channelStatuses.begin(), channelStatuses.begin() + 8);
@@ -78,10 +82,10 @@ unsigned char* Relay::generateOpenCommand(vector<bool> channelStatuses)
 	const unsigned char BIT_8 = 0; // not used in this context
 
 	unsigned char sumCheck = BIT_1 + BIT_2 + BIT_3 + BIT_4 + BIT_5 + BIT_6 + BIT_7 + BIT_8;
-	unsigned char openCommand[LEN_COMMAND] = { BIT_1, BIT_2, BIT_3, BIT_4, BIT_5,
+	unsigned char command[] = { BIT_1, BIT_2, BIT_3, BIT_4, BIT_5,
 		BIT_6, BIT_7, BIT_8, sumCheck };
 
-	return openCommand;
+	std::copy(std::begin(command), std::end(command), openCommand);
 
 }
 
