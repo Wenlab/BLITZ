@@ -64,11 +64,12 @@ public:
 	void initialize(std::vector<bool> cameras2open); // status array that indicate whether a camera should be open
 
 													 /* Grab Pylon image from cameras */
-	Pylon::CGrabResultPtr grabPylonImg();
+	void grabPylonImg();
 
 	/* Get the pointer to image buffer */
-	Pylon::CGrabResultPtr getPtr2buffer();
+	void* getPtr2buffer();
 
+	intptr_t cIdx;// index of camera where the frame is grabbed from
 private:
 	int frameRate;
 	int frameWidth;
@@ -78,10 +79,11 @@ private:
 	std::vector<int> offSetYs;
 	std::string pixelFormat;
 	std::string cameraType;
-
+	Pylon::CPylonImage pylonImg;
 	Pylon::CBaslerUsbInstantCameraArray cameras;
 	Pylon::CGrabResultPtr  ptrGrabResult; //TODO: write a public method to get this variable or return it from an old method
-	intptr_t cIdx;// index of camera where the frame is grabbed from
+	
+	
 };
 
 /* Device unspecific single camera */
@@ -118,6 +120,7 @@ private:
 	int offSetY;
 	std::string pixelFormat;
 	Pylon::CGrabResultPtr  ptrGrabResult;
+	Pylon::CPylonImage pylonImg;
 };
 
 // Global functions

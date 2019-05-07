@@ -99,7 +99,7 @@ public:
 	void givePulse(int idxChannel);
 
 	/* Open multiple channels simultaneously */
-	void givePulse(std::vector<bool> channelStatuses, float openDuration);//TODO: finish the implementation of this method
+	void givePulse(std::vector<bool> channelStatuses, float openDuration = 0.1);//TODO: finish the implementation of this method
 
 	/* Generate open command: open for a few tenth-seconds.*/
 	void generateOpenCommand(

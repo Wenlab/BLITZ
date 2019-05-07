@@ -81,6 +81,7 @@ void FileWriter::writeOutExpSettings(UserInterface& UIobj, Cameras& camerasObj,
 		writeKeyValuePair("ExpStartTime", timeStr, i);
 		writeKeyValuePair("FrameRate", FRAMERATE, i);// TODO: is this cross-file used macro a good practice?
 		writeKeyValuePair("FrameSize", Size(FRAMEWIDTH, FRAMEHEIGHT), i);
+		// TODO: decide where to save x_, y_cut? FishAnalysis or Arena?
 		writeKeyValuePair("ImgSeg", Size(fishAnalysisObj.x_cut,fishAnalysisObj.y_cut), i);
 		writeKeyValuePair("yDivide", fishAnalysisObj.yDivs[i], i);
 	}

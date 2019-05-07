@@ -114,7 +114,7 @@ void MultiUSBCameras::initialize(vector<bool> cameras2open)
 	cout << "Cameras initialization succeeded." << endl << endl;
 }
 
-Pylon::CGrabResultPtr MultiUSBCameras::grabPylonImg()
+void MultiUSBCameras::grabPylonImg()
 {
 
 	// Error handling
@@ -128,16 +128,18 @@ Pylon::CGrabResultPtr MultiUSBCameras::grabPylonImg()
 			<< e.GetDescription() << endl;
 
 	}
+	Pylon::CImageFormatConverter formatConverter;
 	cIdx = ptrGrabResult->GetCameraContext();
+	formatConverter.Convert(pylonImg, ptrGrabResult);
 
 	tryCatchFalse(cameras.IsGrabbing(), "Error! The camera is NOT grabbing!");
 
-	return ptrGrabResult;
+	
 }
 
-Pylon::CGrabResultPtr MultiUSBCameras::getPtr2buffer()
+void* MultiUSBCameras::getPtr2buffer()
 {
-	return ptrGrabResult;
+	return pylonImg.GetBuffer();
 }
 
 
@@ -181,7 +183,7 @@ void SingleCamera::initialize()
 	cout << "Camera initialization succeeded." << endl << endl;
 	
 }
-
+// TODO: rewrite with pylonImg
 Pylon::CGrabResultPtr SingleCamera::grabPylonImg()
 {
 	// Error handling

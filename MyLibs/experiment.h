@@ -43,7 +43,7 @@ class Experiment
 {
 public:
 	// methods
-	ExperimentData()
+	Experiment()
 	{
 		// empty forever
 	}
@@ -64,7 +64,7 @@ private:
 	// Functional module objects
 	UserInterface UIobj; // object that receive user inputs via the command line
 	ExpTimer timerObj; // object that count time and index of frames
-	Cameras camerasObj; //object that captures images from camera, TODO: use generic function to indicate different device?
+	MultiUSBCameras camerasObj; //object that captures images from camera, TODO: use generic function to indicate different device?
 	FishAnalysis fishAnalysisObj; // object that processes images
 	Screen screenObj; // object that shows pattern via a projector
 	Relay relayObj; // object that controls a 16-channel relay

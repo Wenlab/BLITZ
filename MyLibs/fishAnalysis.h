@@ -30,10 +30,177 @@
 // Include standard libraries
 #include <vector>
 
-//TODO: consider to convert the macros to const attributes
-#define MAX_FISH_PER_ARENA 4
-#define X_CUT 385 // x position to separate fish 0,1 and 2,3
-#define Y_CUT 385 // y position to separate fish 0,1 and 2,3
+// Include user-defined libraries
+#include "errorHandling.h"
+
+/* Define related methods and properties for a single fish */
+// Write every frame updated info at here? No! Create another class in fileWriter class
+class Fish {
+
+private:
+	; // nothing for now
+public:
+	// methods
+	Fish(int yDivide = 0, std::string fishID = "") // constructor
+		: ID(fishID)
+		, yDiv(yDivide)
+	{
+		lastTimeUpdatePattern = -1;
+		lastTimeInCS = -1;
+		lastShockTime = -1;
+		pauseFrames = -1;
+		shockOn = false;
+		idxCase = 0;
+		head = cv::Point(-1, -1);
+		tail = cv::Point(-1, -1);
+		center = cv::Point(-1, -1);
+		headingAngle = -360;
+	}
+	/*
+	Find the head, center, tail and headingAngle of the fish
+	by finding the end-points of the contour
+	*/
+	void findPosition();
+
+	/* Find head and tail with endIndices */
+	void findHeadAndTail(std::vector<int> endIndices);
+
+	/* Calculate heading angle of the fish */
+	void calcHeadingAngle();
+
+	/*Determine which side is fish's head by measuring the area of each half*/
+	bool findHeadSide(cv::Point2f* M);
+
+	/* Decide whether to give this fish shock */
+	bool checkIfGiveShock(int sElapsed);
+
+	/* Decide if to reverse the pattern;
+	reverse the pattern if fish stays in non-CS zone too long
+	*/
+	bool checkIfReversePattern(int sElapsed);
+
+	// properties
+	// const properties
+	const std::string ID;
+	const int yDiv; // the division pos between CS and NCS pattern
+
+					// status properties
+	int lastTimeUpdatePattern;
+	int lastTimeInCS;
+	int lastShockTime;
+	int pauseFrames;
+	bool shockOn;
+	int idxCase; // indicate the situation (e.g., pattern) that fish is in
+
+				 // motion parameters
+	std::vector<cv::Point> fishContour;
+	cv::Point head, tail, center;
+	int headingAngle;
+};
+
+
+/* Define all infos including fish for a single arena */
+class Arena {
+
+private:
+	;// nothing for now
+public:
+	// methods
+	Arena(int n = 1) // constructor
+		: numFish(n)
+		, maxNumFish(4)
+		, xCut(385)
+		, yCut(385)
+	{
+		// TODO: replace with a better errorhandling
+
+		allFish.reserve(numFish); // allocate memory
+		binThre = 40;
+		historyLen = 2000;
+	}
+
+	/* Initialize with given fishIDs */
+	void initialize(std::vector<int> yDivs, std::vector<std::string> fishIDs);
+
+	/* Initialize with y division positions only */
+	void initialize(std::vector<int> yDivs);
+
+	/* initialization for common image processing purpose */
+	void initialize();
+
+	/* Get image from camera to opencvImg */
+	void getImgFromCamera(int width, int height, uint8_t* buffer);// TODO: consider to remove width, and height
+
+																  /* Get image from videos */
+	void getImgFromVideo(cv::VideoCapture cap);
+
+	/* Build background image model with MOG operator */
+	void buildBgImg();
+
+	/* Align all images to user's view */
+	void alignImg(int deg2rotate);
+
+	/* find all fish contours in the arena at the same time
+	by finding the largest #fish contours in all contours.
+	Involved parameters:
+	1.Threshold for contour size,
+	2.Moments of contours
+	Scheme for fish positions in arena
+	|		|		|
+	|	0	|	1	|
+	|		|		|
+	|---------------|
+	|		|		|
+	|	2	|	3	|
+	|		|		|
+	*/
+	/* Find all fish in this arena */
+	void findAllFish();
+
+	/* Find the single fish in the entire image,
+	NOT applicable to multi-fish scenarios.
+	*/
+	bool findSingleFish();
+
+	/* Calculate which quadratile this contour is */
+	int findQuadratile(std::vector<cv::Point> contour);
+
+	/* Decorate images with fish's heads, tails and visual pattern's info */
+	void annotateFish(); // TODO: engineer the relation between this and the-same-name function in FishAnalysis class
+
+						 /* Present fish images with annotations.
+						 The code is adapted from code in stackfow. */
+	void displayImg(std::string title); // TODO: update the implementation
+
+										/* Check which fish to give shock */
+	std::vector<bool> checkWhich2GiveShock(int sElapsed);
+
+	/* Check which fish to reverse its underneath pattern */
+	std::vector<bool> checkWhich2ReversePattern(int sElapsed);
+
+	/* Reset shocksOn to false for all fish */
+	void resetShocksOn();
+
+	/* Get number of fish in arena */
+	int getNumFish();
+
+	// properties
+	const int numFish;
+	const int maxNumFish;
+	const int xCut;// x position to separate fish 0,1 and 2,3
+	const int yCut;
+	int binThre; // binary threshold
+	int historyLen; // used in MOG substractor
+
+	cv::Ptr<cv::BackgroundSubtractor> pMOG; // background subtractor for detecting moving object
+	cv::Mat opencvImg, subImg;
+	std::vector<Fish> allFish;
+
+};
+
+
+
+
 
 /* the highest class that encapsulates everything about imaging processing */
 class FishAnalysis {
@@ -48,8 +215,9 @@ public:
 				{ 223, 223, 588, 588 },
 				{ 223, 223, 588, 588 }
 			}; // TODO: make this variable private
+			
+			aIdx = 0;
 		}
-
 
 		// Methods
 		/* Initialize with allFishIDs */
@@ -58,9 +226,17 @@ public:
 		/* Initialize all arenas will be used */
 		void initialize(std::vector<int> numFishInArenas);
 
-		/* Prepare background image for MOG subtractor */
-		void prepareBgImg(const int prepareTime); // TODO: consider to make `prepareTime` a local variable?
+		/* Process image from camera */
+		void preprocessImg(); 
 
+		/* Get image from camera */
+		void getImgFromCamera(int width, int height, uint8_t* buffer);
+
+		/* Align images to user's view */
+		void alignImg();
+
+		/* Build up the model for background image */
+		void buildBgImg();
 
 		/* find all fish contours in the arena at the same time
 		by finding the largest #fish contours in all contours.
@@ -84,18 +260,17 @@ public:
 		void findAllFish();
 
 		/* Decorate images with fish's heads, tails and visual pattern's info */
-		void annotateImgs(); // TODO: update the implementation
+		void annotateImg(); // TODO: update the implementation
 
 		/* Present fish images with annotations. The code is adapted from code in stackfow. */
 		void displayImg(std::string title); // TODO: update the implementation
 
 		/* Check which fish to give shock */
-		// TODO: write the implementation
-		std::vector<bool> checkIfGiveShock();
+		std::vector<std::vector<bool>> checkWhich2GiveShock(int sElapsed);
 
 		/* Check to reverse whose patterns */
 		// TODO: write the implementation
-		std::vector<bool> checkIfReversePattern();
+		std::vector<std::vector<bool>> checkWhich2ReversePattern(int sElapsed);
 
 		/* Reset shocksOn to false for all fish */
 		// TODO: write the implementation
@@ -104,143 +279,15 @@ public:
 		// Properties
 		std::vector<Arena> allArenas; // TODO: consider to make this private?
 		int numArenas;
+		int aIdx; // index of arena to process
 private:
 		std::vector<std::vector<int>> yDivs; 
-
-
-};
-
-/* Define all infos including fish for a single arena */
-class Arena {
-
-private:
-	;// nothing for now
-public:
-	// methods
-	Arena(int n = 1) // constructor
-		: numFish(n)
-	{
-		allFish.reserve(numFish); // allocate memory
-		binThre = 40;
-		historyLen = 2000;
-	}
-
-	void initialize(std::vector<int> yDivs, std::vector<std::string> fishIDs);
-
-	void initialize(std::vector<int> yDivs);
-
-	/* initialization for common image processing purpose */
-	void initialize();
-
-	/* getImgFromCamera */
-	void getImgFromCamera(int width, int height, uint8_t* buffer);// TODO: consider to remove width, and height
-
-	/* Get image from videos */
-	void getImgFromVideo(cv::VideoCapture cap);
-
-	/* Build background image model with MOG operator */
-	void buildBgImg();
-
-
-
-	/* find all fish contours in the arena at the same time
-	by finding the largest #fish contours in all contours.
-	Involved parameters:
-	1.Threshold for contour size,
-	2.Moments of contours
-	Scheme for fish positions in arena
-	|		|		|
-	|	0	|	1	|
-	|		|		|
-	|---------------|
-	|		|		|
-	|	2	|	3	|
-	|		|		|
-	*/
-	/* Find all fish in this arena */
-	bool findAllFish();
-
-	
-
-	/* Align all images to user's view */
-	void alignImg(int deg2rotate);  // TODO: consider to remove width, and height
-
-	/* Decorate images with fish's heads, tails and visual pattern's info */
-	void annotateFish(); // TODO: engineer the relation between this and the-same-name function in FishAnalysis class
-
-	/* Present fish images with annotations. The code is adapted from code in stackfow. */
-	void displayImgs(std::string title); // TODO: update the implementation
-
-	/* Reset shocksOn to false for all fish */
-	// TODO: write the implementation
-	void resetShocksOn();
-
-	// properties
-	const int numFish;
-	int binThre; // binary threshold
-	int historyLen; // used in MOG substractor
-
-	cv::Ptr<cv::BackgroundSubtractor> pMOG; // background subtractor for detecting moving object
-	cv::Mat opencvImg, HUDSimg, subImg;
-	std::vector<Fish> allFish;
-	 
 };
 
 
 
-/* Define related methods and properties for a single fish */
-// Write every frame updated info at here? No! Create another class in fileWriter class
-class Fish {
 
-private:
-	; // nothing for now
-public:
-	// methods // TODO: rewrite
-	Fish(int yDivide = 0, std::string fishID = "") // constructor
-		: ID(fishID)
-		, yDiv(yDivide)
-	{
-		lastTimeInCS = -1;
-		lastShockTime = -1;
-		pauseFrames = -1;
-		shockOn = false;
-		idxCase = 0;
-		head = cv::Point(-1, -1);
-		tail = cv::Point(-1, -1);
-		center = cv::Point(-1, -1);
-		headingAngle = -360;
-	}
-	/*
-	Find the head, center, tail and headingAngle of the fish
-	by finding the end-points of the contour
-	*/
-	void findPosition();
 
-	/*Determine which side is fish's head by measuring the area of each half*/
-	bool findHeadSide(cv::Point2f* M);
-
-	/* Decide whether to give this fish shock */
-	bool ifGiveShock(int pIdx, int sElapsed);
-
-	// properties
-	// const properties
-	const std::string ID;
-
-	// TODO: consider to make it const
-	int yDiv; // the division pos between CS and NCS pattern
-
-// status properties
-	int lastTimeInCS;
-	int lastShockTime;
-	int pauseFrames;// TODO: consider to change this variable
-	bool shockOn;
-	int idxCase; // indicate the situation (e.g., pattern) that fish is in
-
-	// motion parameters
-	std::vector<cv::Point> fishContour;
-	cv::Point head, tail, center;
-	int headingAngle;
-};
 
 // Global functions
 

@@ -65,13 +65,128 @@ void FishAnalysis::initialize(vector<int> numFishInArenas)
 	}
 }
 
-void FishAnalysis::prepareBgImg(const int prepareTime, int frameWidth, int frameHeight, uint8_t* buffer)
+void FishAnalysis::getImgFromCamera(int width, int height, uint8_t* buffer)
 {
-
+	allArenas[aIdx].getImgFromCamera(width, height, buffer);
 }
 
+void FishAnalysis::preprocessImg()
+{
+	alignImg();
+	buildBgImg();
+}
 
+void FishAnalysis::alignImg()
+{
+	if (aIdx != 0)
+		allArenas[aIdx].alignImg(270);
+}
 
+void FishAnalysis::buildBgImg()
+{
+	allArenas[aIdx].buildBgImg();
+}
+
+void FishAnalysis::findAllFish()
+{
+	for (Arena& arena : allArenas)
+		arena.findAllFish();
+}
+
+void FishAnalysis::annotateImg()
+{
+	for (Arena& arena : allArenas)
+		arena.annotateFish();
+}
+
+void FishAnalysis::displayImg(string title)
+{
+	int size;
+	int i;
+	int m, n;
+	int x, y;
+
+	// w - Maximum number of images in a row
+	// h - Maximum number of images in a column
+	int w, h;
+
+	// scale - How much we have to resize the image
+	float scale;
+	int max;
+
+	// If the number of arguments is lesser than 0 or greater than 12
+	// return without displaying
+	if (numArenas <= 0) {
+		printf("Number of arguments too small....\n");
+		return;
+	}
+	else if (numArenas > 3) {
+		printf("Number of arguments too large, can only handle maximally 12 images at a time ...\n");
+		return;
+	}
+	else if (numArenas == 1) {
+		w = h = 1;
+		size = 300;
+	}
+	else if (numArenas == 2) {
+		w = 2; h = 1;
+		size = 300;
+	}
+	else if (numArenas == 3) {
+		w = 2; h = 2;
+		size = 300;
+	}
+	// Create a new 1 channel image
+	Mat DispImage = Mat::zeros(Size(100 + size * w, 60 + size * h), CV_8UC1);
+	// Loop for cams.numCameras number of arguments
+	for (i = 0, m = 20, n = 20; i < numArenas; i++, m += (20 + size)) {
+		// Get the Pointer to the IplImage
+		Mat img = allArenas[i].opencvImg;
+		if (img.empty()) {
+			std::cout << "Invalid arguments" << std::endl;
+			return;
+		}
+		x = img.cols;
+		y = img.rows;
+		// Find whether height or width is greater in order to resize the image
+		max = (x > y) ? x : y;
+		// Find the scaling factor to resize the image
+		scale = (float)((float)max / size);
+		if (i % w == 0 && m != 20) {
+			m = 20;
+			n += 20 + size;
+		}
+		Rect ROI(m, n, (int)(x / scale), (int)(y / scale));
+		Mat temp; resize(img, temp, Size(ROI.width, ROI.height));
+		temp.copyTo(DispImage(ROI));
+	}
+	// Create a new window, and show the Single Big Image
+	namedWindow(title, 1);
+	imshow(title, DispImage);
+}
+
+vector<vector<bool>> FishAnalysis::checkWhich2GiveShock(int sElapsed)
+{
+	vector<vector<bool>> fish2giveShock;
+	for (Arena& arena : allArenas)
+		fish2giveShock.push_back(arena.checkWhich2GiveShock(sElapsed));
+	return fish2giveShock;
+}
+
+vector<vector<bool>> FishAnalysis::checkWhich2ReversePattern(int sElapsed)
+{
+	vector<vector<bool>> patterns2reverse;
+	for (Arena& arena : allArenas)
+		patterns2reverse.push_back(arena.checkWhich2ReversePattern(sElapsed));
+
+	return patterns2reverse;
+}
+
+void FishAnalysis::resetShocksOn()
+{
+	for (Arena& arena : allArenas)
+		arena.resetShocksOn();
+}
 
 
 void Arena::initialize(vector<int> yDivs, vector<string> fishIDs)
@@ -113,11 +228,11 @@ void Arena::getImgFromVideo(cv::VideoCapture cap)
 	cap >> opencvImg;//TODO: test this usage
 }
 
-// TODO: this.name -> alignImgs
 void Arena::alignImg(int deg2rotate) 
 {
 	Mat rotatedImg;
 	rotateImg(opencvImg, rotatedImg, deg2rotate); //TODO: write the implementation
+	opencvImg = rotatedImg; // TODO: check if hardcopy needed?
 }
 
 void Arena::buildBgImg()
@@ -125,109 +240,205 @@ void Arena::buildBgImg()
 	pMOG->apply(opencvImg, subImg);
 }
 
-bool Arena::findAllFish()
+void Arena::findAllFish()
 {
-	int binThre = 20; // in the future, this might be adjusted in the GUI
-	bool fishFlag = true;
-	// outer contours are counter clockwise
 	vector<vector<Point>> contours;
 	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
 
-	// record largest contour of each quadratile and its index
-	// with initial values of -1 (not found)
-	vector<vector<int>> maxContours;
-	maxContours.resize(2, vector<int>(4, -1));
+	const int conSizeThre = 20;
+	vector<vector<Point>> maxContours(4);
+	vector<int> maxContourSizes(4);
 
-	// the size of fish contour should above this threshold
-	const int conThre = 20;
-	for (int i = 0; i < contours.size(); i++)
+	for (auto& contour : contours)
 	{
-		vector<Point> tempContour = contours[i];
-		int contourSize = tempContour.size();
-		if (contourSize < conThre)
-			continue;
+		int contourSize = contour.size();
+		if (contourSize < conSizeThre)
+			continue; // skip this turn
 
-		Moments M = moments(tempContour); // to find the center
-		int x = int(M.m10 / M.m00);
-		int y = int(M.m01 / M.m00);
-		Point center = Point(x, y);
-
-		int signNum = (x - X_CUT > 0) + 2 * (y - Y_CUT > 0);
-		int qIdx = 0; // Quadrantic index
-		switch (signNum)
+		int qIdx = findQuadratile(contour);
+		if (maxContourSizes[qIdx] < contourSize)
 		{
-		case 0:// No.0 Quadrant
-			qIdx = 0;
-			break;
-		case 1:
-			qIdx = 1;
-			break;
-		case 2:
-			qIdx = 2;
-			break;
-		case 3:
-			qIdx = 3;
-			break;
-		default:
-			cout << "Fish Analysis Error" << endl;
-			exit(0);
-		}
-		if (maxContours[0][qIdx] < contourSize)
-		{
-			maxContours[0][qIdx] = contourSize;
-			maxContours[1][qIdx] = i;
+			maxContourSizes[qIdx] = contourSize;
+			maxContours[qIdx] = contour;
 		}
 	}
 
-	// assign largest contour to each fish
+	// assign the largest contours to each fish
 	for (int i = 0; i < numFish; i++)
 	{
-		if (maxContours[1][i] == -1)
+		if (maxContourSizes[i] == 0) // fish not found due to no movement
 		{
 			allFish[i].pauseFrames++;
-			fishFlag = false;
 		}
 		else
 		{
 			allFish[i].pauseFrames = 0;
-			allFish[i].fishContour = contours[maxContours[1][i]];
+			allFish[i].fishContour = maxContours[i];
 			allFish[i].findPosition();
 		}
 	}
 
+}
 
-	return fishFlag;
+bool Arena::findSingleFish()
+{
+	tryCatchFalse(numFish == 1,
+		"Wrong numFish. This method is for finding the single fish in the entire image.");
+
+	vector<vector<Point>> contours;
+	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
+
+	int contourSizeThre = 20;
+	int maxContourSize = 0;
+	vector<Point> maxContour;
+	for (auto& contour : contours)
+	{
+		int contourSize = contour.size();
+		if (contourSize < contourSizeThre)
+			continue; // skip this turn
+		
+		if (maxContourSize < contour.size())
+		{
+			maxContourSize = contour.size();
+			maxContour = contour;
+		}
+	}
+
+	if (maxContourSize == 0)
+	{
+		allFish[0].pauseFrames++;
+		return false; // No fish found
+	}
+	else
+	{
+		allFish[0].pauseFrames = 0;
+		allFish[0].fishContour = maxContour;
+		allFish[0].findPosition();
+		return true; // fish found
+	}
+
 
 }
-/*
-	Find the head, center, tail and headingAngle of the fish
-	by finding the end-points of the contour
-*/
+
+int Arena::findQuadratile(vector<Point> contour)
+{
+	Moments M = moments(contour); // to find the center
+	int x = int(M.m10 / M.m00);
+	int y = int(M.m01 / M.m00);
+	Point center = Point(x, y);
+
+	int signNum = (x - xCut > 0) + 2 * (y - yCut > 0);
+	int qIdx = 0; // Quadrantic index
+	switch (signNum)
+	{
+	case 0:// No.0 Quadrant
+		qIdx = 0;
+		break;
+	case 1:
+		qIdx = 1;
+		break;
+	case 2:
+		qIdx = 2;
+		break;
+	case 3:
+		qIdx = 3;
+		break;
+	default:
+		cout << "Fish Analysis Error" << endl;
+		exit(0);
+	}
+}
+
+void Arena::annotateFish() {
+	for (int j = 0; j < numFish; j++)
+	{
+		/*
+		int pIdx = screen.allAreas[i].allPatches[j].pIdx;
+		if (pIdx == 0)
+		putText(allArenas[i].opencvImg, "CS TOP", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
+		else if (pIdx == 1)
+		putText(allArenas[i].opencvImg, "CS BOTTOM", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
+		*/
+		if (allFish[j].head.x == -1) // invalid fish analysis data
+			continue;
+		circle(opencvImg, allFish[j].head, 5, Scalar(255), 2);
+		circle(opencvImg, allFish[j].tail, 3, Scalar(255), 2);
+	}
+}
+
+void Arena::displayImg(std::string title)
+{
+	imshow(title, opencvImg);
+}
+
+vector<bool> Arena::checkWhich2GiveShock(int sElapsed)
+{
+	vector<bool> fish2giveShock;
+	for (Fish& fish : allFish)
+		fish2giveShock.push_back(fish.checkIfGiveShock(sElapsed));
+	return fish2giveShock;
+}
+
+vector<bool> Arena::checkWhich2ReversePattern(int sElapsed)
+{
+	vector<bool> patterns2reverse;
+	for (Fish& fish : allFish)
+		patterns2reverse.push_back(fish.checkIfReversePattern(sElapsed));
+	return patterns2reverse;
+}
+
+
+void Arena::resetShocksOn() {
+	for (Fish& fish : allFish)
+		fish.shockOn = 0;
+}
+
+int Arena::getNumFish()
+{
+	return allFish.size();
+}
+
+
+
 void Fish::findPosition()
 {
 	Vec4f lineVec;
 	fitLine(fishContour, lineVec, CV_DIST_L2, 0, 0.01, 0.1);
 	double stepSize = 100;
-	vector<int> endIdx = findPtsLineIntersectContour(fishContour,
+	vector<int> endIdx = findPtsLineIntersectContour(
+		fishContour,
 		Point2f(lineVec[2] - stepSize * lineVec[0], lineVec[3] - stepSize * lineVec[1]), // on one side, far from the center point
-		Point2f(lineVec[2] + stepSize * lineVec[0], lineVec[3] + stepSize * lineVec[1]));// on the other side, far from the center point
+		Point2f(lineVec[2] + stepSize * lineVec[0], lineVec[3] + stepSize * lineVec[1])// on the other side, far from the center point
+	);
 
+	findHeadAndTail(endIdx);
+	calcHeadingAngle();
+
+}
+
+
+void Fish::findHeadAndTail(vector<int> endIndices)
+{
 	Moments M = moments(fishContour); // to find the center
-
 	center = Point(M.m10 / M.m00, M.m01 / M.m00);
-	Point EP1 = fishContour[endIdx[0]];
-	Point EP2 = fishContour[endIdx[1]];
+	Point EP1 = fishContour[endIndices[0]];
+	Point EP2 = fishContour[endIndices[1]];
 	if (norm(EP1 - center) < norm(EP2 - center))
 	{
-		head = EP1; tail = EP2;
+		head = EP1;
+		tail = EP2;
 	}
 	else
 	{
-		head = EP2; tail = EP1;
+		head = EP2;
+		tail = EP1;
 	}
+}
+
+void Fish::calcHeadingAngle()
+{
 	Point C2H = head - center; // tail to head, only applied to small fish
 	headingAngle = atan2(C2H.y, C2H.x) * 180 / PI;
-
 }
 
 /*
@@ -267,26 +478,27 @@ bool Fish::findHeadSide(Point2f* M)
 	return areas[aIdx] > areas[!aIdx];
 }
 
-bool Fish::ifGiveShock(int pIdx, int sElapsed) {
+bool Fish::checkIfGiveShock(int sElapsed) {
 	/* Control parameters */
 	int thinkingTime = 7; // seconds, give fish some thinking time
 	int shockCD = 3; // seconds
 	/* Give fish a shock whenever it stays in CS area too long */
 	int CStimeThre = 10;
 	shockOn = false;
-    if (pIdx == 2) // blackout
+    if (idxCase == 2) // blackout
 		return false;
-	if (sElapsed < lastTimeUpdatePattern + thinkingTime)
+	if (idxCase < lastTimeUpdatePattern + thinkingTime)
 		return false;
-	if (sElapsed < lastShockTime + shockCD)
+	if (idxCase < lastShockTime + shockCD)
 		return false;
 	if (head.x == -1) // invalid frame
 		return false;
-	if (pIdx) // patternIdx == 1, since 2 is already excluded
-	{
+	if (idxCase) // patternIdx == 1, since 2 is already excluded
+	{ 
 		if (head.y < yDiv) // in non-CS area
 			shockOn = false;
 		else {
+			lastTimeInCS = sElapsed;
 			if (sElapsed - lastShockTime > CStimeThre)
 				shockOn = true;
 			else {
@@ -302,6 +514,7 @@ bool Fish::ifGiveShock(int pIdx, int sElapsed) {
 		if (head.y > yDiv)
 			shockOn = false;
 		else {
+			lastTimeInCS = sElapsed;
 			if (sElapsed - lastShockTime > CStimeThre)
 				shockOn = true;
 			else {
@@ -312,36 +525,22 @@ bool Fish::ifGiveShock(int pIdx, int sElapsed) {
 			}
 		}
 	}
+	if (shockOn)
+		lastShockTime = sElapsed;
+
 	return shockOn;
 }
 
-
-
-
-// TODO: check whether this for loop necessary
-// I think it is necessary, but I can not confirm now
-void Arena::annotateFish() {
-	for (int j = 0; j < numFish; j++)
+bool Fish::checkIfReversePattern(int sElapsed)
+{
+	int NCStimeThre = 48; // seconds
+	if (sElapsed - lastTimeInCS > NCStimeThre)
 	{
-		/*
-		int pIdx = screen.allAreas[i].allPatches[j].pIdx;
-		if (pIdx == 0)
-		putText(allArenas[i].opencvImg, "CS TOP", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
-		else if (pIdx == 1)
-		putText(allArenas[i].opencvImg, "CS BOTTOM", Point(10, 45), FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
-		*/
-		if (allFish[j].head.x == -1) // invalid fish analysis data
-			continue;
-		circle(opencvImg, allFish[j].head, 5, Scalar(255), 2);
-		circle(opencvImg, allFish[j].tail, 3, Scalar(255), 2);
-	}
-}
-
-void Arena::resetShocksOn() {
-	for (int i = 0; i < numFish; i++)
-	{
-	    allFish[i].shockOn = 0;
-	}
+		idxCase = !idxCase;
+		return true;
+	}	
+	else
+		return false;
 }
 
 
