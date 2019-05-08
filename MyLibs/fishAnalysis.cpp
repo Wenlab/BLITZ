@@ -228,7 +228,7 @@ void Arena::getImgFromVideo(cv::VideoCapture cap)
 	cap >> opencvImg;//TODO: test this usage
 }
 
-void Arena::alignImg(int deg2rotate) 
+void Arena::alignImg(int deg2rotate)
 {
 	Mat rotatedImg;
 	rotateImg(opencvImg, rotatedImg, deg2rotate); //TODO: write the implementation
@@ -296,7 +296,7 @@ bool Arena::findSingleFish()
 		int contourSize = contour.size();
 		if (contourSize < contourSizeThre)
 			continue; // skip this turn
-		
+
 		if (maxContourSize < contour.size())
 		{
 			maxContourSize = contour.size();
@@ -494,7 +494,7 @@ bool Fish::checkIfGiveShock(int sElapsed) {
 	if (head.x == -1) // invalid frame
 		return false;
 	if (idxCase) // patternIdx == 1, since 2 is already excluded
-	{ 
+	{
 		if (head.y < yDiv) // in non-CS area
 			shockOn = false;
 		else {
@@ -538,7 +538,7 @@ bool Fish::checkIfReversePattern(int sElapsed)
 	{
 		idxCase = !idxCase;
 		return true;
-	}	
+	}
 	else
 		return false;
 }
@@ -643,4 +643,58 @@ void rot90CW(Mat src, Mat dst)
 	transpose(temp, dst);
 }
 
+/*This function return a radian to describe the fishtailing motion */
+bool fishAngleAnalysis(Mat fishImg, Point fishHead, Point fishCenter, Point * fishTail_return, double* fishAngle,int threshold_val) {
+	//Find the contour of fish
+	Mat binaryzation;
+	double  max_val = 255, maxFishArea = 10000, minFishArea = 1000;
+	vector<vector<Point>> allContours, fishContours;
+	threshold(fishImg, binaryzation, threshold_val, max_val, CV_THRESH_BINARY);
+	findContours(binaryzation, allContours, CV_RETR_LIST, CHAIN_APPROX_NONE);
+	for (int i = 0; i < allContours.size(); i++) {
+		if (contourArea(allContours[i]) < maxFishArea && contourArea(allContours[i]) > minFishArea)
+			fishContours.push_back(allContours[i]);
+	}
+	if (fishContours.size() != 1) {
+		cout << "Can't find contour of fish!Area of all contours:";
+		for (int i = 0; i < allContours.size(); i++) {
+			cout << contourArea(allContours[i]) << ',';
+		}
+		cout << endl;
+		return false;
+	}
 
+	//Find the tail of fish
+
+	double Pt2center = norm(fishContours[0][0] - fishCenter);
+	topEnd = fishContours[0][0];
+
+	for (int i = 1; i < fishContours[0].size(); i++)
+	{
+		double curPt2center = norm(fishContours[0][i] - fishCenter);
+		if (Pt2center < curPt2center) {
+			topEnd = fishContours[0][i];
+			Pt2center = curPt2center;
+			//circle(fishImg, topEnd, 1, Scalar(255), -1);
+
+		}
+
+
+	}
+	Point tailAxis = topEnd - fishCenter;
+	tailPt_a = fishCenter + tailAxis * 9 / 10 + Point(tailAxis.y, -tailAxis.x)/4;
+	tailPt_b = fishCenter + tailAxis * 9 / 10 + Point(-tailAxis.y, tailAxis.x)/4;
+	vector<int> fishTail = findPtsLineIntersectContour(fishContours[0], tailPt_a, tailPt_b);
+
+	//Calculate the angle
+	Point fishHeadVector, fishTailVector;
+	fishHeadVector = fishCenter - fishHead;
+	fishTailVector = (fishContours[0][fishTail[0]]+ fishContours[0][fishTail[1]])/2 - fishCenter;
+	double sinfi;
+	sinfi = (fishHeadVector.x * fishTailVector.y - fishTailVector.x * fishHeadVector.y) / (norm(fishHeadVector) * norm(fishTailVector));
+	*fishAngle = asin(sinfi);
+	*fishTail_return = (fishContours[0][fishTail[0]] + fishContours[0][fishTail[1]]) / 2;
+	//drawContours(fishImg, fishContours, -1, Scalar(255),2);
+	//imshow("contour", fishImg);
+	return true;
+}

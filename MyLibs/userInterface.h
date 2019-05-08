@@ -28,6 +28,12 @@
 #include <string>
 #include <ctime> // to get the current date and time
 
+// Include OpenCV libraries
+#include <opencv2/core/core.hpp>
+#include <opencv2/video/video.hpp>
+#include <opencv2/highgui/highgui.hpp>
+using namespace cv;
+
 // TODO: make a GUI, alternative1: GMU readline command line interface
 /* Talk to users via command line interface */
 class UserInterface
@@ -38,7 +44,7 @@ private:
 public:
 	UserInterface()
 	{
-		
+
 	}
 
 	/* Ask the user about the experiment infos */
@@ -49,43 +55,43 @@ public:
 
 	/* Ask which cameras to use. */
 	void enquireCameras2use(std::istream& is);
-	
+
 
 	/* Ask which visual pattern to use */
 	void enquirePattern2use(std::istream& is);
-	
+
 
 	/* Ask how many fish under a camera */
 	int enquireNumFishForACam(std::istream& is, int idxCamera);
-	
+
 
 	/* Generate fish IDs for all fish */
 	std::vector<int> generateFishIDs(int numFish);
-	
+
 
 
 	/* Ask for what strain of Fish is using,
 	 	 assume all fish are the same strain */
 	void enquireFishStrain(std::istream& is);
-	
+
 
 
 	/* Ask for the age for all fish,
 	 	assume all fish are at the same age */
 	void enquireFishAge(std::istream& is);
-	
+
 
 	/* Ask for what experiment task for fish */
 	void enquireExpTask(std::istream& is);
-	
+
 
 	/* Generate basenames for all output files */
 	void generateBasenames();
-	
+
 
 	/* Generate basenames for the output files */
 	std::string generateBasename(int idxFile);
-	
+
 
 	// Properties
 	// TODO: get the number of cameras and pass it to fileWriterObj
@@ -101,6 +107,7 @@ public:
 	std::string startTimeStr; // string of the start time of an experiment, YYYYMMDD-HHMM
 	std::vector<std::string> baseNames;
 	int numOpenCameras;
+
 
 };
 
@@ -120,10 +127,17 @@ std::vector<std::string> getStrVecFromCMD(std::istream& is);
  	 depends on <ctime> */
 std::string getCurDateTime();
 
+cv::Mat cur_img;
+Point fishEye1,fishEye2,fishCenter, fishHead;
+int threshold_val = 22;
 
+static void on_trackbar_setThreshold(int, void*);
 
+bool setThreshold();
 
+void on_mouse_findHeadAndCenter(int event, int x, int y, int flags, void* ustc);
 
+bool findHeadAndCenter();
 
 
 
