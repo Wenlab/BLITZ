@@ -63,11 +63,14 @@ public:
 					   /* Initialize multiple cameras */
 	void initialize(std::vector<bool> cameras2open); // status array that indicate whether a camera should be open
 
-													 /* Grab Pylon image from cameras */
+	/* Grab Pylon image from cameras */
 	void grabPylonImg();
 
 	/* Get the pointer to image buffer */
 	void* getPtr2buffer();
+
+	/* Convert time in seconds to the index of frame (start from 0) */
+	int time2IdxFrame(int timing, int idxStart = 0);
 
 	intptr_t cIdx;// index of camera where the frame is grabbed from
 private:
@@ -104,10 +107,14 @@ public:
 	void initialize();
 
 	/* Grab Pylon image from camera */
-	Pylon::CGrabResultPtr grabPylonImg();
+	void grabPylonImg();
 
 	/* Get the pointer to image buffer */
 	Pylon::CGrabResultPtr getPtr2buffer();
+
+	/* Convert time in seconds to the index of frame (start from 0) */
+	int time2IdxFrame(int timing, int idxStart = 0);
+	
 
 private:
 

@@ -29,8 +29,3 @@ void ExpTimer::getTime()
   msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
 }
 
-int getIdxFrame(int frameRate, int endTime, int idxStart)
-{
-	// int numCameras = cameras.size();
-	return numCameras * frameRate * endTime + idxStart;
-}

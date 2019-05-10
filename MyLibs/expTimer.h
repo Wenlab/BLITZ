@@ -53,8 +53,7 @@ public:
   int sElapsed; // seconds that elapsed
   int msRemElapsed; // remianed mili-seconds that elapsed
 
-}
+};
+
 // Global functions
-/* Get the end index of frames from the end time, start from 0 */
-int getIdxFrame(int frameRate, int endTime, int idxStart=0);
-// TODO: consider to talk2camera and convert to a class method 
+

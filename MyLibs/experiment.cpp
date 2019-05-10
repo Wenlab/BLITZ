@@ -72,7 +72,7 @@ void Experiment::runOLexp()
 
 	// Preparation before experiment starts
 	// TODO: write the implementations
-	for (timerObj.resetCount(); timerObj.getCount() < camerasObj.getIdxEndFrame(prepareTime); timerObj.addCount()) // TODO: write a macro to encapsulate this `for`
+	for (timerObj.resetCount(); timerObj.getCount() < camerasObj.time2IdxFrame(prepareTime); timerObj.addCount()) // TODO: write a macro to encapsulate this `for`
 	{
 		camerasObj.grabPylonImg(); // TODO: update the return type
 		int cIdx = camerasObj.cIdx;

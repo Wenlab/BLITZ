@@ -142,6 +142,11 @@ void* MultiUSBCameras::getPtr2buffer()
 	return pylonImg.GetBuffer();
 }
 
+int MultiUSBCameras::time2IdxFrame(int timing, int idxStart)
+{
+	// int numCameras = cameras.size();
+	return cameras.GetSize() * frameRate * timing + idxStart;
+}
 
 
 void SingleCamera::initialize()
@@ -184,7 +189,7 @@ void SingleCamera::initialize()
 	
 }
 // TODO: rewrite with pylonImg
-Pylon::CGrabResultPtr SingleCamera::grabPylonImg()
+void SingleCamera::grabPylonImg()
 {
 	// Error handling
 	try {
@@ -197,13 +202,21 @@ Pylon::CGrabResultPtr SingleCamera::grabPylonImg()
 			<< e.GetDescription() << endl;
 	}
 
+	Pylon::CImageFormatConverter formatConverter;
+	formatConverter.Convert(pylonImg, ptrGrabResult);
+
 	tryCatchFalse(cam.IsGrabbing(), "Error! The camera is NOT grabbing!");
 
-	return ptrGrabResult;
 }
 
 
 Pylon::CGrabResultPtr SingleCamera::getPtr2buffer()
 {
 	return ptrGrabResult;
+}
+
+int SingleCamera::time2IdxFrame(int timing, int idxStart)
+{
+	// int numCameras = cameras.size();
+	return frameRate * timing + idxStart;
 }
