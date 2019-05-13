@@ -691,10 +691,34 @@ bool fishAngleAnalysis(Mat fishImg, Point fishHead, Point fishCenter, Point * fi
 	fishHeadVector = fishCenter - fishHead;
 	fishTailVector = (fishContours[0][fishTail[0]]+ fishContours[0][fishTail[1]])/2 - fishCenter;
 	double sinfi;
-	sinfi = (fishHeadVector.x * fishTailVector.y - fishTailVector.x * fishHeadVector.y) / (norm(fishHeadVector) * norm(fishTailVector));
+	sinfi = -(fishHeadVector.x * fishTailVector.y - fishTailVector.x * fishHeadVector.y) / (norm(fishHeadVector) * norm(fishTailVector));
 	*fishAngle = asin(sinfi);
 	*fishTail_return = (fishContours[0][fishTail[0]] + fishContours[0][fishTail[1]]) / 2;
-	//drawContours(fishImg, fishContours, -1, Scalar(255),2);
-	//imshow("contour", fishImg);
+
 	return true;
+}
+
+int predict_left(double* boutStart) {
+	Py_Initialize();
+	if (Py_IsInitialized() == 0) {
+		cout << "Py_Initialize failed." << endl;
+	}
+	PyObject* pModule = PyImport_ImportModule("predict");
+	if (pModule == NULL)
+		cout << "Py_ImportModule failed." << endl;
+	PyObject * pFunc = PyObject_GetAttrString(pModule, "predict_left");
+	PyObject * PyList = PyList_New(40);
+	PyObject * ArgList = PyTuple_New(1);
+	for (int Index_i = 0; Index_i < PyList_Size(PyList); Index_i++) {
+		PyList_SetItem(PyList, Index_i, PyFloat_FromDouble(boutStart[Index_i]));
+	}
+	PyTuple_SetItem(ArgList, 0, PyList);
+	PyObject* pReturn = NULL;
+	pReturn = PyObject_CallObject(pFunc, ArgList);
+	int result;
+	PyArg_Parse(pReturn, "i", &result);
+	cout << "predict:" << result << endl;
+	Py_Finalize();
+	return result;
+
 }

@@ -329,6 +329,7 @@ bool setThreshold() {
 	namedWindow("setThreshold", CV_WINDOW_NORMAL);
 	createTrackbar("Threshold", "setThreshold", &threshold_val, 255, on_trackbar_setThreshold);
 	on_trackbar_setThreshold(threshold_val, 0);
+	cout<<"Press 'q' to exit."<<endl;
 	while (char(waitKey(1)) != 'q') {}
 	return true;
 }
@@ -363,6 +364,10 @@ bool findHeadAndCenter() {
 	namedWindow("findHeadAndCenter", CV_WINDOW_NORMAL);
 	imshow("findHeadAndCenter", cur_img);
 	setMouseCallback("findHeadAndCenter", on_mouse_findHeadAndCenter, 0);
+	cout<<"Double-click the left mouse button to select one eye."<<endl;
+	cout<<"Double-click the right mouse button to select another eye."<<endl;
+	cout<<"Click the middle mouse button to select center."<<endl;
+	cout<<"Press 'q' to exit."<<endl;
 	while (char(waitKey(1)) != 'q') {}
 	return true;
 }

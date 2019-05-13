@@ -126,17 +126,17 @@ std::vector<std::string> getStrVecFromCMD(std::istream& is);
 /* Get current date and time string from chrono system clock,
  	 depends on <ctime> */
 std::string getCurDateTime();
-
+//some global variables used in trackbar and mouse_findHeadAndCenter
 cv::Mat cur_img;
 Point fishEye1,fishEye2,fishCenter, fishHead;
-int threshold_val = 22;
-
+int threshold_val = 16;
+//callback function used in setThreshold()
 static void on_trackbar_setThreshold(int, void*);
-
+//create a trackbar from a Mat to set threshold value
 bool setThreshold();
-
+//callback function used in findHeadAndCenter()
 void on_mouse_findHeadAndCenter(int event, int x, int y, int flags, void* ustc);
-
+//use click to select head and center
 bool findHeadAndCenter();
 
 
