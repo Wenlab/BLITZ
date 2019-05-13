@@ -28,6 +28,7 @@
 // Include 3rd-party libraries
 #include "../3rdPartyLibs/OpenGL/shader_s.h"
 #include "../3rdPartyLibs/OpenGL/stb_image.h"
+#include <boost/any.hpp>
 
 // Include OpenGL libraries
 #include <glad/glad.h>
@@ -36,6 +37,9 @@
 // Include standard libraries
 #include <vector>
 #include <iostream>
+
+// Include user-defined libraries
+#include "errorHandling.h"
 
 // User-defined macros; TODO: consider to convert some macros to local variables
 #define NUM_ARENA 3
@@ -54,8 +58,10 @@ protected:
 	but can be accessed by inherited classes */
 	// Properties
 	Shader shader;
-	unsigned int VAO, VBO, EBO;
+	unsigned int VBO, EBO;
 	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
+
+
 
 	// Methods
 	/* Initialize vertices and their buffers with given pos(x,y) */
@@ -84,6 +90,13 @@ public:
 
 	/* Upload a float variable to GPU from CPU */
 	void uploadFloat2GPU(std::string varName, float varValue);
+
+	/* Set idxCase, a virtual function to be overrided during runtime */
+	virtual void setIdxCase(int value);
+
+	unsigned int VAO; // vertex array object in GPU
+	int idxCase;
+
 };
 
 /* Patch-area to render a full pattern without anything else */
@@ -193,7 +206,7 @@ public:
 	/* Initialize memory */
 	void initialize(std::string imgName); // name of the pattern to show
 
-										  /* load texture (image) to GPU buffers */
+	/* load texture (image) to GPU buffers */
 	void loadTextureIntoBuffers(std::string imgName);
 
 	/* Update idxCases for all patches in this area,
@@ -217,8 +230,9 @@ public:
 
 
 	// properties
-	template<class P>
-	static std::vector<P> allPatches;
+	std::vector<Patch*> allPatches; 
+	// use Patch as the base class (pointer form),
+	// then override this class with virtual functions
 	// TODO: test whether this initiation works?
 };
 

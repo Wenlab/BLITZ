@@ -47,8 +47,8 @@ void Screen::initialize(string imgName, vector<float> boundBox, string renderTyp
 
 	// initialize an area object
 	Area areaObj(boundBox, renderType);
-	areaObj.initialize();
-	allAreas.push_back(area);
+	areaObj.initialize(imgName);
+	allAreas.push_back(areaObj);
 
 	cout << "Screen initialization succeeded." << endl << endl;
 
@@ -79,7 +79,7 @@ void Screen::init_glfw_window()
 void Screen::init_glad()
 {
 	tryCatchFalse(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress),
-	"Failed to initialize GLAD!")
+		"Failed to initialize GLAD!");
 }
 
 void Screen::show()
@@ -100,7 +100,7 @@ void Screen::show(int idxArea)
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	allAreas[cIdx].renderTexture(idxArea);// TODO: consider to use instance variable instead
+	allAreas[idxArea].renderTexture(idxArea);// TODO: consider to use instance variable instead
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move
@@ -113,7 +113,7 @@ void Screen::showBlackPattern()
 	for (Area& area : allAreas)
 		area.updateIdxCase(idxBlack);
 
-	renderTexture();
+	show();
 }
 
 void Screen::reverse()
@@ -121,7 +121,7 @@ void Screen::reverse()
 	for (Area& area : allAreas)
 		area.negateIdxCase();
 
-	renderTexture();
+	show();
 }
 
 void Screen::reverse(vector<vector<bool>> patchIndices)
@@ -135,7 +135,7 @@ void Screen::reverse(vector<vector<bool>> patchIndices)
 				allAreas[i].negateIdxCase(j);
 		}
 	}
-	renderTexture();
+	show();
 }
 
 void Screen::reverse(int sec2start, int period)
@@ -196,40 +196,52 @@ void Area::initialize(string imgName)
 		patchBoundBox[2] = xDivLen;
 		patchBoundBox[3] = yDivLen;
 		switch (i) {
-			case 0: // the first patch at the upper-left corner
-				break;
-			case 1:
-			{
-				patchBoundBox[0] -= xDivLen;// minus the division length
-				break;
-			}
-			case 2:
-			{
-				patchBoundBox[1] += yDivLen;// minus the division length
-				break;
-			}
-			case 3:
-			{
-				patchBoundBox[0] -= xDivLen;// minus the division length
-				patchBoundBox[1] += yDivLen;// minus the division length
-				break;
-			}
-			if (iequals(renderType,"full"))
-				FullPatch patchObj(patchBoundBox);
-			else if (iequals(renderType,"half"))
-				HalfSplitPatch patchObj(patchBoundBox);
-			else if (iequals(renderType,"rotation"))
-				RotatingPatch patchObj(patchBoundBox);
-			else {
-				cout << "Unknown renderType! Please select one of the following:\n"
-				<< "full, half, rotation" << endl;
-				waitUserInput2exit(0);
-				exit(0);
-			}
-			patchObj.initialize();
-			allPatches.push_back(patchObj);
+		case 0: // the first patch at the upper-left corner
+			break;
+		case 1:
+		{
+			patchBoundBox[0] -= xDivLen;// minus the division length
+			break;
 		}
-	loadTextureIntoBuffers(imgName);
+		case 2:
+		{
+			patchBoundBox[1] += yDivLen;// minus the division length
+			break;
+		}
+		case 3:
+		{
+			patchBoundBox[0] -= xDivLen;// minus the division length
+			patchBoundBox[1] += yDivLen;// minus the division length
+			break;
+		}
+		if (iequals(renderType, "full"))
+		{
+			FullPatch patchObj(patchBoundBox);
+			patchObj.initialize();
+			allPatches.push_back(&patchObj);
+		}
+		else if (iequals(renderType, "half"))
+		{
+			int yDiv = 380;
+			HalfSplitPatch patchObj(patchBoundBox, yDiv);
+			patchObj.initialize();
+			allPatches.push_back(&patchObj);
+		}
+		else if (iequals(renderType, "rotation"))
+		{
+			RotatingPatch patchObj(patchBoundBox);
+			patchObj.initialize();
+			allPatches.push_back(&patchObj);
+		}
+		else {
+			cout << "Unknown renderType! Please select one of the following:\n"
+				<< "full, half, rotation" << endl;
+			waitUserInput2exit();
+		}
+
+		}
+		loadTextureIntoBuffers(imgName);
+	}
 }
 
 void Area::loadTextureIntoBuffers(string imgName)
@@ -270,8 +282,8 @@ void Area::updateIdxCase(int value)
 	*/
 	for (int i = 0; i < numPatches; i++)
 	{
-		allPatches[i].idxCase = value;
-		allPatches[i].uploadInt2GPU("idxCase",idxCase);
+		allPatches[i]->idxCase = value;
+		allPatches[i]->uploadInt2GPU("idxCase", value);
 	}
 }
 
@@ -284,8 +296,8 @@ void Area::negateIdxCase()
 	// TODO: consider to use range-based loop implementation?
 	for (int i = 0; i < numPatches; i++)
 	{
-		allPatches[i].pIdx = !allPatches[i].pIdx;
-		allPatches[i].uploadInt2GPU("idxCase",idxCase);
+		allPatches[i]->idxCase = !allPatches[i]->idxCase;
+		allPatches[i]->uploadInt2GPU("idxCase", allPatches[i]->idxCase);
 	}
 }
 
@@ -295,8 +307,9 @@ void Area::negateIdxCase(int patchIdx)
 	tryCatchFalse(iequals(renderType,"full"),
 	"Wrong renderType! This method is for full rendering only!");
 
-	allPatches[patchIdx].pIdx = !allPatches[patchIdx].pIdx;
-	allPatches[patchIdx].uploadInt2GPU("idxCase",idxCase);
+	allPatches[patchIdx]->idxCase = !allPatches[patchIdx]->idxCase;
+	allPatches[patchIdx]->uploadInt2GPU("idxCase", allPatches[patchIdx]->idxCase);
+
 
 }
 
@@ -306,8 +319,8 @@ void Area::renderTexture(int areaIdx)
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	for (int j = 0; j < numPatches; j++) // TODO: consider to use range-based loop implementation?
 	{
-		allPatches[j].uploadInt2GPU("textureID",areaIdx);
-		glBindVertexArray(allPatches[j].VAO); // TODO: write a method?
+		allPatches[j]->uploadInt2GPU("textureID",areaIdx);
+		glBindVertexArray(allPatches[j]->VAO); // TODO: write a method?
 		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
 	}
 }
@@ -328,10 +341,10 @@ void Patch::initVertices()
 
 	float vertices[32] =
 	{	// positions (0-2)      // colors (3-5)         // texture coordinates (6-7)
-		rect[0], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // top left
-		rect[0], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, rect[3], // bottom left
-		rect[0] - rect[2], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], rect[3], // bottom right
-		rect[0] - rect[2], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], 0.0f // top right
+		boundBox[0], boundBox[1], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // top left
+		boundBox[0], boundBox[1] + boundBox[3], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, boundBox[3], // bottom left
+		boundBox[0] - boundBox[2], boundBox[1] + boundBox[3], 0.0f, 0.0f, 0.0f, 0.0f, boundBox[2], boundBox[3], // bottom right
+		boundBox[0] - boundBox[2], boundBox[1], 0.0f, 0.0f, 0.0f, 0.0f, boundBox[2], 0.0f // top right
 	};
 
 	glGenVertexArrays(1, &VAO);
@@ -364,4 +377,9 @@ void Patch::uploadFloat2GPU(string varName, float varValue)
 {
 	shader.use();
 	shader.setFloat(varName, varValue);
+}
+
+void Patch::setIdxCase(int value)
+{
+	idxCase = value;
 }
