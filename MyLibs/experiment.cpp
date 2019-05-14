@@ -260,17 +260,20 @@ void ExperimentData::runBlueTest()
 
 }
 
-bool fishAngleAnalysis_test(String fishVideoAddress, bool isGrey) {
+// TODO: remove 'isGray', get the attribute directly from the video itself
+bool fishAngleAnalysis_test(String fishVideoAddress, bool isGrey)
+{
 	VideoCapture capture(fishVideoAddress);
 	Point testTail;
 	Mat curImg;
 
-	namedWindow("output", CV_WINDOW_NORMAL);
-	//namedWindow("org", CV_WINDOW_NORMAL);
+	Arena imgProcessor; // default there is only one fish
+	
+
 	capture >> curImg;
-	//findFishHeadAndCenter(curImg);
-	//getchar();
-	for (int i = 0; i < 1400; i++) {
+
+	for (int i = 0; i < 1400; i++)
+	{ //TODO: remove unmoved frames
 		capture >> curImg;
 	}
 
@@ -279,12 +282,17 @@ bool fishAngleAnalysis_test(String fishVideoAddress, bool isGrey) {
 	int checkPoint=0;
 	int boutStart = 0;
 	int predict;
-	for (int i = 0; i < 10000; i++) {
+
+	//TODO: get the number of frames directly
+	for (int i = 0; i < 10000; i++)
+	{
 
 		Mat grey;
 		Point fishTail = Point(-1, -1);
+		vector<double> fishAngles;
 		double fishAngle[10000];
 		capture >> curImg;
+		float angleThre = 0.2; // the threshold to decide if a bout starts
 
 		if (!isGrey) {
 			cvtColor(curImg, grey, CV_BGR2GRAY);
@@ -300,6 +308,25 @@ bool fishAngleAnalysis_test(String fishVideoAddress, bool isGrey) {
 			}
 		}
 
+		vector<double> sampleAngles;
+		bool sampleFlag = false;
+		if ((sampleFlag == false) && (angle > angleThre))
+		{
+			sampleFlag = true;
+			sampleAngles.push_back(vector<double>::iterator fishAngles-4, fishAngles);
+		}
+
+		if (sampleFlag)
+		{
+			sampleAngles.push_back(angle);
+		}
+
+		if (sampleAngles.size() > 40)
+		{
+			sampleFlag = false;
+			predict_left(sampleAngles);
+			sampleAngles.clear();
+		}
 
 		if (n == checkPoint) {
 			if (boutStart > 0) {
@@ -322,6 +349,7 @@ bool fishAngleAnalysis_test(String fishVideoAddress, bool isGrey) {
 		circle(curImg, tailPt_a, 1, Scalar(255, 0, 0), -1);
 		circle(curImg, tailPt_b, 1, Scalar(255, 0, 0), -1);
 		circle(curImg, topEnd, 1, Scalar(255, 0, 0), -1);
+		namedWindow("output", CV_WINDOW_NORMAL);
 		imshow("output", curImg);
 		waitKey();
 	}

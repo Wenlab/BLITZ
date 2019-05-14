@@ -133,7 +133,7 @@ public:
 	/* Get image from camera to opencvImg */
 	void getImgFromCamera(int width, int height, uint8_t* buffer);// TODO: consider to remove width, and height
 
-																  /* Get image from videos */
+	 /* Get image from videos */
 	void getImgFromVideo(cv::VideoCapture cap);
 
 	/* Build background image model with MOG operator */

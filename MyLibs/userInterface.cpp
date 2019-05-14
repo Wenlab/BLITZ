@@ -316,6 +316,7 @@ string getCurDateTime()
 	return timeStr;
 }
 
+// TODO: make several pre-processing modules
 static void on_trackbar_setThreshold(int, void*) {
 	int max_val = 255;
 	Mat binaryzation = Mat::zeros(cur_img.size(), CV_8UC1);
