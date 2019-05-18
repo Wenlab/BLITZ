@@ -28,7 +28,7 @@
 // Include 3rd-party libraries
 #include "../3rdPartyLibs/OpenGL/shader_s.h"
 #include "../3rdPartyLibs/OpenGL/stb_image.h"
-#include <boost/any.hpp>
+//#include <boost/any.hpp>
 
 // Include OpenGL libraries
 #include <glad/glad.h>

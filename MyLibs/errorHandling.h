@@ -24,47 +24,47 @@
 
 
 #include <iostream>
+#include <string>
 
-// TODO: Do I need a class for this?
-class errorHandling
-{
-  // Properties
-};
-// Methods
 void waitUserInput2exit();
+
 
 /* catch NULL value with any datatype*/
 template <typename T>
 void tryCatchNull(T value, std::string exceptionString)
 {
-    if (value == NULL)
-    {
-      std::cout << errorMsg << std::endl;
-			waitUserInput2exit();
-    }
-}
+	if (value == NULL)
+	{
+		std::cout << exceptionString << std::endl;
+		waitUserInput2exit();
+	}
+};
 
 /* catch false value with any datatype*/
 template <typename T>
 void tryCatchFalse(T value, std::string exceptionString)
 {
-  if (value == false)
-  {
-    std::cout << errorMsg << std::endl;
-    waitUserInput2exit();
-  }
-}
+	if (value == false)
+	{
+		std::cout << exceptionString << std::endl;
+		waitUserInput2exit();
+	}
+};
 
 /* catch empty value with any datatype; add this method if needed*/
 template <typename T>
 void tryCatchEmpty(T value, std::string exceptionString)
 {
-  if (value.size() == 0)
-  {
-    std::cout << errorMsg << std::endl;
-    waitUserInput2exit();
-  }
-}
+	if (value.size() == 0)
+	{
+		std::cout << exceptionString << std::endl;
+		waitUserInput2exit();
+	}
+};
+
+/* Case insensitive comparasion
+Adapted from Timmmm, https://stackoverflow.com/a/4119881
+*/
 
 
 

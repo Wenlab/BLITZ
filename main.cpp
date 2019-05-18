@@ -18,18 +18,20 @@
 */
 
 // Include user-defined libraries
-#include "MyLibs/experiment.h"
+
+
+//#include "MyLibs/experiment.h"
 
 // Include standard libraries
 #include <iostream>
-
+#include "MyLibs/talk2screen.h"
 using namespace std;
 
 int main()
 {
-	template<typename T>
-	T var;              // not allowed in pre-C++14
-	var<int> = 5;
+
+
+
 	//Experiment exp();
 	//exp.initialize();
 	//exp.runXXtest();

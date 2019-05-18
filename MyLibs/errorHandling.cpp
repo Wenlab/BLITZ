@@ -17,18 +17,20 @@
 *
 * Current Version: 2.0
 * Author: Wenbin Yang <bysin7@gmail.com>
-
 * Created on: Apr. 17, 2018
 */
+
+#include "errorHandling.h"
 
 using namespace std;
 
 void waitUserInput2exit()
 {
-  do
+	do
 	{
-		cout << '\n' << "Error caught!" << endl <<
-     "Please check the error message and press a key to exit...";
+		cout << '\n'
+			<< "Please check the error message and press a key to exit...";
 	} while (cin.get() != '\n');
-  exit(0);
+	exit(0);
 }
+
