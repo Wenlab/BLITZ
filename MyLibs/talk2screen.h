@@ -28,6 +28,7 @@
 // Include 3rd-party libraries
 #include "../3rdPartyLibs/OpenGL/shader_s.h"
 #include "../3rdPartyLibs/OpenGL/stb_image.h"
+#include <boost/any.hpp>
 
 // Include OpenGL libraries
 #include <glad/glad.h>
@@ -37,12 +38,205 @@
 #include <vector>
 #include <iostream>
 
+// Include user-defined libraries
+#include "errorHandling.h"
+
 // User-defined macros; TODO: consider to convert some macros to local variables
 #define NUM_ARENA 3
 #define PATCHES_PER_ARENA 4
 #define NUM_SHADER 12
 #define VERTEXS_PER_SHADER 4
 #define TRIANGLES_PER_PATCH 2
+
+
+/* This an example class for inheritances.
+A wrapper class of the Shader class */
+class Patch
+{
+protected:
+	/* the following properties or methods should not be accessed by users,
+	but can be accessed by inherited classes */
+	// Properties
+	Shader shader;
+	unsigned int VBO, EBO;
+	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
+
+
+
+									   // Methods
+									   /* Initialize vertices and their buffers with given pos(x,y) */
+	void initVertices();
+
+
+
+public:
+	Patch(
+		std::vector<float> patchRect, // bounding box
+		std::string vertexPath, // path to the vertex shader file
+		std::string fragmentPath // path to the vertex fragment file
+	)
+		: boundBox(patchRect)
+		, shader(vertexPath, fragmentPath)
+	{
+
+	}
+
+
+	/* Initialize memory for patch */
+	void initialize();
+
+	/* Upload an int variable to GPU from CPU */
+	void uploadInt2GPU(std::string varName, int varValue);
+
+	/* Upload a float variable to GPU from CPU */
+	void uploadFloat2GPU(std::string varName, float varValue);
+
+	/* Set idxCase, a virtual function to be overrided during runtime */
+	virtual void setIdxCase(int value);
+
+	unsigned int VAO; // vertex array object in GPU
+	int idxCase;
+
+};
+
+/* Patch-area to render a full pattern without anything else */
+class FullPatch : public Patch
+{
+public:
+	// methods
+	FullPatch(
+		std::vector<float> patchRect, // bounding box
+		std::string vertexPath = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
+		std::string fragmentPath = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
+	)
+		: Patch(patchRect, vertexPath, fragmentPath)
+	{
+
+	}
+
+	/* Initialize memory for patch */
+	// initialize(); inherited from parent class Patch
+};
+
+/* Patch-area to render a half-texture-half-background pattern */
+class HalfSplitPatch : public Patch
+{
+private:
+	// properties
+	const int yDivide; // the dividing position in y
+
+public:
+	// Methods
+	HalfSplitPatch(
+		std::vector<float> patchRect, // bounding box
+		int yDiv, // the dividing position in y
+		std::string vertexPath = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
+		std::string fragmentPath = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
+	)
+		: Patch(patchRect, vertexPath, fragmentPath)
+		, yDivide(yDiv)
+	{
+
+	}
+
+	// Properties
+	int idxCase; // to select the case in f-shader
+
+};
+
+class RotatingPatch : public Patch
+{
+private:
+	// properties
+	; // nothing for now
+
+public:
+	// Methods
+	RotatingPatch(
+		std::vector<float> patchRect, // bounding box
+		float vRadian = 0, // the rotating velocity of the pattern
+		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
+	)
+		: Patch(patchRect, vertexPath, fragmentPath)
+		, radVelo(vRadian)
+	{
+		str = (unsigned char*)malloc(2 * sizeof(unsigned char));
+		str[0] = 'a';
+		str[1] = 'b';
+
+	}
+
+	// Properties
+	float radVelo; // rotating radian velocity
+				   // TODO: consider to make it private?
+	static constexpr unsigned char s[2] = { 'a', 'b' };
+	unsigned char* str;
+};
+
+
+/* represent pattern changes of an entire local area,
+which consists of many patches
+*/
+class Area
+{
+private:
+	std::string renderType; /* 1. full: full rendering of a single pattern;
+							2. half: half pattern, half background (pure-color) rendering
+							3. rotation: render rotating pattern with a fixed rotating rate */
+	unsigned int textureID; // texture ID
+
+	const int numPatches;
+	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
+
+public:
+	// methods
+	/* Enquire the number of patches in an arena */
+	Area(
+		std::vector<float> rect,
+		std::string RT = "full",
+		int n = 1
+	)
+		: boundBox(rect)
+		, renderType(RT)
+		, numPatches(n)
+	{
+
+	}
+	/* Initialize memory */
+	void initialize(std::string imgName); // name of the pattern to show
+
+										  /* load texture (image) to GPU buffers */
+	void loadTextureIntoBuffers(std::string imgName);
+
+	/* Update idxCases for all patches in this area,
+	only for halfSplit rendering type */
+	void updateIdxCase(int value);
+
+	// TODO: consider to have all manipulation methods at this level?
+	/* Negate idxCases for all patches in this area,
+	only for halfSplit rendering type  */
+	void negateIdxCase();
+
+	/* Given idxPatchess, negate idxCases for all patches in this area,
+	only for halfSplit rendering type  */
+	void negateIdxCase(int patchIndex);
+
+	/* Render designed pattern on the screen
+	The keyword `render` is reserved for bottom-level rendering,
+	DO NOT use this word in high level "showPattern" methods */
+	/* Render pattern for the entire area via textureID */
+	void renderTexture(int areaIdx);
+
+
+	// properties
+	std::vector<Patch*> allPatches;
+	// use Patch as the base class (pointer form),
+	// then override this class with virtual functions
+	// TODO: test whether this initiation works?
+};
+
+
 
 
 /* Class to set up GLFW-OpenGL environment for rendering patterns */
@@ -54,15 +248,15 @@ private: // only used within class
 	const GLFWvidmode* mode;
 
 protected:
-/* the following properties or methods should not be accessed by users,
-but can be accessed by inherited classes */
-	 /* GLFW initialize and configure window,
-	 this method is used in initialize() only */
-	 void init_glfw_window();
+	/* the following properties or methods should not be accessed by users,
+	but can be accessed by inherited classes */
+	/* GLFW initialize and configure window,
+	this method is used in initialize() only */
+	void init_glfw_window();
 
-	 /* glad: load all OpenGL function pointers,
-	 this method is used in initialize() only */
-	 void init_glad();
+	/* glad: load all OpenGL function pointers,
+	this method is used in initialize() only */
+	void init_glad();
 
 public:
 	Screen() // constructor
@@ -80,8 +274,8 @@ public:
 	/* Initilize screen environment with pre-defined multi-bounding areas */
 	void initialize(
 		std::vector<std::string> imgNames, // name of the images to show
-		std::vector<std::vector<float>> boundBoxes, // bounding boxes of all the areas
 		std::string renderType, // type of rendering, full, half, rotating
+		std::vector<std::vector<float>> boundBoxes, // bounding boxes of all the areas
 		std::vector<int> patchesInAreas // number of patches in each area
 	);
 
@@ -95,14 +289,14 @@ public:
 	void showBlackPattern();
 
 	/* Reverse patterns on the top and on the bottom,
-	 	only for halfSplit rendering */
+	only for halfSplit rendering */
 	void reverse();
 
 	/* Given the indices of patches, reverse patterns on the top and on the bottom,
-	  only for halfSplit rendering */
+	only for halfSplit rendering */
 	void reverse(std::vector<std::vector<bool>> patchIndices); // indices to indicate the patches to reverse
 
-	/* Reverse all patterns periodically */
+															   /* Reverse all patterns periodically */
 	void reverse(
 		int sec2start, // time to the beginning in second
 		int period // the interval between two reversals
@@ -120,180 +314,6 @@ public:
 	int numAreas; //TODO: consider to get this via a get method "numAreas = allAreas.size();"
 };
 
-/* represent pattern changes of an entire local area,
- which consists of many patches
-*/
-
-class Area
-{
-private:
-	std::string renderType; /* 1. full: full rendering of a single pattern;
-							   2. half: half pattern, half background (pure-color) rendering
-							   3. rotation: render rotating pattern with a fixed rotating rate */
-	unsigned int textureID; // texture ID
-
-	const int numPatches;
-	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
-
-public:
-	// methods
-	/* Enquire the number of patches in an arena */
-	Area(
-		std::vector<float> rect,
-		string RT = "full",
-		int n = 1
-	)
-		: boundBox(rect)
-		, renderType(RT)
-		, numPatches(n)
-	{
-
-	}
-	/* Initialize memory */
-	void initialize(std::string imgName); // name of the pattern to show
-
-	/* load texture (image) to GPU buffers */
-	void loadTextureIntoBuffers(std::string imgName);
-
-	/* Update idxCases for all patches in this area,
-	 	only for halfSplit rendering type */
-	void updateIdxCase(int value);
-
-	// TODO: consider to have all manipulation methods at this level?
-	/* Negate idxCases for all patches in this area,
-	 	only for halfSplit rendering type  */
-	void negateIdxCase();
-
-	/* Given idxPatchess, negate idxCases for all patches in this area,
-	 	only for halfSplit rendering type  */
-	void negateIdxCase(int patchIndex);
-
-	/* Render designed pattern on the screen
-	The keyword `render` is reserved for bottom-level rendering,
-	DO NOT use this word in high level "showPattern" methods */
-	/* Render pattern for the entire area via textureID */
-	void renderTexture(int areaIdx);
-
-
-	// properties
-	template<class P>
-	std::vector<P> allPatches;
-	// TODO: test whether this initiation works?
-};
-
-/* This an example class for inheritances.
-A wrapper class of the Shader class */
-
-class Patch
-{
-protected:
-/* the following properties or methods should not be accessed by users,
-but can be accessed by inherited classes */
-	// Properties
-	Shader shader;
-	std::string vertexPathStr; // path to the vertex shader file
-	std::string fragmentPathStr;// path to the vertex fragment file
-	unsigned int VAO, VBO, EBO;
-	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
-
-	int idxCase;
-	// Methods
-	/* Initialize vertices and their buffers with given pos(x,y) */
-	void initVertices();
-
-
-
-public:
-	Patch(
-		std::vector<float> patchRect // bounding box
-	)
-		:  boundBox(patchRect)
-		//, shader(vertexPathStr,fragmentPathStr)
-	{
-
-	}
-	/* Initialize memory for patch */
-	void initialize();
-
-	/* Upload an int variable to GPU from CPU */
-	void uploadInt2GPU(std::string varName, int varValue);
-
-	/* Upload a float variable to GPU from CPU */
-	void uploadFloat2GPU(std::string varName, float varValue);
-};
-
-/* Patch-area to render a full pattern without anything else */
-class FullPatch : public Patch
-{
-public:
-	// methods
-	FullPatch() : Patch( boundBox )
-	{
-		vertexPathStr = "3rdPartyLibs/OpenGL/full.vs";
-		fragmentPathStr = "3rdPartyLibs/OpenGL/full.fs";
-	}
-
-};
-
-/* Patch-area to render a half-texture-half-background pattern */
-class HalfSplitPatch : public Patch
-{
-private:
-	// properties
-	const int yDivide; // the dividing position in y
-
-public:
-	// Methods
-	HalfSplitPatch( int yDiv ) 
-		: Patch(boundBox)
-		, yDivide(yDiv)
-	{
-		vertexPathStr = "3rdPartyLibs/OpenGL/half.vs";
-		fragmentPathStr = "3rdPartyLibs/OpenGL/half.fs";
-		shader.use();
-		shader.setInt("idxCase",idxCase);
-	}
-
-	// Properties
-	//int idxCase; // to select the case in f-shader
-
-};
-
-class RotatingPatch : public Patch
-{
-private:
-	// properties
-	; // nothing for now
-
-public:
-	// Methods
-	RotatingPatch( 
-		int radVelo = 0 // the rotating velocity of the pattern
-	)
-	: Patch(boundBox)
-	{
-		vertexPathStr = "3rdPartyLibs/OpenGL/rotating.vs";
-		fragmentPathStr = "3rdPartyLibs/OpenGL/rotating.fs";
-		shader.use();
-		shader.setInt("idxCase",idxCase);
-	}
-
-
-
-	// Properties
-	float radVelo; // rotating radian velocity
-	//int idxCase;
-	// TODO: consider to make it private?
-};
-
-
-
 // global functions
-/* Case insensitive comparasion
-Adapted from Timmmm, https://stackoverflow.com/a/4119881
-*/
-
-//TODO: how to reduce the duplication of this method in both files?
-// Create a new class? move to errorHandling class
 
 #endif // !_GUARD_TALK2SCREEN_H

@@ -21,7 +21,6 @@
 * Current Version: 2.1
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Modified on: May 12, 2018
-
 * Replaced Version: 2.0
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Created on: Jan. 1, 2018
@@ -32,7 +31,6 @@
 #include <string>
 
 #include "talk2screen.h"
-#include "errorHandling.h"
 
 
 using namespace std;
@@ -88,7 +86,7 @@ void Screen::show()
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	for (int  i = 0; i < allAreas.size(); i++)
+	for (int i = 0; i < allAreas.size(); i++)
 		allAreas[i].renderTexture(i);
 	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
@@ -102,7 +100,7 @@ void Screen::show(int idxArea)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	allAreas[idxArea].renderTexture(idxArea);// TODO: consider to use instance variable instead
-	// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+											 // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 	glfwSwapBuffers(window);
 	glfwPollEvents();// DO NOT DELETE!!! It processes all pending events, such as mouse move
 
@@ -145,7 +143,7 @@ void Screen::reverse(int sec2start, int period)
 	vector<vector<bool>> patchIndices(numAreas);
 	for (int i = 0; i < numAreas; i++)
 	{// TODO: deal with situation that areas have different patches
-		vector<bool> vec(PATCHES_PER_ARENA,true);
+		vector<bool> vec(PATCHES_PER_ARENA, true);
 		patchIndices[i] = vec;
 	}
 	if ((sec2start / period) % 2) // has to be odd-times period to reverse
@@ -215,21 +213,31 @@ void Area::initialize(string imgName)
 			patchBoundBox[1] += yDivLen;// minus the division length
 			break;
 		}
-		if (renderType.compare("full") == 0) {
-			FullPatch patchObj();
+		if (renderType.compare("full") == 0)
+		{
+			FullPatch patchObj(patchBoundBox);
 			patchObj.initialize();
-			allPatches.push_back(patchObj);
+			allPatches.push_back(&patchObj);
 		}
 		else if (renderType.compare("half") == 0)
-			HalfSplitPatch patchObj();
-		else if (renderType.compare("rotation") == 0)
-			RotatingPatch patchObj();
-		else {
-			cout << "Unknown renderType! Please select one of the following:" << endl;
-			cout << "full, half, rotation" << endl;
-			waitUserInput2exit();
-			exit(0);
+		{
+			int yDiv = 380;
+			HalfSplitPatch patchObj(patchBoundBox, yDiv);
+			patchObj.initialize();
+			allPatches.push_back(&patchObj);
 		}
+		else if (renderType.compare("rotation") == 0)
+		{
+			RotatingPatch patchObj(patchBoundBox);
+			patchObj.initialize();
+			allPatches.push_back(&patchObj);
+		}
+		else {
+			cout << "Unknown renderType! Please select one of the following:\n"
+				<< "full, half, rotation" << endl;
+			waitUserInput2exit();
+		}
+
 		}
 		loadTextureIntoBuffers(imgName);
 	}
@@ -267,14 +275,14 @@ void Area::updateIdxCase(int value)
 	/* TODO: test this range-based loop implementation
 	for (auto patch : allPatches)
 	{
-		patch.idxCase = value; // TODO: consider to have a method?
-		patch.uploadInt2GPU("idxCase",idxCase);
+	patch.idxCase = value; // TODO: consider to have a method?
+	patch.uploadInt2GPU("idxCase",idxCase);
 	}
 	*/
 	for (int i = 0; i < numPatches; i++)
 	{
-		allPatches[i].idxCase = value;
-		allPatches[i].uploadInt2GPU("idxCase",idxCase);
+		allPatches[i]->idxCase = value;
+		allPatches[i]->uploadInt2GPU("idxCase", value);
 	}
 }
 
@@ -287,8 +295,8 @@ void Area::negateIdxCase()
 	// TODO: consider to use range-based loop implementation?
 	for (int i = 0; i < numPatches; i++)
 	{
-		allPatches[i].pIdx = !allPatches[i].pIdx;
-		allPatches[i].uploadInt2GPU("idxCase",idxCase);
+		allPatches[i]->idxCase = !allPatches[i]->idxCase;
+		allPatches[i]->uploadInt2GPU("idxCase", allPatches[i]->idxCase);
 	}
 }
 
@@ -298,8 +306,9 @@ void Area::negateIdxCase(int patchIdx)
 	tryCatchFalse(!renderType.compare("full"),
 		"Wrong renderType! This method is for full rendering only!");
 
-	allPatches[patchIdx].pIdx = !allPatches[patchIdx].pIdx;
-	allPatches[patchIdx].uploadInt2GPU("idxCase",idxCase);
+	allPatches[patchIdx]->idxCase = !allPatches[patchIdx]->idxCase;
+	allPatches[patchIdx]->uploadInt2GPU("idxCase", allPatches[patchIdx]->idxCase);
+
 
 }
 
@@ -309,8 +318,8 @@ void Area::renderTexture(int areaIdx)
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	for (int j = 0; j < numPatches; j++) // TODO: consider to use range-based loop implementation?
 	{
-		allPatches[j].uploadInt2GPU("textureID",areaIdx);
-		glBindVertexArray(allPatches[j].VAO); // TODO: write a method?
+		allPatches[j]->uploadInt2GPU("textureID", areaIdx);
+		glBindVertexArray(allPatches[j]->VAO); // TODO: write a method?
 		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
 	}
 }
@@ -318,7 +327,6 @@ void Area::renderTexture(int areaIdx)
 void Patch::initialize()
 {
 	initVertices();
-	shader(vertexPathStr,fragmentPathStr);
 	// Space for updates
 }
 
@@ -332,10 +340,10 @@ void Patch::initVertices()
 
 	float vertices[32] =
 	{	// positions (0-2)      // colors (3-5)         // texture coordinates (6-7)
-		rect[0], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // top left
-		rect[0], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, rect[3], // bottom left
-		rect[0] - rect[2], rect[1] + rect[3], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], rect[3], // bottom right
-		rect[0] - rect[2], rect[1], 0.0f, 0.0f, 0.0f, 0.0f, rect[2], 0.0f // top right
+		boundBox[0], boundBox[1], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, // top left
+		boundBox[0], boundBox[1] + boundBox[3], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, boundBox[3], // bottom left
+		boundBox[0] - boundBox[2], boundBox[1] + boundBox[3], 0.0f, 0.0f, 0.0f, 0.0f, boundBox[2], boundBox[3], // bottom right
+		boundBox[0] - boundBox[2], boundBox[1], 0.0f, 0.0f, 0.0f, 0.0f, boundBox[2], 0.0f // top right
 	};
 
 	glGenVertexArrays(1, &VAO);
@@ -370,5 +378,7 @@ void Patch::uploadFloat2GPU(string varName, float varValue)
 	shader.setFloat(varName, varValue);
 }
 
-
-
+void Patch::setIdxCase(int value)
+{
+	idxCase = value;
+}

@@ -27,8 +27,11 @@ using namespace std;
 
 int main()
 {
-	Experiment exp();
-	exp.initialize();
-	exp.runXXtest();
-	waitUserInput2exit(); // included in errorHandling.h
+	template<typename T>
+	T var;              // not allowed in pre-C++14
+	var<int> = 5;
+	//Experiment exp();
+	//exp.initialize();
+	//exp.runXXtest();
+	//waitUserInput2exit(); // included in errorHandling.h
 }
