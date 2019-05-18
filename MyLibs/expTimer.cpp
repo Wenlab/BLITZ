@@ -21,11 +21,11 @@
 
 
 */
-
+#include "expTimer.h"
 
 void ExpTimer::getTime()
 {
   sElapsed = getElapsedTimeInSec();
-  msRemElapsed = (int)expTimer.getElapsedTimeInMilliSec() % 1000;
+  msRemElapsed = (int)getElapsedTimeInMilliSec() % 1000;
 }
 
