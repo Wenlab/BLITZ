@@ -33,71 +33,41 @@ using namespace std;
 int main()
 {
 	
-	Screen sObj;
-	sObj.initialize(
-		"Images/RBC.jpg"
-		, "half"
-		, { 0.068f, 0.300f, 0.258f, 0.668f }
-	);
-
-	while (1)
-	{
-		sObj.show();
-	}
-
-
-	/*ExpTimer expTimer;
-	Screen Board;
-	Board.initialize(
-		"Images/RBC.jpg"
-		,"half"
-		, { 0.068f, 0.300f, 0.258f, 0.668f }
-	);
-
-	expTimer.start();
-
-	while (1)
-	{
-		int timeInSec = expTimer.getElapsedTimeInSec();
-		cout << "Time (s) : " << timeInSec << endl;
-		if (timeInSec % 5 == 0)
-			Board.reverse();
-		Board.show();
-	}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	
 	/*
 	SingleCamera cObj;
 	cObj.initialize();
 	int numFrames2grab = 1000;
-	
+
 	// giant grabbing loop
 	for (int i = 0; i < numFrames2grab; i++)
-	{ 
-	
-#ifdef PYLON_WIN_BUILD
+	{
+
+	#ifdef PYLON_WIN_BUILD
 	// Display the grabbed image.
 	Pylon::DisplayImage(1, cObj.grabPylonImg());
-#endif
+	#endif
 
 	}
 	*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 
 }
 
