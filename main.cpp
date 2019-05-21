@@ -42,6 +42,7 @@ int main()
 
 	while (1)
 	{
+		sObj.allAreas[0].allPatches[0]->setIdxCase(1);
 		sObj.show();
 	}
 	
