@@ -37,7 +37,7 @@
 using namespace std;
 
 // TODO: decide the renderType after the initialization
-void Screen::initialize(string imgName, vector<float> boundBox, string renderType)
+void Screen::initialize(string imgName, string renderType, vector<float> boundBox)
 {
 	cout << "Initializing the projector screen .. " << endl;
 	/* GLFW initialize and configure */
@@ -51,6 +51,21 @@ void Screen::initialize(string imgName, vector<float> boundBox, string renderTyp
 	allAreas.push_back(areaObj);
 
 	cout << "Screen initialization succeeded." << endl << endl;
+
+}
+
+void Screen::initialize(vector<string> imgNames, // name of the images to show
+						string renderType, // type of rendering, full, half, rotating
+						vector<vector<float>> boundBoxes, // bounding boxes of all the areas
+						vector<int> patchesInAreas // number of patches in each area
+) {
+	cout << "Initializing the projector screen .. " << endl;
+	/* GLFW initialize and configure */
+	init_glfw_window();
+	/* glad: load all OpenGL function pointers */
+	init_glad();
+
+	//TODO:complete this code block
 
 }
 
@@ -214,20 +229,20 @@ void Area::initialize(string imgName)
 			patchBoundBox[1] += yDivLen;// minus the division length
 			break;
 		}
-		if (iequals(renderType, "full"))
+		if (renderType.compare("full") == 0)
 		{
 			FullPatch patchObj(patchBoundBox);
 			patchObj.initialize();
 			allPatches.push_back(&patchObj);
 		}
-		else if (iequals(renderType, "half"))
+		else if (renderType.compare("half") == 0)
 		{
 			int yDiv = 380;
 			HalfSplitPatch patchObj(patchBoundBox, yDiv);
 			patchObj.initialize();
 			allPatches.push_back(&patchObj);
 		}
-		else if (iequals(renderType, "rotation"))
+		else if (renderType.compare("rotation") == 0)
 		{
 			RotatingPatch patchObj(patchBoundBox);
 			patchObj.initialize();
@@ -270,7 +285,7 @@ void Area::loadTextureIntoBuffers(string imgName)
 void Area::updateIdxCase(int value)
 {
 
-	tryCatchFalse(iequals(renderType,"full"),
+	tryCatchFalse(renderType.compare("half") == 0,
 	"Wrong renderType! This method is for full rendering only!");
 
 	/* TODO: test this range-based loop implementation
@@ -290,7 +305,7 @@ void Area::updateIdxCase(int value)
 void Area::negateIdxCase()
 {
 
-	tryCatchFalse(iequals(renderType,"full"),
+	tryCatchFalse(renderType.compare("half") == 0,
 	"Wrong renderType! This method is for full rendering only!");
 
 	// TODO: consider to use range-based loop implementation?
@@ -304,7 +319,7 @@ void Area::negateIdxCase()
 void Area::negateIdxCase(int patchIdx)
 {
 
-	tryCatchFalse(iequals(renderType,"full"),
+	tryCatchFalse(renderType.compare("half") == 0,
 	"Wrong renderType! This method is for full rendering only!");
 
 	allPatches[patchIdx]->idxCase = !allPatches[patchIdx]->idxCase;

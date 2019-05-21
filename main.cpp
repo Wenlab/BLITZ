@@ -24,13 +24,51 @@
 #include <vector>
 
 
-#include "MyLibs/talk2relay.h"
+#include "MyLibs\talk2screen.h"
+#include "MyLibs\expTimer.h"
+
 
 using namespace std;
 
 int main()
 {
 	
+	ExpTimer expTimer;
+	Screen Board;
+	Board.initialize(
+		"Images/RBC.jpg"
+		,"half"
+		, { 0.068f, 0.300f, 0.258f, 0.668f }
+	);
+
+	expTimer.start();
+
+	while (1)
+	{
+		int timeInSec = expTimer.getElapsedTimeInSec();
+		cout << "Time (s) : " << timeInSec << endl;
+		if (timeInSec % 5 == 0)
+			Board.reverse();
+		Board.show();
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	/*
 	SingleCamera cObj;
 	cObj.initialize();

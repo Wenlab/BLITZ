@@ -130,8 +130,8 @@ public:
 	HalfSplitPatch(
 		std::vector<float> patchRect, // bounding box
 		int yDiv, // the dividing position in y
-		std::string vertexPath = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
-		std::string fragmentPath = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
+		std::string vertexPath = "3rdPartyLibs/OpenGL/shader.vs", // path to the vertex shader file
+		std::string fragmentPath = "3rdPartyLibs/OpenGL/shader.fs" // path to the vertex fragment file
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
 		, yDivide(yDiv)
@@ -266,8 +266,9 @@ public:
 	/* Initilize screen environment and coordinates for a single area */
 	void initialize(
 		std::string imgName, // name of the image to show
-		std::vector<float> boundBox, // bounding area of the pattern x,y (-1.0f<->1.0f)
-		std::string renderType // type of rendering, full, half, rotating
+		std::string renderType, // type of rendering, full, half, rotating
+		std::vector<float> boundBox // bounding area of the pattern x,y (-1.0f<->1.0f)
+		
 	);
 
 	// TODO: write the implementation
