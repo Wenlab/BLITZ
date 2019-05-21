@@ -303,7 +303,7 @@ void Area::updateIdxCase(int value)
 	*/
 	for (int i = 0; i < numPatches; i++)
 	{
-		allPatches[i]->idxCase = value;
+		allPatches[i]->setIdxCase(value);
 		allPatches[i]->uploadInt2GPU("idxCase", value);
 	}
 }
@@ -317,8 +317,8 @@ void Area::negateIdxCase()
 	// TODO: consider to use range-based loop implementation?
 	for (int i = 0; i < numPatches; i++)
 	{
-		allPatches[i]->idxCase = !allPatches[i]->idxCase;
-		allPatches[i]->uploadInt2GPU("idxCase", allPatches[i]->idxCase);
+		allPatches[i]->setIdxCase(!allPatches[i]->getIdxCase());
+		allPatches[i]->uploadInt2GPU("idxCase", allPatches[i]->getIdxCase());
 	}
 }
 
@@ -328,8 +328,8 @@ void Area::negateIdxCase(int patchIdx)
 	tryCatchFalse(renderType.compare("half") == 0,
 	"Wrong renderType! This method is for full rendering only!");
 
-	allPatches[patchIdx]->idxCase = !allPatches[patchIdx]->idxCase;
-	allPatches[patchIdx]->uploadInt2GPU("idxCase", allPatches[patchIdx]->idxCase);
+	allPatches[patchIdx]->setIdxCase(!allPatches[patchIdx]->getIdxCase());
+	allPatches[patchIdx]->uploadInt2GPU("idxCase", allPatches[patchIdx]->getIdxCase());
 
 
 }
@@ -349,9 +349,7 @@ void Area::renderTexture(int areaIdx)
 void Patch::initialize()
 {
 	initVertices();
-	uploadInt2GPU("patternIdx", idxCase);
-
-	cout << "Patch" << endl;
+	
 	// Space for updates
 }
 
@@ -403,15 +401,31 @@ void Patch::uploadFloat2GPU(string varName, float varValue)
 	shader.setFloat(varName, varValue);
 }
 
-void Patch::uploadIdxCase(int value)
+
+int Patch::getIdxCase()
+{
+	return 0;
+}
+
+void Patch::setIdxCase(int value)
 {
 
+}
+
+int HalfSplitPatch::getIdxCase()
+{
+	return idxCase;
+}
+
+void HalfSplitPatch::setIdxCase(int value)
+{
+	idxCase = value;
 }
 
 void HalfSplitPatch::initialize()
 {
 	initVertices();
-	uploadInt2GPU("patternIdx", idxCase);
+	uploadInt2GPU("idxCase", idxCase);
 	uploadInt2GPU("yDivide", yDivide);
 	cout << "HalfSplitPatch" << endl;
 }

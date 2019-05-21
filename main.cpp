@@ -24,7 +24,7 @@
 #include <vector>
 
 
-#include "MyLibs\talk2camera.h"
+#include "MyLibs\talk2screen.h"
 #include "MyLibs\expTimer.h"
 
 
@@ -33,8 +33,19 @@ using namespace std;
 int main()
 {
 	
+	Screen sObj;
+	sObj.initialize(
+		"Images/RBC.jpg"
+		, "half"
+		, { 0.068f, 0.300f, 0.258f, 0.668f }
+	);
+
+	while (1)
+	{
+		sObj.show();
+	}
 	
-	
+	/*
 	SingleCamera cObj;
 	cObj.initialize();
 	int numFrames2grab = 1000;
@@ -50,7 +61,7 @@ int main()
 	#endif
 
 	}
-	
+	*/
 
 
 

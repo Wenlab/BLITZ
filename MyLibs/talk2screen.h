@@ -66,7 +66,7 @@ public:
 		: boundBox(patchRect)
 		, shader(vertexPath, fragmentPath)
 	{
-		idxCase = 0;
+
 	}
 
 	/* Initialize memory for patch */
@@ -78,11 +78,14 @@ public:
 	/* Upload a float variable to GPU from CPU */
 	void uploadFloat2GPU(std::string varName, float varValue);
 
-	/* Set idxCase, a virtual function to be overrided during runtime */
-	virtual void uploadIdxCase(int value);
+	/* Get idxCase for HalfSplitPatch*/
+	virtual int getIdxCase();
+
+	/* Set idxCase for HalfSplitPatch */
+	virtual void setIdxCase(int value);
 
 	unsigned int VAO; // vertex array object in GPU
-	int idxCase; // TODO: decide whether it is a sharing property or a exclusive one
+	//int idxCase; // TODO: decide whether it is a sharing property or a exclusive one
 
 };
 
@@ -129,6 +132,11 @@ public:
 	/* initialize vertices, upload uniform variables */
 	void initialize();
 
+	/* Get idxCase, real implementation */
+	int getIdxCase();
+
+	/* Set idxCase, real implementation */
+	void setIdxCase(int value);
 
 
 	int idxCase;
