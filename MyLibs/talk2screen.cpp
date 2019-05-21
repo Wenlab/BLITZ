@@ -403,12 +403,7 @@ void Patch::uploadFloat2GPU(string varName, float varValue)
 	shader.setFloat(varName, varValue);
 }
 
-void Patch::setIdxCase(int value)
-{
-	idxCase = value;
-}
-
-void Patch::updateVRpattern()
+void Patch::uploadIdxCase(int value)
 {
 
 }

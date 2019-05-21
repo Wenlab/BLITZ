@@ -6,7 +6,6 @@ in vec2 TexCoord;
 
 // texture sampler
 uniform sampler2D textureID;
-uniform int patternIdx;
 
 //rotation angle
 uniform float theta;

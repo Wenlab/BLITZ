@@ -60,7 +60,7 @@ protected:
 public:
 	Patch(
 		std::vector<float> patchRect, // bounding box
-		std::string vertexPath, // path to the vertex shader file // TODO: make it a sharing variable
+		std::string vertexPath, // path to the vertex shader file
 		std::string fragmentPath // path to the vertex fragment file
 	)
 		: boundBox(patchRect)
@@ -79,9 +79,7 @@ public:
 	void uploadFloat2GPU(std::string varName, float varValue);
 
 	/* Set idxCase, a virtual function to be overrided during runtime */
-	virtual void setIdxCase(int value);
-
-	virtual void updateVRpattern();
+	virtual void uploadIdxCase(int value);
 
 	unsigned int VAO; // vertex array object in GPU
 	int idxCase; // TODO: decide whether it is a sharing property or a exclusive one
@@ -95,7 +93,7 @@ public:
 	// methods
 	FullPatch(
 		std::vector<float> patchRect, // bounding box
-		std::string vertexPath = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
+		std::string vertexPath = "3rdPartyLibs/OpenGL/shader.vs", // path to the vertex shader file
 		std::string fragmentPath = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
@@ -127,7 +125,10 @@ public:
 	{
 		idxCase = 0;
 	}
+
+	/* initialize vertices, upload uniform variables */
 	void initialize();
+
 
 
 	int idxCase;
@@ -150,18 +151,13 @@ public:
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
 		, radVelo(vRadian)
-	{
-		str = (unsigned char*)malloc(2 * sizeof(unsigned char));
-		str[0] = 'a';
-		str[1] = 'b';
+	{	
 
 	}
 
 	// Properties
 	float radVelo; // rotating radian velocity
-				   // TODO: consider to make it private?
-	static constexpr unsigned char s[2] = { 'a', 'b' };
-	unsigned char* str;
+				 
 };
 
 
@@ -221,9 +217,7 @@ public:
 
 	// properties
 	std::vector<Patch*> allPatches; 
-	// use Patch as the base class (pointer form),
-	// then override this class with virtual functions
-	// TODO: test whether this initiation works?
+	
 };
 
 
