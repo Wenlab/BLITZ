@@ -96,9 +96,9 @@ public:
 
 	virtual int getIdxCase();
 
-	virtual void setTheta(float theta);
-	virtual void setXDis(float xDis);
-	virtual void setYDis(float yDis);
+	virtual void setTheta(float value);
+	virtual void setXDis(float value);
+	virtual void setYDis(float value);
 	virtual float getTheta();
 	virtual float getXDis();
 	virtual float getYDis();
@@ -214,11 +214,11 @@ public:
 
 	int getIdxCase();
 
-	void setTheta(float theta);
+	void setTheta(float value);
 
-	void setXDis(float xDis);
+	void setXDis(float value);
 
-	void setYDis(float yDis);
+	void setYDis(float value);
 
 	float getTheta();
 	
