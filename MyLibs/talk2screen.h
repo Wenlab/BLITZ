@@ -94,6 +94,15 @@ public:
 	/* Set idxCase, a virtual function to be overrided during runtime */
 	virtual void setIdxCase(int value);
 
+
+
+
+	virtual void getTheta(float theta);
+	virtual void getXDis(float xDis);
+	virtual void getYDis(float yDis);
+	virtual void updateVrPattern();
+
+
 	unsigned int VAO; // vertex array object in GPU
 	int idxCase;
 
@@ -161,18 +170,58 @@ public:
 		: Patch(patchRect, vertexPath, fragmentPath)
 		, radVelo(vRadian)
 	{
-		str = (unsigned char*)malloc(2 * sizeof(unsigned char));
-		str[0] = 'a';
-		str[1] = 'b';
+
 
 	}
 
 	// Properties
 	float radVelo; // rotating radian velocity
 				   // TODO: consider to make it private?
-	static constexpr unsigned char s[2] = { 'a', 'b' };
-	unsigned char* str;
+
 };
+
+
+
+class VrPatch : public Patch
+{
+private:
+	// properties
+	; // nothing for now
+
+public:
+	// Methods
+	VrPatch(
+		std::vector<float> patchRect, // bounding box
+		const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs", // path to the vertex shader file
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/VrShader.fs" // path to the vertex fragment file
+	)
+		: Patch(patchRect, vertexPath, fragmentPath)
+	{
+		pIdx = 0;
+		xDis = 0;
+		yDis = 0;
+		theta = 0;
+
+	}
+
+	// Properties
+	int pIdx; // pattern index
+
+	float xDis, yDis;
+	float theta;
+
+	void initialize();
+
+	void updateVrPattern();
+
+	void getTheta(float theta);
+
+	void getXDis(float xDis);
+
+	void getYDis(float yDis);
+
+};
+
 
 
 /* represent pattern changes of an entire local area,

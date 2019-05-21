@@ -32,26 +32,27 @@ using namespace std;
 
 int main()
 {
-	
-	ExpTimer expTimer;
-	Screen Board;
-	Board.initialize(
+	Screen sObj;
+	sObj.initialize(
 		"Images/RBC.jpg"
-		,"half"
+		, "vr"
 		, { 0.068f, 0.300f, 0.258f, 0.668f }
 	);
 
-	expTimer.start();
-
 	while (1)
 	{
-		int timeInSec = expTimer.getElapsedTimeInSec();
-		cout << "Time (s) : " << timeInSec << endl;
-		if (timeInSec % 5 == 0)
-			Board.reverse();
-		Board.show();
+		for (int i = 0; i < sObj.allAreas.size(); i++)
+		{
+			for (int j = 0; j < sObj.allAreas[i].allPatches.size(); j++)
+			{
+				sObj.allAreas[i].allPatches[j]->getTheta(5.0);
+				sObj.allAreas[i].allPatches[j]->getXDis(rand() / 10.0);
+				sObj.allAreas[i].allPatches[j]->getYDis(rand() / 10.0);
+				sObj.allAreas[i].allPatches[j]->updateVrPattern();
+			}
+		}
+		sObj.show();
 	}
-
 
 
 
