@@ -33,7 +33,20 @@ using namespace std;
 int main()
 {
 	
-	ExpTimer expTimer;
+	Screen sObj;
+	sObj.initialize(
+		"Images/RBC.jpg"
+		, "half"
+		, { 0.068f, 0.300f, 0.258f, 0.668f }
+	);
+
+	while (1)
+	{
+		sObj.show();
+	}
+
+
+	/*ExpTimer expTimer;
 	Screen Board;
 	Board.initialize(
 		"Images/RBC.jpg"
@@ -51,7 +64,7 @@ int main()
 			Board.reverse();
 		Board.show();
 	}
-
+*/
 
 
 

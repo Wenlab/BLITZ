@@ -46,6 +46,7 @@ void Screen::initialize(string imgName, string renderType, vector<float> boundBo
 	init_glad();
 
 	// initialize an area object
+	numAreas = 1;
 	Area areaObj(boundBox, renderType);
 	areaObj.initialize(imgName);
 	allAreas.push_back(areaObj);
@@ -211,24 +212,26 @@ void Area::initialize(string imgName)
 		patchBoundBox[2] = xDivLen;
 		patchBoundBox[3] = yDivLen;
 		switch (i) {
-		case 0: // the first patch at the upper-left corner
-			break;
-		case 1:
-		{
-			patchBoundBox[0] -= xDivLen;// minus the division length
-			break;
+			case 0: // the first patch at the upper-left corner
+				break;
+			case 1:
+			{
+				patchBoundBox[0] -= xDivLen;// minus the division length
+				break;
+			}
+			case 2:
+			{
+				patchBoundBox[1] += yDivLen;// minus the division length
+				break;
+			}
+			case 3:
+			{
+				patchBoundBox[0] -= xDivLen;// minus the division length
+				patchBoundBox[1] += yDivLen;// minus the division length
+				break;
+			}
 		}
-		case 2:
-		{
-			patchBoundBox[1] += yDivLen;// minus the division length
-			break;
-		}
-		case 3:
-		{
-			patchBoundBox[0] -= xDivLen;// minus the division length
-			patchBoundBox[1] += yDivLen;// minus the division length
-			break;
-		}
+
 		if (renderType.compare("full") == 0)
 		{
 			FullPatch patchObj(patchBoundBox);
@@ -237,7 +240,7 @@ void Area::initialize(string imgName)
 		}
 		else if (renderType.compare("half") == 0)
 		{
-			int yDiv = 380;
+			int yDiv = 900; // TODO: consider to move this parameter to a higher level
 			HalfSplitPatch patchObj(patchBoundBox, yDiv);
 			patchObj.initialize();
 			allPatches.push_back(&patchObj);
@@ -254,9 +257,9 @@ void Area::initialize(string imgName)
 			waitUserInput2exit();
 		}
 
-		}
-		loadTextureIntoBuffers(imgName);
 	}
+	loadTextureIntoBuffers(imgName);
+	
 }
 
 void Area::loadTextureIntoBuffers(string imgName)
@@ -343,6 +346,7 @@ void Area::renderTexture(int areaIdx)
 void Patch::initialize()
 {
 	initVertices();
+	uploadInt2GPU("patternIdx", idxCase);
 	// Space for updates
 }
 
@@ -397,4 +401,11 @@ void Patch::uploadFloat2GPU(string varName, float varValue)
 void Patch::setIdxCase(int value)
 {
 	idxCase = value;
+}
+
+void HalfSplitPatch::initialize()
+{
+	initVertices();
+	uploadInt2GPU("patternIdx", idxCase);
+	uploadInt2GPU("yDivide", yDivide);
 }

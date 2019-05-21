@@ -78,7 +78,7 @@ public:
 		: boundBox(patchRect)
 		, shader(vertexPath, fragmentPath)
 	{
-
+		idxCase = 0;
 	}
 
 
@@ -95,7 +95,7 @@ public:
 	virtual void setIdxCase(int value);
 
 	unsigned int VAO; // vertex array object in GPU
-	int idxCase;
+	int idxCase; // TODO: decide whether it is a sharing property or a exclusive one
 
 };
 
@@ -136,11 +136,12 @@ public:
 		: Patch(patchRect, vertexPath, fragmentPath)
 		, yDivide(yDiv)
 	{
-
+		idxCase = 0;
 	}
+	void initialize();
 
-	// Properties
-	int idxCase; // to select the case in f-shader
+
+	int idxCase;
 
 };
 
