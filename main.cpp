@@ -36,24 +36,17 @@ int main()
 	sObj.initialize(
 		"Images/RBC.jpg"
 		, "vr"
-		, { 0.068f, 0.300f, 0.258f, 0.668f }
+		, { 0.5f, -0.5f, 1.0f, 1.0f }
 	);
 
 	while (1)
 	{
-		for (int i = 0; i < sObj.allAreas.size(); i++)
-		{
-			for (int j = 0; j < sObj.allAreas[i].allPatches.size(); j++)
-			{
-				sObj.allAreas[i].allPatches[j]->getTheta(5.0);
-				sObj.allAreas[i].allPatches[j]->getXDis(rand() / 10.0);
-				sObj.allAreas[i].allPatches[j]->getYDis(rand() / 10.0);
-				sObj.allAreas[i].allPatches[j]->updateVrPattern();
-			}
-		}
+		sObj.allAreas[0].allPatches[0]->setTheta(10.0);
+		sObj.allAreas[0].allPatches[0]->setXDis(10.0);
+		sObj.allAreas[0].allPatches[0]->setYDis(10.0);
+		sObj.allAreas[0].updateVrPattern();
 		sObj.show();
 	}
-
 
 
 

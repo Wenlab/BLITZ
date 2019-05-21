@@ -78,7 +78,6 @@ public:
 		: boundBox(patchRect)
 		, shader(vertexPath, fragmentPath)
 	{
-
 	}
 
 
@@ -95,16 +94,16 @@ public:
 	virtual void setIdxCase(int value);
 
 
+	virtual int getIdxCase();
 
-
-	virtual void getTheta(float theta);
-	virtual void getXDis(float xDis);
-	virtual void getYDis(float yDis);
-	virtual void updateVrPattern();
-
+	virtual void setTheta(float theta);
+	virtual void setXDis(float xDis);
+	virtual void setYDis(float yDis);
+	virtual float getTheta();
+	virtual float getXDis();
+	virtual float getYDis();
 
 	unsigned int VAO; // vertex array object in GPU
-	int idxCase;
 
 };
 
@@ -197,28 +196,35 @@ public:
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
 	{
-		pIdx = 0;
 		xDis = 0;
 		yDis = 0;
 		theta = 0;
-
+		idxCase = 0;
 	}
 
 	// Properties
-	int pIdx; // pattern index
+	int idxCase;
 
 	float xDis, yDis;
 	float theta;
 
 	void initialize();
 
-	void updateVrPattern();
+	void setIdxCase(int value);
 
-	void getTheta(float theta);
+	int getIdxCase();
 
-	void getXDis(float xDis);
+	void setTheta(float theta);
 
-	void getYDis(float yDis);
+	void setXDis(float xDis);
+
+	void setYDis(float yDis);
+
+	float getTheta();
+	
+	float getXDis();
+
+	float getYDis();
 
 };
 
@@ -277,6 +283,7 @@ public:
 	/* Render pattern for the entire area via textureID */
 	void renderTexture(int areaIdx);
 
+	void updateVrPattern();
 
 	// properties
 	std::vector<Patch*> allPatches; 

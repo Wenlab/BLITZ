@@ -239,7 +239,7 @@ void Area::initialize(string imgName)
 		}
 		else if (renderType.compare("half") == 0)
 		{
-			int yDiv = 900;
+			int yDiv = 1800;
 			HalfSplitPatch patchObj(patchBoundBox, yDiv);
 			patchObj.initialize();
 			allPatches.push_back(&patchObj);
@@ -304,7 +304,7 @@ void Area::updateIdxCase(int value)
 	*/
 	for (int i = 0; i < numPatches; i++)
 	{
-		allPatches[i]->idxCase = value;
+		allPatches[i]->setIdxCase(value);
 		allPatches[i]->uploadInt2GPU("idxCase", value);
 	}
 }
@@ -318,8 +318,8 @@ void Area::negateIdxCase()
 	// TODO: consider to use range-based loop implementation?
 	for (int i = 0; i < numPatches; i++)
 	{
-		allPatches[i]->idxCase = !allPatches[i]->idxCase;
-		allPatches[i]->uploadInt2GPU("idxCase", allPatches[i]->idxCase);
+		allPatches[i]->setIdxCase(!allPatches[i]->getIdxCase());
+		allPatches[i]->uploadInt2GPU("idxCase", allPatches[i]->getIdxCase());
 	}
 }
 
@@ -329,10 +329,8 @@ void Area::negateIdxCase(int patchIdx)
 	tryCatchFalse(renderType.compare("half") == 0,
 	"Wrong renderType! This method is for full rendering only!");
 
-	allPatches[patchIdx]->idxCase = !allPatches[patchIdx]->idxCase;
-	allPatches[patchIdx]->uploadInt2GPU("idxCase", allPatches[patchIdx]->idxCase);
-
-
+	allPatches[patchIdx]->setIdxCase(!allPatches[patchIdx]->getIdxCase());	
+	allPatches[patchIdx]->uploadInt2GPU("idxCase", allPatches[patchIdx]->getIdxCase());
 }
 
 void Area::renderTexture(int areaIdx)
@@ -344,6 +342,17 @@ void Area::renderTexture(int areaIdx)
 		allPatches[j]->uploadInt2GPU("textureID",areaIdx);
 		glBindVertexArray(allPatches[j]->VAO); // TODO: write a method?
 		glDrawElements(GL_TRIANGLES, TRIANGLES_PER_PATCH * 3, GL_UNSIGNED_INT, 0);
+	}
+}
+
+void Area::updateVrPattern()
+{
+	for (int i = 0; i < allPatches.size(); i++)
+	{
+		allPatches[i]->uploadInt2GPU("patternIdx", allPatches[i]->getIdxCase());
+		allPatches[i]->uploadFloat2GPU("theta", allPatches[i]->getTheta());
+		allPatches[i]->uploadFloat2GPU("xDis", allPatches[i]->getXDis());
+		allPatches[i]->uploadFloat2GPU("yDis", allPatches[i]->getYDis());
 	}
 }
 
@@ -403,55 +412,79 @@ void Patch::uploadFloat2GPU(string varName, float varValue)
 
 void Patch::setIdxCase(int value)
 {
+
+}
+
+int Patch::getIdxCase() {
+	return 0;
+}
+
+void Patch::setTheta(float value)
+{
+
+}
+
+void Patch::setXDis(float value)
+{
+
+}
+
+void Patch::setYDis(float value)
+{
+
+}
+
+float Patch::getTheta() {
+	return 0;
+}
+
+float Patch::getXDis() {
+	return 0;
+}
+
+float Patch::getYDis() {
+	return 0;
+}
+
+void VrPatch::setIdxCase(int value) {
 	idxCase = value;
 }
 
-void Patch::updateVrPattern() {
-
+int VrPatch::getIdxCase() {
+	return idxCase;
 }
 
-void Patch::getTheta(float value)
-{
-
-}
-
-void Patch::getXDis(float value)
-{
-
-}
-
-void Patch::getYDis(float value)
-{
-
-}
-
-void VrPatch::getTheta(float value)
+void VrPatch::setTheta(float value)
 {
 	theta = value;
 }
 
-void VrPatch::getXDis(float value)
+void VrPatch::setXDis(float value)
 {
 	xDis = value;
 }
 
-void VrPatch::getYDis(float value)
+void VrPatch::setYDis(float value)
 {
 	yDis = value;
+}
+
+float VrPatch::getTheta() {
+	return theta;
+}
+
+float VrPatch::getXDis() {
+	return xDis;
+}
+
+float VrPatch::getYDis() {
+	return yDis;
 }
 
 void VrPatch::initialize()
 {
 	initVertices();
-	uploadInt2GPU("patternIdx", pIdx);
-	uploadFloat2GPU("theta", theta);
-	uploadFloat2GPU("xDis", xDis);
-	uploadFloat2GPU("yDis", yDis);
-}
-
-void VrPatch::updateVrPattern()
-{
-	uploadInt2GPU("patternIdx", pIdx);
+	uploadInt2GPU("patternIdx", idxCase);
 	uploadFloat2GPU("theta", theta);
 	uploadFloat2GPU("xDis", xDis);
 	uploadFloat2GPU("yDis", yDis);
