@@ -73,6 +73,8 @@ public:
 	int time2IdxFrame(int timing, int idxStart = 0);
 
 	intptr_t cIdx;// index of camera where the frame is grabbed from
+	Pylon::CPylonImage pylonImg;
+
 private:
 	int frameRate;
 	int frameWidth;
@@ -82,7 +84,7 @@ private:
 	std::vector<int> offSetYs;
 	std::string pixelFormat;
 	std::string cameraType;
-	Pylon::CPylonImage pylonImg;
+	
 	Pylon::CBaslerUsbInstantCameraArray cameras;
 	Pylon::CGrabResultPtr  ptrGrabResult; //TODO: write a public method to get this variable or return it from an old method
 	
@@ -115,6 +117,7 @@ public:
 	/* Convert time in seconds to the index of frame (start from 0) */
 	int time2IdxFrame(int timing, int idxStart = 0);
 	
+	Pylon::CPylonImage pylonImg;
 
 private:
 
@@ -127,7 +130,7 @@ private:
 	int offSetY;
 	std::string pixelFormat;
 	Pylon::CGrabResultPtr  ptrGrabResult;
-	Pylon::CPylonImage pylonImg;
+	
 };
 
 // Global functions
