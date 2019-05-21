@@ -41,14 +41,6 @@
 // Include user-defined libraries
 #include "errorHandling.h"
 
-// User-defined macros; TODO: consider to convert some macros to local variables
-#define NUM_ARENA 3
-#define PATCHES_PER_ARENA 4
-#define NUM_SHADER 12
-#define VERTEXS_PER_SHADER 4
-#define TRIANGLES_PER_PATCH 2
-
-
 /* This an example class for inheritances.
 A wrapper class of the Shader class */
 class Patch
@@ -61,18 +53,14 @@ protected:
 	unsigned int VBO, EBO;
 	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
 
-
-
 	// Methods
 	/* Initialize vertices and their buffers with given pos(x,y) */
 	void initVertices();
 
-
-
 public:
 	Patch(
 		std::vector<float> patchRect, // bounding box
-		std::string vertexPath, // path to the vertex shader file
+		std::string vertexPath, // path to the vertex shader file // TODO: make it a sharing variable
 		std::string fragmentPath // path to the vertex fragment file
 	)
 		: boundBox(patchRect)
@@ -80,7 +68,6 @@ public:
 	{
 		idxCase = 0;
 	}
-
 
 	/* Initialize memory for patch */
 	void initialize();
@@ -93,6 +80,8 @@ public:
 
 	/* Set idxCase, a virtual function to be overrided during runtime */
 	virtual void setIdxCase(int value);
+
+	virtual void updateVRpattern();
 
 	unsigned int VAO; // vertex array object in GPU
 	int idxCase; // TODO: decide whether it is a sharing property or a exclusive one
@@ -131,7 +120,7 @@ public:
 		std::vector<float> patchRect, // bounding box
 		int yDiv, // the dividing position in y
 		std::string vertexPath = "3rdPartyLibs/OpenGL/shader.vs", // path to the vertex shader file
-		std::string fragmentPath = "3rdPartyLibs/OpenGL/shader.fs" // path to the vertex fragment file
+		std::string fragmentPath = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
 		, yDivide(yDiv)
@@ -156,8 +145,8 @@ public:
 	RotatingPatch(
 		std::vector<float> patchRect, // bounding box
 		float vRadian = 0, // the rotating velocity of the pattern
-		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
-		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
+		const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs", // path to the vertex shader file
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/rotate.fs" // path to the vertex fragment file
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
 		, radVelo(vRadian)

@@ -33,6 +33,7 @@
 
 #include "talk2screen.h"
 
+#define TRIANGLES_PER_PATCH 2
 
 using namespace std;
 
@@ -159,8 +160,10 @@ void Screen::reverse(int sec2start, int period)
 	// TODO: check this code
 	vector<vector<bool>> patchIndices(numAreas);
 	for (int i = 0; i < numAreas; i++)
-	{// TODO: deal with situation that areas have different patches
-		vector<bool> vec(PATCHES_PER_ARENA,true);
+	{
+		// TODO: rewrite in OO style
+		int numPatches = allAreas[i].allPatches.size();
+		vector<bool> vec(numPatches,true);
 		patchIndices[i] = vec;
 	}
 	if ((sec2start / period) % 2) // has to be odd-times period to reverse
@@ -347,6 +350,8 @@ void Patch::initialize()
 {
 	initVertices();
 	uploadInt2GPU("patternIdx", idxCase);
+
+	cout << "Patch" << endl;
 	// Space for updates
 }
 
@@ -403,9 +408,15 @@ void Patch::setIdxCase(int value)
 	idxCase = value;
 }
 
+void Patch::updateVRpattern()
+{
+
+}
+
 void HalfSplitPatch::initialize()
 {
 	initVertices();
 	uploadInt2GPU("patternIdx", idxCase);
 	uploadInt2GPU("yDivide", yDivide);
+	cout << "HalfSplitPatch" << endl;
 }
