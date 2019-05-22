@@ -74,11 +74,12 @@ public:
 
 	intptr_t cIdx;// index of camera where the frame is grabbed from
 	Pylon::CPylonImage pylonImg;
-
-private:
 	int frameRate;
 	int frameWidth;
 	int frameHeight;
+
+private:
+	
 	std::vector<std::string> serialNums;
 	std::vector<int> offSetXs;
 	std::vector<int> offSetYs;

@@ -266,7 +266,7 @@ public:
 	// TODO: write the implementation
 	/* Initilize screen environment with pre-defined multi-bounding areas */
 	void initialize(
-		std::vector<std::string> imgNames, // name of the images to show
+		std::string imgName, // name of the image to show
 		std::string renderType, // type of rendering, full, half, rotating
 		std::vector<std::vector<float>> boundBoxes, // bounding boxes of all the areas
 		std::vector<int> patchesInAreas // number of patches in each area

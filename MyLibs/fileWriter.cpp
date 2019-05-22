@@ -67,7 +67,7 @@ void FileWriter::initialize(string baseName, Size frameSize, float frameRate = 1
 
 }
 
-void FileWriter::writeOutExpSettings(UserInterface& UIobj, Cameras& camerasObj,
+void FileWriter::writeOutExpSettings(UserInterface& UIobj, MultiUSBCameras& camerasObj,
 	FishAnalysis& fishAnalysisObj)
 {
 	for (int i = 0; i < numFiles; i++)
@@ -79,11 +79,11 @@ void FileWriter::writeOutExpSettings(UserInterface& UIobj, Cameras& camerasObj,
 		writeKeyValuePair("Task", UIobj.expTask, i);
 		writeKeyValuePair("CSpattern", UIobj.visPattern, i);
 		writeKeyValuePair("ExpStartTime", timeStr, i);
-		writeKeyValuePair("FrameRate", FRAMERATE, i);// TODO: is this cross-file used macro a good practice?
-		writeKeyValuePair("FrameSize", Size(FRAMEWIDTH, FRAMEHEIGHT), i);
+		writeKeyValuePair("FrameRate", camerasObj.frameRate, i);// TODO: is this cross-file used macro a good practice?
+		writeKeyValuePair("FrameSize", Size(camerasObj.frameWidth, camerasObj.frameHeight), i);
 		// TODO: decide where to save x_, y_cut? FishAnalysis or Arena?
-		writeKeyValuePair("ImgSeg", Size(fishAnalysisObj.x_cut,fishAnalysisObj.y_cut), i);
-		writeKeyValuePair("yDivide", fishAnalysisObj.yDivs[i], i);
+		//writeKeyValuePair("ImgSeg", Size(fishAnalysisObj.x_cut,fishAnalysisObj.y_cut), i);
+		//writeKeyValuePair("yDivide", fishAnalysisObj.yDivs[i], i);
 	}
 
 }

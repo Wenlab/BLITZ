@@ -37,24 +37,42 @@
 using namespace std;
 using namespace cv;
 
-// TODO: make each module can be enabled separately
-bool Experiment::initialize()
+void Experiment::initialize()
 {
+	// TODO: better place for this variable?
+	const vector<vector<float>> allAreaPos =
+	{
+		{ 0.068f, 0.300f, 0.258f, 0.668f },
+		{ 0.840f, -0.810f, 0.258f, 0.73f },
+		{ -0.668f, -0.810f, 0.258f, 0.73f }
+	};
+
+	vector<int> patchesInAreas = {4,4,4};
+	// TODO: make this variable as an argument
+	string renderType = "half";
+
 	UIobj.enquireInfoFromUser();
 	// TODO: consider to encapsulate this property with a method
 	if (UIobj.devices2use[0]) // initialize relay
-		relayObj.initialize();
+		relayObj.initialize(COM_NUM);
 	else if (UIobj.devices2use[1]) // initialize pattern rendering
-	  screenObj.initialize();
+		screenObj.initialize(UIobj.visPattern, renderType, allAreaPos, patchesInAreas);
 	else if (UIobj.devices2use[2]) // initialize cameras
 	{
 		camerasObj.initialize(UIobj.cameras2open); // TODO: use method instead
-		fishAnalysisObj.initialize();
+		vector<int> numFishInArenas;
+		for (auto i : UIobj.allFishIDs)
+			numFishInArenas.push_back(i.size());
+		
+		fishAnalysisObj.initialize(numFishInArenas);
 	}
 
-	fileWriterObj.initialize(UIobj);
-	fileWriterObj.writeOutExpSettings(); //TODO: consider to move this into runXXexp?
-	timerObj.initialize();
+	fileWriterObj.initialize(UIobj.baseNames, 
+		Point(camerasObj.frameWidth,camerasObj.frameHeight),
+		camerasObj.frameRate);
+
+	fileWriterObj.writeOutExpSettings(UIobj,camerasObj,fishAnalysisObj);
+
 }
 
 void Experiment::runOLexp()

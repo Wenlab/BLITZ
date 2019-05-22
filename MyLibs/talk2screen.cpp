@@ -56,7 +56,7 @@ void Screen::initialize(string imgName, string renderType, vector<float> boundBo
 
 }
 
-void Screen::initialize(vector<string> imgNames, // name of the images to show
+void Screen::initialize(string imgName, // name of the images to show
 						string renderType, // type of rendering, full, half, rotating
 						vector<vector<float>> boundBoxes, // bounding boxes of all the areas
 						vector<int> patchesInAreas // number of patches in each area

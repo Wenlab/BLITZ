@@ -104,7 +104,7 @@ public:
 		only write once */
 	void writeOutExpSettings(
 		UserInterface& UIobj, // object that contains user's input
-		Cameras& camerasObj, // object that contains cameras' info (e.g., FRAMERATE)
+		MultiUSBCameras& camerasObj, // object that contains cameras' info (e.g., FRAMERATE)
 		FishAnalysis& fishAnalysisObj // object that contains image processing info
 	);
 
