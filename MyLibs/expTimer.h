@@ -46,6 +46,16 @@ public:
 
   /* Get both sElapsed and msRemElapsed */
   void getTime();
+
+  /* Reset count to zero */
+  void resetCount();
+
+  /* Get count */
+  int getCount();
+
+  /* Add count by one */
+  void addCount(int increase = 1);
+
   // Properties
 
   int count; // count events

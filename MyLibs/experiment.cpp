@@ -96,50 +96,57 @@ void Experiment::runOLexp()
 		int cIdx = camerasObj.cIdx;
 		fishAnalysisObj.aIdx = cIdx;
 
-
-		fishAnalysisObj.getImgFromCamera((uint8_t*)camerasObj.getPtr2buffer(), cIdx);
+		fishAnalysisObj.getImgFromCamera(camerasObj.frameWidth, camerasObj.frameHeight, (uint8_t*)camerasObj.getPtr2buffer());
 		// TODO: include the following two lines in the method "preprocessImg"
 		fishAnalysisObj.alignImg();
-		fishAnalysisObj.buildBgImg(cIdx);
+		fishAnalysisObj.buildBgImg();
 
 	}
 
-	timerObj.reset(); //TODO, reset seconds and count
+	timerObj.start(); //TODO, reset seconds and count
 
-	for (timerObj.resetCount(); timerObj.getCount() < camerasObj.getIdxEndFrame(prepareTime); timerObj.addCount())
+	for (timerObj.resetCount(); timerObj.getCount() < camerasObj.time2IdxFrame(prepareTime); timerObj.addCount())
 	{
 		timerObj.getTime();
 		camerasObj.grabPylonImg(); // grabbing
-		int cIdx = camerasObj.getIdxCamera();
-		fishAnalysisObj.getImgFromCamera((uint8_t*)camerasObj.getPtr2buffer(), cIdx);
-		fishAnalysisObj.alignImg(cIdx);
-		fishAnalysisObj.buildBgImg(cIdx);
+		int cIdx = camerasObj.cIdx;
+		fishAnalysisObj.aIdx = cIdx;
+
+		fishAnalysisObj.getImgFromCamera(camerasObj.frameWidth, camerasObj.frameHeight, (uint8_t*)camerasObj.getPtr2buffer());
+		// TODO: include the following two lines in the method "preprocessImg"
+		fishAnalysisObj.alignImg();
+		fishAnalysisObj.buildBgImg();
 
 		fishAnalysisObj.findAllFish();
 
 		// run baseline session
-		if (timerObj.getCount() < camerasObj.getIdxEndFrame(baselineEndTime))
+		if (timerObj.getCount() < camerasObj.time2IdxFrame(baselineEndTime))
 		{
 			timerObj.expPhase = 0;
-			screen.reverse(sElapsed, baselineInterval);
+			screenObj.reverse(timerObj.sElapsed, baselineInterval);
 		}
-		else if (timerObj.getCount() < camerasObj.getIdxEndFrame(trainingEndTime))
+		else if (timerObj.getCount() < camerasObj.time2IdxFrame(trainingEndTime))
 		{
 			timerObj.expPhase = 1;
-			vector<vector<bool>> fish2shock = fishAnalysisObj.checkIfGiveShock();
+			vector<vector<bool>> fish2shock = fishAnalysisObj.checkWhich2GiveShock(timerObj.sElapsed);
 			// TODO: map 2D fish2shock to 1D
-			relayObj.givePulse(fish2shock);
+			vector<bool> channels2open;
+			for (vector<bool> v : fish2shock)
+				for (auto i : v)
+					channels2open.push_back(i);
+
+			relayObj.givePulse(channels2open);
 			// update pattern indices based on shock status, fish positions, and current pattern
-			vector<vector<bool>> fish2reversePattern = fishAnalysisObj.checkIfReversePattern(); // TODO: is there a better place to put this method?
-			screen.reverse(fish2reversePattern);
+			vector<vector<bool>> fish2reversePattern = fishAnalysisObj.checkWhich2ReversePattern(timerObj.sElapsed); // TODO: is there a better place to put this method?
+			screenObj.reverse(fish2reversePattern);
 		}
-		else if (timerObj.getCount() < camerasObj.getIdxEndFrame(trainingEndTime))
+		else if (timerObj.getCount() < camerasObj.time2IdxFrame(trainingEndTime))
 		{
 			timerObj.expPhase = 3;
-			screen.reverse(sElapsed-trainingEndTime, testInterval);
+			screenObj.reverse(timerObj.sElapsed-trainingEndTime, testInterval);
 		}
-		fileWriterObj.writeOutFrame();
-		fishAnalysisObj.annotateImgs();
+		fileWriterObj.writeOutFrame(timerObj, fishAnalysisObj, cIdx);
+		fishAnalysisObj.annotateImg();
 		fishAnalysisObj.displayImg("Live");
 
 	}
@@ -147,7 +154,7 @@ void Experiment::runOLexp()
 
 }
 
-void ExperimentData::runUnpairedOLexp()
+void Experiment::runUnpairedOLexp()
 {
 	const int prepareTime = 1 * 60; // seconnds, default 1 min
 	const int baselineEndTime = 1 * 60; // seconds, default 10 mins
@@ -233,7 +240,7 @@ void ExperimentData::runUnpairedOLexp()
 	cout << "Experiment ended. " << endl;
 }
 
-void ExperimentData::runBlueTest()
+void Experiment::runBlueTest()
 {
 	const int prepareTime = 1 * 60; // seconnds, default 1 min
 	const int baselineEndTime = 10 * 60; // seconds, default 10 mins

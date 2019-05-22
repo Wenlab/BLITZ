@@ -29,3 +29,17 @@ void ExpTimer::getTime()
   msRemElapsed = (int)getElapsedTimeInMilliSec() % 1000;
 }
 
+void ExpTimer::resetCount()
+{
+	count = 0;
+}
+
+int ExpTimer::getCount()
+{
+	return count;
+}
+
+void ExpTimer::addCount(int increase)
+{
+	count = count + increase;
+}
