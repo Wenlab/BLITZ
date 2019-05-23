@@ -28,7 +28,7 @@
 // Include 3rd-party libraries
 #include "../3rdPartyLibs/OpenGL/shader_s.h"
 #include "../3rdPartyLibs/OpenGL/stb_image.h"
-#include <boost/any.hpp>
+#include "boost/any.hpp"
 
 // Include OpenGL libraries
 #include <glad/glad.h>
@@ -66,7 +66,6 @@ public:
 		: boundBox(patchRect)
 		, shader(vertexPath, fragmentPath)
 	{
-
 	}
 
 	/* Initialize memory for patch */
@@ -84,8 +83,17 @@ public:
 	/* Set idxCase for HalfSplitPatch */
 	virtual void setIdxCase(int value) { }
 
+
+	virtual int getIdxCase();
+
+	virtual void setTheta(float value);
+	virtual void setXDis(float value);
+	virtual void setYDis(float value);
+	virtual float getTheta();
+	virtual float getXDis();
+	virtual float getYDis();
+
 	unsigned int VAO; // vertex array object in GPU
-	//int idxCase; // TODO: decide whether it is a sharing property or a exclusive one
 
 };
 
@@ -159,14 +167,67 @@ public:
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
 		, radVelo(vRadian)
-	{	
+
+	{
+
+
 
 	}
 
 	// Properties
 	float radVelo; // rotating radian velocity
-				 
+
 };
+
+
+
+class VrPatch : public Patch
+{
+private:
+	// properties
+	; // nothing for now
+
+public:
+	// Methods
+	VrPatch(
+		std::vector<float> patchRect, // bounding box
+		const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs", // path to the vertex shader file
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/VrShader.fs" // path to the vertex fragment file
+	)
+		: Patch(patchRect, vertexPath, fragmentPath)
+	{
+		xDis = 0;
+		yDis = 0;
+		theta = 0;
+		idxCase = 0;
+	}
+
+	// Properties
+	int idxCase;
+
+	float xDis, yDis;
+	float theta;
+
+	void initialize();
+
+	void setIdxCase(int value);
+
+	int getIdxCase();
+
+	void setTheta(float value);
+
+	void setXDis(float value);
+
+	void setYDis(float value);
+
+	float getTheta();
+	
+	float getXDis();
+
+	float getYDis();
+
+};
+
 
 
 /* represent pattern changes of an entire local area,
@@ -222,6 +283,7 @@ public:
 	/* Render pattern for the entire area via textureID */
 	void renderTexture(int areaIdx);
 
+	void updateVrPattern();
 
 	// properties
 	std::vector<Patch*> allPatches; 

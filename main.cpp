@@ -32,18 +32,24 @@ using namespace std;
 
 int main()
 {
-	
+
 	Screen sObj;
 	sObj.initialize(
 		"Images/RBC.jpg"
-		, "half"
-		, { 0.068f, 0.300f, 0.258f, 0.668f }
+		, "vr"
+		, { 0.5f, -0.5f, 1.0f, 1.0f }
+
 	);
 
 	while (1)
 	{
-		sObj.reverse();
-		
+
+		sObj.allAreas[0].allPatches[0]->setTheta(rand() / 10.0);
+		sObj.allAreas[0].allPatches[0]->setXDis(rand()/10.0);
+		sObj.allAreas[0].allPatches[0]->setYDis(rand()/10.0);
+		sObj.allAreas[0].updateVrPattern();
+		sObj.show();
+
 	}
 	
 	/*
@@ -63,7 +69,6 @@ int main()
 
 	}
 	*/
-
 
 
 
