@@ -32,6 +32,8 @@
 #include <random>
 #include <iterator>
 #include <functional>
+#include <numeric>
+#include <algorithm>
 
 
 using namespace std;
@@ -162,125 +164,97 @@ void Experiment::runUnpairedOLexp()
 	const int blackoutEndTime = 8 * 60; // seconds, default 1 min
 	const int testEndTime = 10 * 60; // seconds, default 18 mins (including memory extinction period)
 	const int expEndTime = testEndTime;
+	const int baselineInterval = 30; // seconds
+	const int testInterval = 30; // seconds
 
 	const int numShocks = 20; // comparable to shocks fish received in the normal OLexp group
 
-	vector<int> vec;
-	for (int i = baselineEndTime * FRAMERATE; i < trainingEndTime*FRAMERATE; i++)
-		vec.push_back(i);
 
-	// First create an instance of an engine.
-	random_device rnd_device;
-	// Specify the engine and distribution.
-	mt19937 g(rnd_device());
-	shuffle(vec.begin(), vec.end(), g);
-	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
-
-	// TODO: wrap the above RNG code
-
-	prepareBgImg(prepareTime);
-	expTimer.start(); // reset timer to 0
-	while (idxFrame < numCameras * expEndTime * FRAMERATE)// giant grabbing loop
+	// write a function to sample frames2giveShock
+	vector<bool> frames2giveShock = RNGsampleFrames2giveShock(numShocks, trainingEndTime - baselineEndTime);
+	for (timerObj.resetCount(); timerObj.getCount() < camerasObj.time2IdxFrame(prepareTime); timerObj.addCount()) // TODO: write a macro to encapsulate this `for`
 	{
-		cams.grabPylonImg();
-		idxFrame++;
-		int cIdx = cams.cIdx;
-		allArenas[cIdx].prepareBgImg(cams.ptrGrabResult->GetWidth(), cams.ptrGrabResult->GetHeight()
-			, cIdx, (uint8_t*)cams.pylonImg.GetBuffer());
-		getTime();
-		if (!allArenas[cIdx].findAllFish())
-			cout << "in arena: " << cIdx << endl;
-		if (sElapsed < baselineEndTime)
-		{
-			expPhase = 0;
-			screen.updatePatternInBaseline(sElapsed);
-		}
-		else if (sElapsed < trainingEndTime)
-		{
-			expPhase = 1;
-			for (int i = 0; i < allArenas[cIdx].numFish; i++)
-			{	// find certain element in the vector
-				int target = (idxFrame - cIdx) / numCameras;
-				if (find(rndVec.begin(), rndVec.end(), target) != rndVec.end())
-					giveFishShock(i);
-				else
-					allArenas[cIdx].allFish[i].shockOn = 0; // TODO: condiser to align abstraction level
-				int pIdx = screen.allAreas[cIdx].allPatches[i].pIdx;
-				screen.allAreas[cIdx].allPatches[i].pIdx
-					= allArenas[cIdx].allFish[i].updatePatternInTraining(sElapsed, pIdx, ITI);
-				screen.allAreas[cIdx].allPatches[i].updatePattern();
-			}
-		}
-		else if (sElapsed < blackoutEndTime)
-		{
-			expPhase = 2;
-			if (idxFrame == trainingEndTime * FRAMERATE * numCameras + cIdx)
-			{
-				allArenas[cIdx].resetShocksOn();
-				// make it an AreaData method
-				screen.updatePatternInBlackout();
-			}
-		}
-		else if (sElapsed <= testEndTime)
-		{
-			expPhase = 3;
-			screen.updatePatternInTest(sElapsed);
-		}
-		else
-		{ // experiment ends
-		  //cout << "Experiment ended. " << endl;
-		  //exit(0);
-		}
-		screen.renderTexture(); // TODO: Specify rendering style, e.g., avoidance, OMR, etc.
-		writeOutFrame();
-		annotateFishImgs();
+		camerasObj.grabPylonImg(); // TODO: update the return type
+		int cIdx = camerasObj.cIdx;
+		fishAnalysisObj.aIdx = cIdx;
 
-		displayFishImgs("Display");
+		fishAnalysisObj.getImgFromCamera(camerasObj.frameWidth, camerasObj.frameHeight, (uint8_t*)camerasObj.getPtr2buffer());
+		// TODO: include the following two lines in the method "preprocessImg"
+		fishAnalysisObj.alignImg();
+		fishAnalysisObj.buildBgImg();
+
+	}
+	timerObj.start();
+
+	for (timerObj.resetCount(); timerObj.getCount() < camerasObj.time2IdxFrame(prepareTime); timerObj.addCount())
+	{
+		timerObj.getTime();
+		camerasObj.grabPylonImg(); // grabbing
+		int cIdx = camerasObj.cIdx;
+		fishAnalysisObj.aIdx = cIdx;
+
+		fishAnalysisObj.getImgFromCamera(camerasObj.frameWidth, camerasObj.frameHeight, (uint8_t*)camerasObj.getPtr2buffer());
+		// TODO: include the following two lines in the method "preprocessImg"
+		fishAnalysisObj.alignImg();
+		fishAnalysisObj.buildBgImg();
+
+		fishAnalysisObj.findAllFish();
+
+		// run baseline session
+		if (timerObj.getCount() < camerasObj.time2IdxFrame(baselineEndTime))
+		{
+			timerObj.expPhase = 0;
+			screenObj.reverse(timerObj.sElapsed, baselineInterval);
+		}
+		else if (timerObj.getCount() < camerasObj.time2IdxFrame(trainingEndTime))
+		{
+			timerObj.expPhase = 1;
+			vector<bool> channels2open;
+			if (frames2giveShock[timerObj.getCount() - camerasObj.time2IdxFrame(baselineEndTime)])
+				channels2open.resize(12, true);//TODO: the magic number means max number of channels, consider to have this variable in the Relay class
+			else
+				channels2open.resize(12, false);
+
+			relayObj.givePulse(channels2open);
+			// update pattern indices based on shock status, fish positions, and current pattern
+			vector<vector<bool>> fish2reversePattern = fishAnalysisObj.checkWhich2ReversePattern(timerObj.sElapsed); // TODO: is there a better place to put this method?
+			screenObj.reverse(fish2reversePattern);
+		}
+		else if (timerObj.getCount() < camerasObj.time2IdxFrame(trainingEndTime))
+		{
+			timerObj.expPhase = 3;
+			screenObj.reverse(timerObj.sElapsed - trainingEndTime, testInterval);
+		}
+		fileWriterObj.writeOutFrame(timerObj, fishAnalysisObj, cIdx);
+		fishAnalysisObj.annotateImg();
+		fishAnalysisObj.displayImg("Live");
+
 	}
 	cout << "Experiment ended. " << endl;
 }
 
-void Experiment::runBlueTest()
+vector<bool> Experiment::RNGsampleFrames2giveShock(int numShocks, int sampleDuration, int startTime)
 {
-	const int prepareTime = 1 * 60; // seconnds, default 1 min
-	const int baselineEndTime = 10 * 60; // seconds, default 10 mins
-	const int trainingEndTime = 30 * 60; // seconds, default 20 mins
-	const int expEndTime = trainingEndTime;
+	// First create an instance of an engine.
+	random_device rnd_device;
+	// Specify the engine and distribution.
+	mt19937 g(rnd_device());
+	vector<int> vec(sampleDuration);
+	iota(vec.begin(), vec.end(), 1);
 
-	prepareBgImg(prepareTime);
-	expTimer.start(); // reset timer to 0
+	shuffle(vec.begin(), vec.end(), g);
+	vector<int> rndVec(vec.begin(), vec.begin() + numShocks);
 
-	for (idxFrame = 0; idxFrame < numCameras * expEndTime * FRAMERATE; idxFrame++)// giant grabbing loop
-	{
+	for (auto& i : rndVec)
+		i += startTime;
+	
+	int frameRate = camerasObj.frameRate;
+	int numCameras = UIobj.numOpenCameras;
+	vector<bool> frames2giveShock(sampleDuration * camerasObj.frameRate);
+	for (auto& i : rndVec)
+		fill(frames2giveShock.begin() + frameRate * i, frames2giveShock.begin() + frameRate * i + numCameras, true);
+	
+	return frames2giveShock;
 
-		cams.grabPylonImg();
-		int cIdx = cams.cIdx;
-		allArenas[cIdx].prepareBgImg(
-			cams.ptrGrabResult->GetWidth(),
-			cams.ptrGrabResult->GetHeight(),
-			cIdx,
-			(uint8_t*)cams.pylonImg.GetBuffer());
-
-		if (!getTime()) {
-			break;
-		}
-		if (!allArenas[cIdx].findAllFish())
-			cout << "Fish in arena " << cIdx + 1 << " not found." << endl;
-		if (sElapsed < baselineEndTime)
-		{
-			expPhase = 0;             //baseline = 0, training = 1, blackout = 2, test = 3
-			screen.updatePatternInBaseline(sElapsed);
-		}
-		else if (sElapsed < expEndTime)
-		{
-			expPhase = 1;
-			screen.updatePatternInTest(sElapsed);
-		}
-		screen.renderTexture();
-		writeOutFrame();
-		annotateFishImgs();
-		displayFishImgs("Display");
-	}
-	cout << "Experiment ended. " << endl;
 
 }
