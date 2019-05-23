@@ -209,6 +209,7 @@ void Area::initialize(string imgName)
 	float xDivLen = boundBox[2] / nx; // the length of each division in x
 	float yDivLen = boundBox[3] / ny; // the length of each division in y
 
+	allPatches.resize(numPatches, NULL);
 	for (int i = 0; i < numPatches; i++)
 	{
 		vector<float> patchBoundBox = boundBox;
@@ -237,22 +238,19 @@ void Area::initialize(string imgName)
 
 		if (renderType.compare("full") == 0)
 		{
-			FullPatch patchObj(patchBoundBox);
-			patchObj.initialize();
-			allPatches.push_back(&patchObj);
+			allPatches[i] = new FullPatch(patchBoundBox);
+			allPatches[i]->initialize();
 		}
 		else if (renderType.compare("half") == 0)
 		{
 			int yDiv = 900; // TODO: consider to move this parameter to a higher level
-			HalfSplitPatch patchObj(patchBoundBox, yDiv);
-			patchObj.initialize();
-			allPatches.push_back(&patchObj);
+			allPatches[i] = new HalfSplitPatch(patchBoundBox, yDiv);
+			allPatches[i]->initialize();		
 		}
 		else if (renderType.compare("rotation") == 0)
 		{
-			RotatingPatch patchObj(patchBoundBox);
-			patchObj.initialize();
-			allPatches.push_back(&patchObj);
+			allPatches[i] = new RotatingPatch(patchBoundBox);
+			allPatches[i]->initialize();
 		}
 		else {
 			cout << "Unknown renderType! Please select one of the following:\n"
@@ -399,17 +397,6 @@ void Patch::uploadFloat2GPU(string varName, float varValue)
 {
 	shader.use();
 	shader.setFloat(varName, varValue);
-}
-
-
-int Patch::getIdxCase()
-{
-	return 0;
-}
-
-void Patch::setIdxCase(int value)
-{
-
 }
 
 int HalfSplitPatch::getIdxCase()

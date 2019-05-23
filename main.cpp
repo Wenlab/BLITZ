@@ -42,7 +42,8 @@ int main()
 
 	while (1)
 	{
-		sObj.show();
+		sObj.reverse();
+		
 	}
 	
 	/*

@@ -70,7 +70,7 @@ public:
 	}
 
 	/* Initialize memory for patch */
-	void initialize();
+	virtual void initialize();
 
 	/* Upload an int variable to GPU from CPU */
 	void uploadInt2GPU(std::string varName, int varValue);
@@ -79,10 +79,10 @@ public:
 	void uploadFloat2GPU(std::string varName, float varValue);
 
 	/* Get idxCase for HalfSplitPatch*/
-	virtual int getIdxCase();
+	virtual int getIdxCase() { return 0; }
 
 	/* Set idxCase for HalfSplitPatch */
-	virtual void setIdxCase(int value);
+	virtual void setIdxCase(int value) { }
 
 	unsigned int VAO; // vertex array object in GPU
 	//int idxCase; // TODO: decide whether it is a sharing property or a exclusive one
