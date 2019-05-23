@@ -32,53 +32,60 @@ using namespace std;
 
 int main()
 {
+
 	Screen sObj;
 	sObj.initialize(
 		"Images/RBC.jpg"
 		, "vr"
 		, { 0.5f, -0.5f, 1.0f, 1.0f }
+
 	);
 
 	while (1)
 	{
+
 		sObj.allAreas[0].allPatches[0]->setTheta(rand() / 10.0);
 		sObj.allAreas[0].allPatches[0]->setXDis(rand()/10.0);
 		sObj.allAreas[0].allPatches[0]->setYDis(rand()/10.0);
 		sObj.allAreas[0].updateVrPattern();
 		sObj.show();
+
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	
 	/*
 	SingleCamera cObj;
 	cObj.initialize();
 	int numFrames2grab = 1000;
-	
+
 	// giant grabbing loop
 	for (int i = 0; i < numFrames2grab; i++)
-	{ 
-	
-#ifdef PYLON_WIN_BUILD
+	{
+
+		cObj.grabPylonImg();
+	#ifdef PYLON_WIN_BUILD
 	// Display the grabbed image.
-	Pylon::DisplayImage(1, cObj.grabPylonImg());
-#endif
+	Pylon::DisplayImage(1, cObj.pylonImg);
+	#endif
 
 	}
 	*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 
 }
 

@@ -173,16 +173,19 @@ void SingleCamera::initialize()
 
 	// Set the parameters
 	if (IsWritable(camOffsetX))
-	camOffsetX->SetValue(offSetX);
+		camOffsetX->SetValue(offSetX);
 	if (IsWritable(camOffsetY))
-	camOffsetY->SetValue(offSetY);
-	camWidth->SetValue(frameWidth);
-	camHeight->SetValue(frameHeight);
-	camFrameRate->SetValue(frameRate);
+		camOffsetY->SetValue(offSetY);
+	if (IsWritable(camWidth))
+		camWidth->SetValue(frameWidth);
+	if (IsWritable(camHeight))
+		camHeight->SetValue(frameHeight);
+	if (IsWritable(camFrameRate))
+		camFrameRate->SetValue(frameRate);
 
 	// Set the pixel data format.
-	CEnumerationPtr(control.GetNode("PixelFormat"))->FromString(pixelFormat.c_str());
-
+	//CEnumerationPtr(control.GetNode("PixelFormat"))->FromString(pixelFormat.c_str());
+	//TODO: add pixel format control
 
 	cam.StartGrabbing();
 	cout << "Camera initialization succeeded." << endl << endl;

@@ -41,14 +41,6 @@
 // Include user-defined libraries
 #include "errorHandling.h"
 
-// User-defined macros; TODO: consider to convert some macros to local variables
-#define NUM_ARENA 3
-#define PATCHES_PER_ARENA 4
-#define NUM_SHADER 12
-#define VERTEXS_PER_SHADER 4
-#define TRIANGLES_PER_PATCH 2
-
-
 /* This an example class for inheritances.
 A wrapper class of the Shader class */
 class Patch
@@ -61,13 +53,9 @@ protected:
 	unsigned int VBO, EBO;
 	const std::vector<float> boundBox; // upper-left corner (x, y, width, height)
 
-
-
 	// Methods
 	/* Initialize vertices and their buffers with given pos(x,y) */
 	void initVertices();
-
-
 
 public:
 	Patch(
@@ -80,7 +68,6 @@ public:
 	{
 	}
 
-
 	/* Initialize memory for patch */
 	virtual void initialize();
 
@@ -90,8 +77,11 @@ public:
 	/* Upload a float variable to GPU from CPU */
 	void uploadFloat2GPU(std::string varName, float varValue);
 
-	/* Set idxCase, a virtual function to be overrided during runtime */
-	virtual void setIdxCase(int value);
+	/* Get idxCase for HalfSplitPatch*/
+	virtual int getIdxCase() { return 0; }
+
+	/* Set idxCase for HalfSplitPatch */
+	virtual void setIdxCase(int value) { }
 
 
 	virtual int getIdxCase();
@@ -114,7 +104,7 @@ public:
 	// methods
 	FullPatch(
 		std::vector<float> patchRect, // bounding box
-		std::string vertexPath = "3rdPartyLibs/OpenGL/full.vs", // path to the vertex shader file
+		std::string vertexPath = "3rdPartyLibs/OpenGL/shader.vs", // path to the vertex shader file
 		std::string fragmentPath = "3rdPartyLibs/OpenGL/full.fs" // path to the vertex fragment file
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
@@ -139,16 +129,25 @@ public:
 		std::vector<float> patchRect, // bounding box
 		int yDiv, // the dividing position in y
 		std::string vertexPath = "3rdPartyLibs/OpenGL/shader.vs", // path to the vertex shader file
-		std::string fragmentPath = "3rdPartyLibs/OpenGL/shader.fs" // path to the vertex fragment file
+		std::string fragmentPath = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
 		, yDivide(yDiv)
 	{
-
+		idxCase = 0;
 	}
 
-	// Properties
-	int idxCase; // to select the case in f-shader
+	/* initialize vertices, upload uniform variables */
+	void initialize();
+
+	/* Get idxCase, real implementation */
+	int getIdxCase();
+
+	/* Set idxCase, real implementation */
+	void setIdxCase(int value);
+
+
+	int idxCase;
 
 };
 
@@ -163,19 +162,20 @@ public:
 	RotatingPatch(
 		std::vector<float> patchRect, // bounding box
 		float vRadian = 0, // the rotating velocity of the pattern
-		const char vertexPath[] = "3rdPartyLibs/OpenGL/halfSplit.vs", // path to the vertex shader file
-		const char fragmentPath[] = "3rdPartyLibs/OpenGL/halfSplit.fs" // path to the vertex fragment file
+		const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs", // path to the vertex shader file
+		const char fragmentPath[] = "3rdPartyLibs/OpenGL/rotate.fs" // path to the vertex fragment file
 	)
 		: Patch(patchRect, vertexPath, fragmentPath)
 		, radVelo(vRadian)
+
 	{
+
 
 
 	}
 
 	// Properties
 	float radVelo; // rotating radian velocity
-				   // TODO: consider to make it private?
 
 };
 
@@ -287,9 +287,7 @@ public:
 
 	// properties
 	std::vector<Patch*> allPatches; 
-	// use Patch as the base class (pointer form),
-	// then override this class with virtual functions
-	// TODO: test whether this initiation works?
+	
 };
 
 
@@ -330,7 +328,7 @@ public:
 	// TODO: write the implementation
 	/* Initilize screen environment with pre-defined multi-bounding areas */
 	void initialize(
-		std::vector<std::string> imgNames, // name of the images to show
+		std::string imgName, // name of the image to show
 		std::string renderType, // type of rendering, full, half, rotating
 		std::vector<std::vector<float>> boundBoxes, // bounding boxes of all the areas
 		std::vector<int> patchesInAreas // number of patches in each area

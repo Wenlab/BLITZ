@@ -33,6 +33,7 @@
 
 #include "talk2screen.h"
 
+#define TRIANGLES_PER_PATCH 2
 
 using namespace std;
 
@@ -55,7 +56,7 @@ void Screen::initialize(string imgName, string renderType, vector<float> boundBo
 
 }
 
-void Screen::initialize(vector<string> imgNames, // name of the images to show
+void Screen::initialize(string imgName, // name of the images to show
 						string renderType, // type of rendering, full, half, rotating
 						vector<vector<float>> boundBoxes, // bounding boxes of all the areas
 						vector<int> patchesInAreas // number of patches in each area
@@ -159,8 +160,10 @@ void Screen::reverse(int sec2start, int period)
 	// TODO: check this code
 	vector<vector<bool>> patchIndices(numAreas);
 	for (int i = 0; i < numAreas; i++)
-	{// TODO: deal with situation that areas have different patches
-		vector<bool> vec(PATCHES_PER_ARENA,true);
+	{
+		// TODO: rewrite in OO style
+		int numPatches = allAreas[i].allPatches.size();
+		vector<bool> vec(numPatches,true);
 		patchIndices[i] = vec;
 	}
 	if ((sec2start / period) % 2) // has to be odd-times period to reverse
@@ -206,6 +209,7 @@ void Area::initialize(string imgName)
 	float xDivLen = boundBox[2] / nx; // the length of each division in x
 	float yDivLen = boundBox[3] / ny; // the length of each division in y
 
+	allPatches.resize(numPatches, NULL);
 	for (int i = 0; i < numPatches; i++)
 	{
 		vector<float> patchBoundBox = boundBox;
@@ -231,6 +235,7 @@ void Area::initialize(string imgName)
 				break;
 			}
 		}
+
 		Patch *patchObj;
 		if (renderType.compare("full") == 0)
 		{
@@ -252,15 +257,18 @@ void Area::initialize(string imgName)
 		{
 			patchObj = new VrPatch(patchBoundBox);
 			patchObj->initialize();
+
 		}
 		else {
 			cout << "Unknown renderType! Please select one of the following:\n"
 				<< "full, half, rotation, vr" << endl;
 			waitUserInput2exit();
 		}
+
 		allPatches.push_back(patchObj);
 	}
 	loadTextureIntoBuffers(imgName);
+
 }
 
 void Area::loadTextureIntoBuffers(string imgName)
@@ -325,9 +333,9 @@ void Area::negateIdxCase(int patchIdx)
 
 	tryCatchFalse(renderType.compare("half") == 0,
 	"Wrong renderType! This method is for full rendering only!");
-
 	allPatches[patchIdx]->setIdxCase(!allPatches[patchIdx]->getIdxCase());	
 	allPatches[patchIdx]->uploadInt2GPU("idxCase", allPatches[patchIdx]->getIdxCase());
+
 }
 
 void Area::renderTexture(int areaIdx)
@@ -356,6 +364,7 @@ void Area::updateVrPattern()
 void Patch::initialize()
 {
 	initVertices();
+	
 	// Space for updates
 }
 
@@ -407,7 +416,12 @@ void Patch::uploadFloat2GPU(string varName, float varValue)
 	shader.setFloat(varName, varValue);
 }
 
-void Patch::setIdxCase(int value)
+int HalfSplitPatch::getIdxCase()
+{
+	return idxCase;
+}
+
+void HalfSplitPatch::setIdxCase(int value)
 {
 
 }
@@ -447,6 +461,7 @@ void VrPatch::setIdxCase(int value) {
 	idxCase = value;
 }
 
+
 int VrPatch::getIdxCase() {
 	return idxCase;
 }
@@ -485,4 +500,12 @@ void VrPatch::initialize()
 	uploadFloat2GPU("theta", theta);
 	uploadFloat2GPU("xDis", xDis);
 	uploadFloat2GPU("yDis", yDis);
+
+void HalfSplitPatch::initialize()
+{
+	initVertices();
+	uploadInt2GPU("idxCase", idxCase);
+	uploadInt2GPU("yDivide", yDivide);
+	cout << "HalfSplitPatch" << endl;
+
 }

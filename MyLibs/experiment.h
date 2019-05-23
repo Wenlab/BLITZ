@@ -56,9 +56,13 @@ public:
 	/* Run unpaired training in the operant learning procedure */
 	void runUnpairedOLexp(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
 
-	/* Run the experiment to do whether fish invisible to the blue pattern */
-	void runBlueTest(); // TODO: rewrite the implementation with new methods. Be sure to align the abstraction level.
-
+	/* */
+	std::vector<bool> RNGsampleFrames2giveShock(
+		int numShocks, // number of shocks to give
+		int sampleDuration, // the entire time that to sample from
+		int startTime = 0 // start from when
+	);
+	
 private:
   // properties
 	// Functional module objects
