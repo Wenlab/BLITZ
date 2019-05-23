@@ -57,13 +57,13 @@ void UserInterface::enquireDevice2use(std::istream& is)
 		{
 			devices2use[1] = 1;
 			enquirePattern2use(is);
-		}		
+		}
 		else if (!s.compare("3"))
 		{
 			devices2use[2] = 1;
 			enquireCameras2use(is);
 		}
-			
+
 		else
 		{
 			cout << "Invalid input! Please enter again." << endl;
@@ -87,7 +87,7 @@ void UserInterface::enquireCameras2use(std::istream& is)
 
 	for (int i = 0; i < numCameras; i++)
 		cameras2open[i] = stoi(tempStrVec[i]);
-	
+
 	for (int i = 0; i < cameras2open.size(); i++)
 	{
 		if (cameras2open[i])
@@ -227,7 +227,7 @@ void UserInterface::generateBasenames()
 string UserInterface::generateBasename(int idxFile)
 {
 	string baseName =
-		startTimeStr + "_" + "Arena" 
+		startTimeStr + "_" + "Arena"
 		+ to_string(arenaIDs[idxFile])
 		+ "_" + strainName + "_"
 		+ to_string(fishAge)+ "dpf_"
@@ -251,7 +251,7 @@ void showWelcomeMsg()
 	Copyright 2018 Wenbin Yang <bysin7@gmail.com>
 	*/
 	cout << "Welcome to BLITZ (Behavioral Learning In The Zebrafish)." << endl
-		<< "This program is under GNU 3.0 License." << endl 
+		<< "This program is under GNU 3.0 License." << endl
 		<< "Most updated code and other resources can be found at " << endl
 		<< "https://github.com/Wenlab/BLITZ" << endl
 		<< "Please cite (Wenbin Yang et al., 2019) if you use any portion of this program." << endl
@@ -283,7 +283,7 @@ vector<string> getStrVecFromCMD(std::istream& is)
 	string inputStr;
 	getline(is, inputStr);
 	cout << endl; // separated with an empty line
-	
+
 
 	istringstream ss;
 	ss.clear();
@@ -314,4 +314,60 @@ string getCurDateTime()
 	strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M", &timeinfo);
 	timeStr = buffer;
 	return timeStr;
+}
+
+static void on_trackbar_setThreshold(int, void*) {
+	int max_val = 255;
+	Mat binaryzation = Mat::zeros(cur_img.size(), CV_8UC1);
+	threshold(cur_img, binaryzation, threshold_val, max_val, CV_THRESH_BINARY);
+
+	imshow("setThreshold", binaryzation);
+
+}
+
+bool setThreshold() {
+	namedWindow("setThreshold", CV_WINDOW_NORMAL);
+	createTrackbar("Threshold", "setThreshold", &threshold_val, 255, on_trackbar_setThreshold);
+	on_trackbar_setThreshold(threshold_val, 0);
+	cout<<"Press 'q' to exit."<<endl;
+	while (char(waitKey(1)) != 'q') {}
+	return true;
+}
+
+void on_mouse_findHeadAndCenter(int event, int x, int y, int flags, void* ustc) {
+	if (event == CV_EVENT_LBUTTONDBLCLK) {
+		fishEye1 = Point(x, y);
+		circle(cur_img, fishEye1, 2, Scalar(255, 0, 0, 0), CV_FILLED, CV_AA, 0);
+		imshow("findHeadAndCenter", cur_img);
+	}
+	else if (event == CV_EVENT_RBUTTONDBLCLK) {
+
+		fishEye2 = Point(x, y);
+		fishHead = (fishEye1 + fishEye2) / 2;
+		circle(cur_img, fishHead, 2, Scalar(0, 0, 0, 255), CV_FILLED, CV_AA, 0);
+		circle(cur_img, fishEye2, 2, Scalar(0, 255, 0, 0), CV_FILLED, CV_AA, 0);
+		imshow("findHeadAndCenter", cur_img);
+
+	}
+	else if (event == CV_EVENT_MBUTTONDOWN) {
+
+		fishCenter = Point(x, y);
+		circle(cur_img, fishCenter, 2, Scalar(0, 0, 255, 0), CV_FILLED, CV_AA, 0);
+		imshow("findHeadAndCenter", cur_img);
+		cout << "fishCenter:" << fishCenter.x << ',' << fishCenter.y << endl;
+		cout << "fishHead:" << fishHead.x << ',' << fishHead.y << endl;
+	}
+
+}
+
+bool findHeadAndCenter() {
+	namedWindow("findHeadAndCenter", CV_WINDOW_NORMAL);
+	imshow("findHeadAndCenter", cur_img);
+	setMouseCallback("findHeadAndCenter", on_mouse_findHeadAndCenter, 0);
+	cout<<"Double-click the left mouse button to select one eye."<<endl;
+	cout<<"Double-click the right mouse button to select another eye."<<endl;
+	cout<<"Click the middle mouse button to select center."<<endl;
+	cout<<"Press 'q' to exit."<<endl;
+	while (char(waitKey(1)) != 'q') {}
+	return true;
 }

@@ -33,6 +33,8 @@
 // Include user-defined libraries
 #include "errorHandling.h"
 
+#include <Python.h>
+
 /* Define related methods and properties for a single fish */
 // Write every frame updated info at here? No! Create another class in fileWriter class
 class Fish {
@@ -215,7 +217,7 @@ public:
 				{ 223, 223, 588, 588 },
 				{ 223, 223, 588, 588 }
 			}; // TODO: make this variable private
-			
+
 			aIdx = 0;
 		}
 
@@ -227,7 +229,7 @@ public:
 		void initialize(std::vector<int> numFishInArenas);
 
 		/* Process image from camera */
-		void preprocessImg(); 
+		void preprocessImg();
 
 		/* Get image from camera */
 		void getImgFromCamera(int width, int height, uint8_t* buffer);
@@ -281,7 +283,7 @@ public:
 		int numArenas;
 		int aIdx; // index of arena to process
 private:
-		std::vector<std::vector<int>> yDivs; 
+		std::vector<std::vector<int>> yDivs;
 };
 
 
@@ -305,7 +307,9 @@ double getPt2LineDistance(cv::Point2f P, cv::Point2f A, cv::Point2f B);
 /* Find 2 intersection points of a line (AB) and contour */
 std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv::Point2f A, cv::Point2f B);
 
-
-
+/*This function return a radian to describe the fishtailing motion */
+bool fishAngleAnalysis(Mat fishImg, Point fishHead, Point fishCenter, Point * fishTail_return, double* fishAngle,int threshold_val);
+/*This function return the direction of motion(is or not left),which predicted from 40 radians*/
+int predict_left(double* boutStart);
 
 #endif // !_GUARD_FISHANALYSIS_H

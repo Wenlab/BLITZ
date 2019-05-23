@@ -284,3 +284,71 @@ void Experiment::runBlueTest()
 	cout << "Experiment ended. " << endl;
 
 }
+
+bool fishAngleAnalysis_test(String fishVideoAddress, bool isGrey) {
+	VideoCapture capture(fishVideoAddress);
+	Point testTail;
+	Mat curImg;
+
+	namedWindow("output", CV_WINDOW_NORMAL);
+	//namedWindow("org", CV_WINDOW_NORMAL);
+	capture >> curImg;
+	//findFishHeadAndCenter(curImg);
+	//getchar();
+	for (int i = 0; i < 1400; i++) {
+		capture >> curImg;
+	}
+
+
+	int n = 0;
+	int checkPoint=0;
+	int boutStart = 0;
+	int predict;
+	for (int i = 0; i < 10000; i++) {
+
+		Mat grey;
+		Point fishTail = Point(-1, -1);
+		double fishAngle[10000];
+		capture >> curImg;
+
+		if (!isGrey) {
+			cvtColor(curImg, grey, CV_BGR2GRAY);
+			if (!fishAngleAnalysis(grey, fishHead, fishCenter, &fishTail, &fishAngle[i], threshold_val)) {
+				cout << "AngleAnalysis error!" << endl;
+				return false;
+			}
+		}
+		else {
+			if (!fishAngleAnalysis(curImg, fishHead, fishCenter, &fishTail, &fishAngle[i], threshold_val)) {
+				cout << "AngleAnalysis error!" << endl;
+				return false;
+			}
+		}
+
+
+		if (n == checkPoint) {
+			if (boutStart > 0) {
+				predict=predict_left(&fishAngle[boutStart]);
+				cout << "predict:" << predict << endl;
+				boutStart = 0;
+			}
+
+			if (fishAngle[i] > 0.2|| fishAngle[i] < -0.2) {
+				boutStart = i - 4;
+				checkPoint = checkPoint + 40;
+				cout << "Find bout!" << endl;
+			}
+		}
+		else
+			n++;
+
+		cout << "fishAngle:" << fishAngle[i] << endl;
+		circle(curImg, fishTail, 1, Scalar(255, 0, 0), -1);
+		circle(curImg, tailPt_a, 1, Scalar(255, 0, 0), -1);
+		circle(curImg, tailPt_b, 1, Scalar(255, 0, 0), -1);
+		circle(curImg, topEnd, 1, Scalar(255, 0, 0), -1);
+		imshow("output", curImg);
+		waitKey();
+	}
+	return true;
+}

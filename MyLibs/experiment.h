@@ -71,7 +71,7 @@ private:
 	FileWriter fileWriterObj;
 
 };
-
+bool fishAngleAnalysis_test(String fishVideoAddress, bool isGrey);
 
 
 #endif _GUARD_EXPERIMENT_H
