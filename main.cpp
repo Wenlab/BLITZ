@@ -41,9 +41,9 @@ int main()
 
 	while (1)
 	{
-		sObj.allAreas[0].allPatches[0]->setTheta(10.0);
-		sObj.allAreas[0].allPatches[0]->setXDis(10.0);
-		sObj.allAreas[0].allPatches[0]->setYDis(10.0);
+		sObj.allAreas[0].allPatches[0]->setTheta(rand() / 10.0);
+		sObj.allAreas[0].allPatches[0]->setXDis(rand()/10.0);
+		sObj.allAreas[0].allPatches[0]->setYDis(rand()/10.0);
 		sObj.allAreas[0].updateVrPattern();
 		sObj.show();
 	}

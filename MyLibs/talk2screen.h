@@ -82,7 +82,7 @@ public:
 
 
 	/* Initialize memory for patch */
-	void initialize();
+	virtual void initialize();
 
 	/* Upload an int variable to GPU from CPU */
 	void uploadInt2GPU(std::string varName, int varValue);

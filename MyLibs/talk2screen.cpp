@@ -231,37 +231,34 @@ void Area::initialize(string imgName)
 				break;
 			}
 		}
+		Patch *patchObj;
 		if (renderType.compare("full") == 0)
 		{
-			FullPatch patchObj(patchBoundBox);
-			patchObj.initialize();
-			allPatches.push_back(&patchObj);
+			patchObj = new FullPatch(patchBoundBox);
+			patchObj->initialize();
 		}
 		else if (renderType.compare("half") == 0)
 		{
 			int yDiv = 1800;
-			HalfSplitPatch patchObj(patchBoundBox, yDiv);
-			patchObj.initialize();
-			allPatches.push_back(&patchObj);
+			patchObj = new HalfSplitPatch(patchBoundBox, yDiv);
+			patchObj->initialize();
 		}
 		else if (renderType.compare("rotation") == 0)
 		{
-			RotatingPatch patchObj(patchBoundBox);
-			patchObj.initialize();
-			allPatches.push_back(&patchObj);
+			patchObj = new RotatingPatch(patchBoundBox);
+			patchObj->initialize();
 		}
 		else if (renderType.compare("vr") == 0)
 		{
-			VrPatch patchObj(patchBoundBox);
-			patchObj.initialize();
-			allPatches.push_back(&patchObj);
+			patchObj = new VrPatch(patchBoundBox);
+			patchObj->initialize();
 		}
 		else {
 			cout << "Unknown renderType! Please select one of the following:\n"
 				<< "full, half, rotation, vr" << endl;
 			waitUserInput2exit();
 		}
-
+		allPatches.push_back(patchObj);
 	}
 	loadTextureIntoBuffers(imgName);
 }
