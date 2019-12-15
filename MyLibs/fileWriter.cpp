@@ -1,0 +1,134 @@
+/*
+* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
+* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
+* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
+* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
+* 	"Optogenetic manipulation of neural activity with high spatial resolution in
+*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+*
+* BLITZ is a free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the license, or
+* (at your option) any later version.
+*
+* Filename: fileWriter.h
+* Abstract: this file contains all function definitions
+*			used to write experiment info and extracted motion parameters
+*			into yaml files and save videos for each camera
+*
+* Current Version: 2.0
+* Author: Wenbin Yang <bysin7@gmail.com>
+* Modified on: Apr. 28, 2018
+
+* Replaced Version: 1.1
+* Author: Wenbin Yang <bysin7@gmail.com>
+* Created on: Jan. 1, 2018
+*/
+
+// Include user-defined libraries
+#include "C:\Users\USER\source\repos\rewrite-learning\rewrite-learning\fileWriter.h"
+
+// Include standard libraries
+
+#include <algorithm>  // include the algorithm reverse
+
+
+using namespace std;
+using namespace cv;
+
+
+
+
+
+void FileWriter::initialize(string baseName, Size frameSize, float frameRate )
+{
+	string videoName = path2save + baseName + ".yaml";
+	cv::VideoWriter vObj(videoName, CV_FOURCC('D', 'I', 'V', 'X'), frameRate, frameSize, false);
+	if (!vObj.isOpened()) {
+		cout<<"Video file writer CANNOT be opened!"<<endl;
+	}
+	videoVec=vObj;
+
+}
+
+void FileWriter::writeOutExpSettings(Prepare& prepareObj, Camera& camerasObj,
+	FixedFish& fishAnalysisObj)
+{
+	
+	
+	writeKeyValuePair("FishAge", prepareObj.fishAge);
+	writeKeyValuePair("FishStrain", prepareObj.strainName);
+	writeKeyValuePair("Task", prepareObj.expTask);
+	writeKeyValuePair("ExpStartTime", timeStr);
+	writeKeyValuePair("FrameRate", camerasObj.getFrameRate());// TODO: is this cross-file used macro a good practice?
+	writeKeyValuePair("FrameSize", camerasObj.getFrameSize());
+	writeKeyValuePair("Head", prepareObj.Head);
+	writeKeyValuePair("Center", prepareObj.Center);
+
+}
+
+void FileWriter::writeOutFrame(ExpTimer& timerObj, FixedFish& FixedFishObj)
+{
+	// TODO: align the abstraction level
+	videoVec << FixedFishObj.fishImg; // write image to disk
+
+	// write the custom class to disk
+	yamlVec << "Frames" << "[";
+	// Python-like inline compact form
+	// general experimental info
+	writeKeyValueInline("FrameNum", FixedFishObj.count);
+	writeKeyValueInline("ExpPhase", timerObj.expPhase);
+	writeKeyValueInline("sElapsed", timerObj.sElapsed);
+	writeKeyValueInline("msRemElapsed", timerObj.msRemElapsed);
+	writeKeyValueInline("TailingAngle", FixedFishObj.tailingAngle[FixedFishObj.count]);
+	writeKeyValueInline("ShockOn", FixedFishObj.shockOn);
+
+	
+	yamlVec << "]";
+}
+
+void FileWriter::writeOutBout(ExpTimer& timerObj, FixedFish& FixedFishObj)
+{
+	// TODO: align the abstraction level
+	
+	// write the custom class to disk
+	yamlVec << "Bout" << "[";
+	// Python-like inline compact form
+	// general experimental info
+	writeKeyValueInline("BoutStartFrameNum", FixedFishObj.count);
+	writeKeyValueInline("ExpPhase", timerObj.expPhase);
+	writeKeyValueInline("sElapsed", timerObj.sElapsed);
+	writeKeyValueInline("msRemElapsed", timerObj.msRemElapsed);
+	writeKeyValueInline("TailingAngle", FixedFishObj.tailingAngle[FixedFishObj.count]);
+	writeKeyValueInline("ShockOn", FixedFishObj.shockOn);
+
+
+	yamlVec << "]";
+}
+
+string strVec2str(vector<string> strVec)
+{
+	if (strVec.empty()) // vector is empty, return empty string
+		return "";
+
+	string str = strVec[0];
+	for (int j = 1; j < strVec.size(); j++)
+		str += "," + strVec[j];
+
+	return str;
+}
+
+string intVec2str(vector<int> intVec)
+{
+	if (intVec.empty()) // vector is empty, return empty string
+		return "";
+
+	string str = "";
+	for (int& i : intVec)
+		str += to_string(i) + ",";
+
+	str.erase(str.end() - 1, str.end()); // remove the last charactor
+	return str;
+}
+
+

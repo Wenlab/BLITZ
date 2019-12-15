@@ -1,357 +1,56 @@
-/*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
-*
-* BLITZ is a free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the license, or
-* (at your option) any later version.
-*
-* Filename: fishAnalysis.cpp
-* Abstract: this file contains all function definitions
-*			used in analyzing fish behavioral parameters, such as
-*			fish's head, tail and center.
-*
-* Current Version: 2.0
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
-*/
-
-
 // Include user-defined libraries
 #include "fishAnalysis.h"
 
-// Include standard libraries
-#include <iostream>
-
-// User-defined macros
-#define PI 3.14159
-
-using namespace std;
 using namespace cv;
 
-/* find all fish contours in the arena at the same time
- by finding the largest #fish contours in all contours.
- Involved parameters: 
-	1.Threshold for contour size,
-	2.Moments of contours
-Scheme for fish positions in arena
-|		|		|
-|	0	|	1	|
-|		|		|
-|---------------|
-|		|		|
-|	2	|	3	|
-|		|		|
-
-TODO:
-1. Abolish fishFlag?
-2. Consize the recursive ifs
-*/
-
-void ArenaData::initialize(
-	vector<string> fishIDs, // unique fish IDs
-	int fishAge, 
-	vector<int> yDivs
-	)
-{
-	const int historyLen = 2000; // used in MOG subtractor
-	pMOG = cv::createBackgroundSubtractorMOG2(historyLen, binThre, false);
-	for (int i = 0; i < numFish; i++)
-	{
-		FishData fish(fishIDs[i], fishAge, yDivs[i]);
-		allFish.push_back(fish);
+int predict_left(double* boutStart) {
+	Py_Initialize();
+	if (Py_IsInitialized() == 0) {
+		cout << "Py_Initialize failed." << endl;
 	}
+	PyObject* pModule = PyImport_ImportModule("predict");
+	if (pModule == NULL)
+		cout << "Py_ImportModule failed." << endl;
+	PyObject* pFunc = PyObject_GetAttrString(pModule, "predict_left");
+	PyObject* PyList = PyList_New(40);
+	PyObject* ArgList = PyTuple_New(1);
+	for (int Index_i = 0; Index_i < PyList_Size(PyList); Index_i++) {
+		PyList_SetItem(PyList, Index_i, PyFloat_FromDouble(boutStart[Index_i]));
+	}
+	PyTuple_SetItem(ArgList, 0, PyList);
+	PyObject* pReturn = NULL;
+	pReturn = PyObject_CallObject(pFunc, ArgList);
+	int result;
+	PyArg_Parse(pReturn, "i", &result);
+	cout << "predict:" << result << endl;
+	Py_Finalize();
+	return result;
+
 }
-
-bool ArenaData::findAllFish()
-{
-	bool fishFlag = true;
-	// outer contours are counter clockwise
-	vector<vector<Point>> contours;
-	findContours(subImg, contours, RETR_EXTERNAL, CHAIN_APPROX_NONE); 
-
-	// record largest contour of each quadratile and its index
-	// with initial values of -1 (not found)
-	vector<vector<int>> maxContours;
-	maxContours.resize(2, vector<int>(4, -1));
-
-	// the size of fish contour should above this threshold
-	const int conThre = 20;
-	for (int i = 0; i < contours.size(); i++)
-	{
-		vector<Point> tempContour = contours[i];
-		int contourSize = tempContour.size();
-		if (contourSize < conThre)
-			continue;
-
-		Moments M = moments(tempContour); // to find the center
-		int x = int(M.m10 / M.m00);
-		int y = int(M.m01 / M.m00);
-		Point center = Point(x, y);
-
-		int signNum = (x - X_CUT > 0) + 2 * (y - Y_CUT > 0);
-		int qIdx = 0; // Quadrantic index
-		switch (signNum)
-		{
-		case 0:// No.0 Quadrant
-			qIdx = 0;
-			break;
-		case 1:
-			qIdx = 1;
-			break;
-		case 2:
-			qIdx = 2;
-			break;
-		case 3:
-			qIdx = 3;
-			break;
-		default:
-			cout << "Fish Analysis Error" << endl;
-			exit(0);
-		}
-		if (maxContours[0][qIdx] < contourSize)
-		{
-			maxContours[0][qIdx] = contourSize;
-			maxContours[1][qIdx] = i;
-		}
+int predict_right(double* boutStart) {
+	Py_Initialize();
+	if (Py_IsInitialized() == 0) {
+		cout << "Py_Initialize failed." << endl;
 	}
-
-	// assign largest contour to each fish
-	for (int i = 0; i < numFish; i++)
-	{
-		if (maxContours[1][i] == -1)
-		{
-			allFish[i].pauseFrames++;
-			fishFlag = false;
-		}
-		else
-		{
-			allFish[i].pauseFrames = 0;
-			allFish[i].fishContour = contours[maxContours[1][i]];
-			allFish[i].findPosition();
-		}
+	PyObject* pModule = PyImport_ImportModule("predict");
+	if (pModule == NULL)
+		cout << "Py_ImportModule failed." << endl;
+	PyObject* pFunc = PyObject_GetAttrString(pModule, "predict_right");
+	PyObject* PyList = PyList_New(40);
+	PyObject* ArgList = PyTuple_New(1);
+	for (int Index_i = 0; Index_i < PyList_Size(PyList); Index_i++) {
+		PyList_SetItem(PyList, Index_i, PyFloat_FromDouble(boutStart[Index_i]));
 	}
+	PyTuple_SetItem(ArgList, 0, PyList);
+	PyObject* pReturn = NULL;
+	pReturn = PyObject_CallObject(pFunc, ArgList);
+	int result;
+	PyArg_Parse(pReturn, "i", &result);
+	cout << "predict:" << result << endl;
+	Py_Finalize();
+	return result;
 
-
-	return fishFlag;
-	
 }
-/*
-	Find the head, center, tail and headingAngle of the fish
-	by finding the end-points of the contour
-*/
-void FishData::findPosition()
-{
-	Vec4f lineVec;
-	fitLine(fishContour, lineVec, CV_DIST_L2, 0, 0.01, 0.1);
-	double stepSize = 100;
-	vector<int> endIdx = findPtsLineIntersectContour(fishContour, 
-		Point2f(lineVec[2] - stepSize * lineVec[0], lineVec[3] - stepSize * lineVec[1]), // on one side, far from the center point
-		Point2f(lineVec[2] + stepSize * lineVec[0], lineVec[3] + stepSize * lineVec[1]));// on the other side, far from the center point
-
-	Moments M = moments(fishContour); // to find the center
-	
-	center = Point(M.m10 / M.m00, M.m01 / M.m00);
-	Point EP1 = fishContour[endIdx[0]];
-	Point EP2 = fishContour[endIdx[1]];
-	if (norm(EP1 - center) < norm(EP2 - center))
-	{
-		head = EP1; tail = EP2;
-	}
-	else
-	{
-		head = EP2; tail = EP1;
-	}
-	Point C2H = head - center; // tail to head, only applied to small fish
-	headingAngle = atan2(C2H.y, C2H.x) * 180 / PI;
-	
-}
-
-/*
-	Determine which side is fish's head 
-	by measuring the area of each half
-*/
-bool FishData::findHeadSide(Point2f* M)
-{
-	vector<int> indices = findPtsLineIntersectContour(fishContour, M[0], M[2]);
-	int idxMidPt = (indices[0] + indices[1]) / 2;
-	Point2f midPtContour = fishContour[idxMidPt];
-	double dist2line = getPt2LineDistance(M[1], M[0], M[2]);
-	double dist2pt = norm(midPtContour - M[1]);
-
-	vector<vector<Point>> contourHalves(2);
-	if (indices[0] == indices[1])
-	{
-		cout << "The contour is too thin to cut in-between" << endl;
-		return false;
-	}
-	else {
-		// contour half of negative skewness contains refPt
-		contourHalves[0].insert(contourHalves[0].end(), fishContour.begin() + indices[0], fishContour.begin() + indices[1]);
-		contourHalves[1].insert(contourHalves[1].end(), fishContour.begin() + indices[1], fishContour.end());
-		contourHalves[1].insert(contourHalves[1].end(), fishContour.begin(), fishContour.begin() + indices[0]);
-	}
-
-	vector<int> areas(2);
-	areas[0] = contourArea(contourHalves[0]);
-	areas[1] = contourArea(contourHalves[1]);
-
-	int aIdx; // index of area where refPt is in.
-	if (dist2line < dist2pt) // refPt is not in-between idx0 -> idx1
-		aIdx = 1;
-	else
-		aIdx = 0;
-	return areas[aIdx] > areas[!aIdx];
-}
-
-bool FishData::ifGiveShock(int pIdx, int sElapsed) {
-	/* Control parameters */
-	int thinkingTime = 7; // seconds, give fish some thinking time
-	int shockCD = 3; // seconds
-	/* Give fish a shock whenever it stays in CS area too long */
-	int CStimeThre = 10;
-	shockOn = false;
-    if (pIdx == 2) // blackout 
-		return false;
-	if (sElapsed < lastTimeUpdatePattern + thinkingTime)
-		return false;
-	if (sElapsed < lastShockTime + shockCD)
-		return false;
-	if (head.x == -1) // invalid frame
-		return false;
-	if (pIdx) // patternIdx == 1, since 2 is already excluded
-	{
-		if (head.y < yDiv) // in non-CS area
-			shockOn = false;
-		else {
-			if (sElapsed - lastShockTime > CStimeThre)
-				shockOn = true;
-			else {
-				if (headingAngle < 0) // fish is trying to escape CS area
-					shockOn = false;
-				else
-					shockOn = true;
-			}
-		}
-	}
-	else
-	{
-		if (head.y > yDiv)
-			shockOn = false;
-		else {
-			if (sElapsed - lastShockTime > CStimeThre)
-				shockOn = true;
-			else {
-				if (headingAngle > 0) // fish is trying to escape CS area
-					shockOn = false;
-				else
-					shockOn = true;
-			}
-		}
-	}
-	return shockOn;
-}
-
-int FishData::updatePatternInTraining(int sElapsed,int pIdx, int ITI) {
-	int NCStimeThre = 48; // seconds
-	if (pIdx == 2)
-	{
-		if (sElapsed > lastBlackoutStart + ITI)
-		{
-			pIdx = rand() % 2;
-		    lastTimeUpdatePattern = sElapsed;
-			lastTimeInCS = sElapsed;
-		}
-	}
-	else {
-		// update lastTimeInCS and lastTimeInNCS of fish
-		if (pIdx) // patternIdx == 1, since patternIdx == 2 is excluded
-		{
-			if (head.y > yDiv)
-				lastTimeInCS = sElapsed;
-		}
-		else {
-			if (head.y < yDiv) // In non-CS area
-				lastTimeInCS = sElapsed;
-		}
-
-		if (sElapsed - lastTimeInCS > NCStimeThre) // if stays too long in non-CS area
-		{
-			pIdx = 2;
-			lastBlackoutStart = sElapsed;
-		}
-	}
-	return pIdx;
-}
-
-void ArenaData::prepareBgImg(int width, int height, int cIdx, uint8_t* buffer) {
-	Mat rawImg = Mat(width, height,CV_8UC1, buffer);
-	rawImg.copyTo(opencvImg);
-	if (cIdx != 0) {
-		rot90CW(opencvImg, opencvImg);
-	}
-	pMOG->apply(opencvImg, subImg);
-}
-
-// TODO: check whether this for loop necessary 
-// I think it is necessary, but I can not confirm now
-void ArenaData::annotateFish(vector<int> pIndices) {
-	for (int j = 0; j < numFish; j++)
-	{
-		int pIdx = pIndices[j];
-		int xShift = X_CUT;
-		int yShift = Y_CUT;
-		int w = j % 2;
-		int h = j / 2;
-
-		Point txtPos = Point(10 + w * xShift,45 + h * yShift);
-		line(opencvImg, Point(0+w*xShift, allFish[j].yDiv), 
-			Point(X_CUT+ w * xShift, allFish[j].yDiv),
-			Scalar(255, 0, 0), 1, LINE_AA);
-		if (pIdx == 0)	
-			putText(opencvImg, "CS TOP", txtPos, FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
-		else if (pIdx == 1)
-			putText(opencvImg, "CS BOTTOM", txtPos, FONT_HERSHEY_TRIPLEX, 1, Scalar::all(255), 2);
-		
-
-		if (allFish[j].head.x == -1) // invalid fish analysis data
-			continue;
-		circle(opencvImg, allFish[j].head, 5, Scalar(255), 2);
-		circle(opencvImg, allFish[j].tail, 3, Scalar(255), 2);
-	}
-}
-
-void ArenaData::resetShocksOn() {
-	for (int i = 0; i < numFish; i++)
-	{
-	    allFish[i].shockOn = 0;
-	}
-}
-
-/* Initialize all arenas will be used in the experiment */
-vector<ArenaData> initializeAllArenas(vector<vector<int>> yDivs, vector<vector<string>> fishIDs, int fishAge)
-{
-	vector<ArenaData> allArenas;
-	int binThreList[] = { 30, 30, 30 }; // the background threshold for each arena
-	
-	for (int i = 0; i < fishIDs.size(); i++)
-	{
-		ArenaData arena(binThreList[i], fishIDs[i].size());
-		arena.initialize(fishIDs[i], fishAge, yDivs[i]);
-		allArenas.push_back(arena);
-	}
-	return allArenas;
-}
-
 
 /*Find the closest point on the contour to the reference point, return the index findClosestPt*/
 int findClosestPt(vector<Point>& contour, Point point)
@@ -375,14 +74,12 @@ int findClosestPt(vector<Point>& contour, Point point)
 	return goodIndex;
 }
 
-
-
 /* Get the Euclidean distance from point P to line AB */
 double getPt2LineDistance(Point2f P, Point2f A, Point2f B)
 {
 	Point2f BA = B - A; // the vector from A to B
 	//Point2f PA = P - A; // the vector from A to P
-	double dist = abs(BA.y*P.x - BA.x*P.y + B.cross(A)) / norm(BA);
+	double dist = abs(BA.y * P.x - BA.x * P.y + B.cross(A)) / norm(BA);
 	return dist;
 }
 
@@ -398,7 +95,7 @@ vector<int> findPtsLineIntersectContour(vector<Point>& contour, Point2f A, Point
 	{
 		curPt = contour[i];
 		double pt2line = getPt2LineDistance(curPt, A, B);
-		if ( pt2line < distThre)
+		if (pt2line < distThre)
 		{
 			ptList.push_back(contour[i]);
 			idxList.push_back(i);
@@ -421,14 +118,115 @@ vector<int> findPtsLineIntersectContour(vector<Point>& contour, Point2f A, Point
 		goodIndices[1] = idxList[idxA];
 	}
 
-	
+
 	return goodIndices;
 
 }
 
-void rot90CW(Mat src, Mat dst)
+/*This function return a radian to describe the fishtailing motion */
+bool FixedFish::fishAngleAnalysis(int counter) {
+	//Find the contour of fish
+	Mat binaryzation;
+	double  max_val = 255, maxFishArea = 150000, minFishArea = 1000;
+	Point topEnd, tailPt_a, tailPt_b;
+	vector<vector<Point>> allContours, fishContours;
+
+	fishImg.copyTo(ROIimage, fishROI);
+	threshold(ROIimage, binaryzation, threshold_val, max_val, CV_THRESH_BINARY);
+	//imshow("test", ROIimage);
+	//imshow("test2", binaryzation);
+	findContours(binaryzation, allContours, CV_RETR_LIST, CHAIN_APPROX_NONE);
+	for (int i = 0; i < allContours.size(); i++) {
+		if (contourArea(allContours[i]) < maxFishArea && contourArea(allContours[i]) > minFishArea)
+			fishContours.push_back(allContours[i]);
+	}
+	for (int i = 0; i < allContours.size(); i++) {
+		cout << contourArea(allContours[i]) << ',';
+	}
+	if (fishContours.size() != 1) {
+		cout << "Can't find contour of fish!Area of all contours:";
+		cout << fishContours.size() << endl;
+		for (int i = 0; i < allContours.size(); i++) {
+			cout << contourArea(allContours[i]) << ',';
+		}
+		cout << endl;
+		return false;
+	}
+
+	//Find the tail of fish
+
+	double Pt2center = norm(fishContours[0][0] - fishCenter);
+	topEnd = fishContours[0][0];
+
+	for (int i = 1; i < fishContours[0].size(); i++)
+	{
+		double curPt2center = norm(fishContours[0][i] - fishCenter);
+		if (Pt2center < curPt2center) {
+			topEnd = fishContours[0][i];
+			Pt2center = curPt2center;
+			//circle(fishImg, topEnd, 1, Scalar(255), -1);
+
+		}
+
+
+	}
+	Point tailAxis = topEnd - fishCenter;
+	tailPt_a = fishCenter + tailAxis * 9 / 10 + Point(tailAxis.y, -tailAxis.x) / 4;
+	tailPt_b = fishCenter + tailAxis * 9 / 10 + Point(-tailAxis.y, tailAxis.x) / 4;
+	vector<int> fishTail = findPtsLineIntersectContour(fishContours[0], tailPt_a, tailPt_b);
+
+	//Calculate the angle
+	Point fishHeadVector, fishTailVector;
+	fishHeadVector = fishCenter - fishHead;
+	fishTailVector = (fishContours[0][fishTail[0]] + fishContours[0][fishTail[1]]) / 2 - fishCenter;
+	double sinfi;
+	sinfi = -(fishHeadVector.x * fishTailVector.y - fishTailVector.x * fishHeadVector.y) / (norm(fishHeadVector) * norm(fishTailVector));
+
+	tailingAngle[counter] = asin(sinfi);
+	if (tailingAngle[counter] > 0.2 || tailingAngle[counter] < -0.2) {
+		tailingFlag[counter] = 1;
+		
+	}
+	
+	//*fishTail_return = (fishContours[0][fishTail[0]] + fishContours[0][fishTail[1]]) / 2;
+	//drawContours(fishImg, fishContours, -1, Scalar(255),2);
+	//imshow("contour", fishImg);
+	return true;
+}
+
+
+void FixedFish::getImgFromVideo(cv::VideoCapture cap)
 {
-	Mat temp;
-	flip(src, temp, 0);
-	transpose(temp, dst);
+	cap >> fishImgFromVideo;
+	cvtColor(fishImgFromVideo, fishImg, CV_BGR2GRAY);
+}
+void FixedFish::getMat(Mat curImg)
+{
+	fishImg=curImg;
+}
+
+void FixedFish::resetCount()
+{
+	count = 0;
+}
+
+int FixedFish::getCount()
+{
+	return count;
+}
+
+void FixedFish::addCount(int increase)
+{
+	count = count + increase;
+}
+
+void FixedFish::predictDirection() {
+	if (leftTrue) {
+		predict_left(&tailingAngle[count - boutFrames]);
+		//TODO:save data
+	}
+	else {
+		predict_right(&tailingAngle[count - boutFrames]);
+		//TODO:save data
+	}
 }

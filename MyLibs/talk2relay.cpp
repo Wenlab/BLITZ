@@ -24,28 +24,83 @@
 * Created on: Jan. 1, 2018
 */
 
+
+
+
 // Include user-defined libraries
 #include "talk2relay.h"
 
 
+using namespace std;
 
-bool PortData::initialize(int com_num)
+void Relay::initialize(int com_num)
 {
-	if (!port.InitPort(com_num))
-	{
-		std::cout << "SerialPort initiation failed! " << std::endl;
-		return false;
-	}
-	else
-	{
-		std::cout << "SerialPort initiation succeeded! " << std::endl << std::endl;
-	}
-	return true;	
-}
-/* Open channel by index */
-bool PortData::givePulse(int idxChannel)
-{
-	bool res = port.WriteData(openCommands[idxChannel], LEN_COMMAND);	
-	return res;
+
+	sPort.InitPort(com_num);
+	cout << "The relay initiation succeeded! " << endl;
+
 }
 
+void Relay::giveFixedFishPulse()
+{
+	sPort.WriteData(openCommandForFixedFish, LEN_COMMAND);
+}
+
+
+/*
+void Relay::givePulse(int idxChannel)
+{
+	float openDuration = 0.1; // seconds
+	vector<bool> openStatuses(NUM_CHANNEL, 0);
+	openStatuses[idxChannel] = 1;
+	givePulse(openStatuses, openDuration);
+}
+
+void Relay::givePulse(vector<bool> channelStatuses, float openDuration = 0.1)
+{
+	(openDuration > 0.1);
+	unsigned char* openCommand = new unsigned char[LEN_COMMAND];
+	generateOpenCommand(openCommand, channelStatuses, openDuration);
+
+	sPort.WriteData(openCommand, LEN_COMMAND);
+}
+
+void Relay::generateOpenCommand(unsigned char* openCommand, vector<bool> channelStatuses, float openDuration)
+{
+	const unsigned char BIT_5 = 0x12; // operation number
+	unsigned char BIT_6 = binaryAdding(channelStatuses.begin(), channelStatuses.begin() + 8);
+	unsigned char BIT_7 = binaryAdding(channelStatuses.begin() + 8, channelStatuses.end());
+	unsigned char BIT_8 = ceil(openDuration * 10); // openDuration in unit count; an unit is 0.1s
+
+	unsigned char sumCheck = BIT_1 + BIT_2 + BIT_3 + BIT_4 + BIT_5 + BIT_6 + BIT_7 + BIT_8;
+	unsigned char command[] = { BIT_1, BIT_2, BIT_3, BIT_4, BIT_5,
+		BIT_6, BIT_7, BIT_8, sumCheck };
+
+	std::copy(std::begin(command), std::end(command), openCommand);
+
+}
+
+void Relay::generateOpenCommand(unsigned char* openCommand, vector<bool> channelStatuses)
+{
+	const unsigned char BIT_5 = 0x01; // operation number
+	unsigned char BIT_6 = binaryAdding(channelStatuses.begin(), channelStatuses.begin() + 8);
+	unsigned char BIT_7 = binaryAdding(channelStatuses.begin() + 8, channelStatuses.end());
+	const unsigned char BIT_8 = 0; // not used in this context
+
+	unsigned char sumCheck = BIT_1 + BIT_2 + BIT_3 + BIT_4 + BIT_5 + BIT_6 + BIT_7 + BIT_8;
+	unsigned char command[] = { BIT_1, BIT_2, BIT_3, BIT_4, BIT_5,
+		BIT_6, BIT_7, BIT_8, sumCheck };
+
+	std::copy(std::begin(command), std::end(command), openCommand);
+
+}
+
+int binaryAdding(vector<bool>::iterator vecBegin, vector<bool>::iterator vecEnd)
+{
+	int sum = 0;
+	for (vector<bool>::iterator it = vecBegin; it != vecEnd; ++it)
+		sum += (*it << (it - vecBegin));
+
+	return sum;
+}
+*/

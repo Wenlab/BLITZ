@@ -1,10 +1,8 @@
+#pragma once
 /*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,14 +14,12 @@
 *			used in analyzing fish behavioral parameters, such as
 *			fish's head, tail and center.
 *
-* Current Version: 2.0
+* Current Version: 3.0
 * Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
+* Created on: Jan. 15, 2018
+* Modified on: Apr. 20, 2019
 */
+
 #ifndef _GUARD_FISHANALYSIS_H
 #define _GUARD_FISHANALYSIS_H
 
@@ -33,124 +29,78 @@
 #include <opencv2/highgui/highgui.hpp>
 
 // Include standard libraries
+#include <stdio.h> 
+#include <iostream>
+
 #include <vector>
 
-#define MAX_FISH_PER_ARENA 4
-#define X_CUT 385 // x position to separate fish 0,1 and 2,3
-#define Y_CUT 385 // y position to separate fish 0,1 and 2,3
+#include <Python.h>
 
-/* Define related methods and properties for a single fish */
-class FishData {
+
+using namespace std;
+
+
+
+class FixedFish {
 
 private:
 	; // nothing for now
 public:
 	// methods
-	FishData(std::string fishID = "", int fishAge = 0, int yDivide = 0) // constructor
-		: ID(fishID)
-		, age(fishAge)
-		, yDiv(yDivide)
+	FixedFish(cv::Point head, cv::Point center,int threshold_val,cv::Mat mask) // constructor
+		: fishHead(head)
+		, fishCenter(center)
+		, threshold_val(threshold_val)
+		, fishROI(mask)
 	{
-		lastBlackoutStart = -1;
-		lastTimeUpdatePattern = -1;
-		lastTimeInCS = -1;
-		lastShockTime = -1;
-		pauseFrames = -1;
+		count = 0;
+		boutFrames = 44;
+	
 		shockOn = false;
-		head = cv::Point(-1, -1);
-		tail = cv::Point(-1, -1);
-		center = cv::Point(-1, -1);
-		headingAngle = -360;
+		idxCase = 0;
+		fishTail = cv::Point(-1, -1);
+		tailingAngle.resize(500000,3);
+		tailingFlag.resize(500000, 0);
 	}
-	/*
-	Find the head, center, tail and headingAngle of the fish
-	by finding the end-points of the contour
-	*/
-	void findPosition();
-	/*Determine which side is fish's head by measuring the area of each half*/
-	bool findHeadSide(cv::Point2f* M);
+	
 
-	bool ifGiveShock(int pIdx, int sElapsed);
-
-	int updatePatternInTraining(int sElapsed, int pIdx, int ITI);
-
+	bool fishAngleAnalysis(int counter);
 	// properties
 	// const properties
-	const std::string ID;
-	const int age;
-	// TODO: assign yDivide in the initialization function
-	int yDiv; // the division pos between CS and NCS pattern
+	void getImgFromVideo(cv::VideoCapture cap);
+	void getMat(cv::Mat curImg);
+	void predictDirection();
 
-	int lastBlackoutStart;
+
+	const std::string ID;
+
+
+	void resetCount();
+
+	int getCount();
+
+	void addCount(int increase=1);
+
 	
-	int lastTimeUpdatePattern;
-	int lastTimeInCS;
-	int lastShockTime;
-	int pauseFrames;
-	bool shockOn;
+
+					// status properties
+	
+	bool shockOn,leftTrue;
+	int idxCase, threshold_val, count;
+	int boutFrames;
+	vector<double> tailingAngle;
+	vector<int> tailingFlag;
 
 	std::vector<cv::Point> fishContour;
-	cv::Point head, tail, center;
-	int headingAngle;
+	cv::Point fishHead, fishTail, fishCenter;
+	cv::Mat fishImg, fishImgFromVideo,fishROI,ROIimage;
+	
 };
 
-/* Define all infos including fish for a single arena */
-class ArenaData {
+int findClosestPt(vector<cv::Point>& contour, cv::Point point);
 
-private:
-	;// nothing for now
-public:
-	// methods
-	ArenaData(int BWthre = 30, int n = 1) // constructor
-		: numFish(n)
-	{
-		binThre = BWthre;
-		allFish.reserve(numFish); // allocate memory
-	}
-
-	void initialize(std::vector<std::string> fishIDs, int fishAge, std::vector<int> yDivs);
-	
-	/* find all fish contours in the arena at the same time
-	by finding the largest #fish contours in all contours.
-	Involved parameters:
-	1.Threshold for contour size,
-	2.Moments of contours
-	Scheme for fish positions in arena
-	|		|		|
-	|	0	|	1	|
-	|		|		|
-	|---------------|
-	|		|		|
-	|	2	|	3	|
-	|		|		|
-	*/
-	bool findAllFish();
-	
-	void prepareBgImg(int width, int height, int cIdx, uint8_t* buffer);
-
-	void annotateFish(std::vector<int> pIdx);
-	
-	void resetShocksOn();
-								   
-	// properties
-	const int numFish;
-	int binThre; // in the future, this might be adjusted in the GUI
-
-	cv::Ptr<cv::BackgroundSubtractor> pMOG; // one pMOG for one arena
-	cv::Mat opencvImg, HUDSimg, subImg;
-	std::vector<FishData> allFish;
-
-};
-/* Initialize all arenas will be used in the experiment */
-std::vector<ArenaData> initializeAllArenas(std::vector<std::vector<int>> yDivs, std::vector<std::vector<std::string>> fishIDs, int fishAge);
-/*Find the closest point on the contour to the reference point*/
-int findClosestPt(std::vector<cv::Point>& contour, cv::Point point);
-/* Rotate the image 90 degrees clockwise */
-void rot90CW(cv::Mat src, cv::Mat dst);
-/* Get the Euclidean distance from point P to line AB */
 double getPt2LineDistance(cv::Point2f P, cv::Point2f A, cv::Point2f B);
-/* Find 2 intersection points of a line (AB) and contour */
-std::vector<int> findPtsLineIntersectContour(std::vector<cv::Point>& contour, cv::Point2f A, cv::Point2f B);
 
+vector<int> findPtsLineIntersectContour(vector<cv::Point>& contour, cv::Point2f A, cv::Point2f B);
 
 #endif // !_GUARD_FISHANALYSIS_H

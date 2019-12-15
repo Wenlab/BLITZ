@@ -1,34 +1,8 @@
-/*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
-*
-* BLITZ is a free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the license, or
-* (at your option) any later version.
-*
-* Filename: talk2camera.h
-* Abstract: this file contains all classes and functions' declarations
-*			used in implementing Basler Pylon USB cameras
-*
-* Current Version: 2.0
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
-*/
-
-
-
+#pragma once
 #ifndef _GUARD_TALK2CAMERA_H
 #define _GUARD_TALK2CAMERA_H
-// Include files to use the PYLON API.
+
+// Include Basler Pylon libraries
 #include <pylon/PylonIncludes.h>
 #include <pylon/ImageFormatConverter.h>
 #include <pylon/usb/BaslerUsbInstantCameraArray.h>
@@ -41,32 +15,59 @@
 #include <string>
 #include <iostream>
 
-// User-defined macros
-#define MAX_CAMERAS 3
+//opencv libs
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
-/* Define Basler Pylon properties and related methods for a single USB camera */
-class CameraData
+using namespace std;
+using namespace Pylon;
+
+/* Device unspecific single camera */
+class Camera
 {
-private:
-	;// nothing for now
 public:
-	// methods
-	CameraData() // constructor
+	Camera()
 	{
-	
+		frameRate = 140;
+		exposureTime = 5000;
+		frameWidth = 400;
+		frameHeight = 400;
+		offSetX = 0;
+		offSetY = 0;
+		pixelFormat = "Mono8";
 	}
-	bool initialize(int nCams, int frameWidth, int frameHeight, int frameRate);
-	/* Grab Pylon image from cameras */
+
+	/* Initialize a single camera, device unspecific */
+	void initialize();
+
+	/* Grab Pylon image from camera */
 	bool grabPylonImg();
 
-	// properties
-	Pylon::CDeviceInfo di[MAX_CAMERAS];
-	Pylon::CBaslerUsbInstantCameraArray cameras;
+	/* Get the pointer to image buffer */
+	//Pylon::CGrabResultPtr getPtr2buffer();
+	cv::Mat getMat();
+
+	int getFrameRate();
+	cv::Size getFrameSize();
+
+private:
+
+	Pylon::CBaslerUsbInstantCamera cam;
+	Pylon::CImageFormatConverter formatConverter;
+	// TODO: finish this properties list
+	float frameRate;
+	int frameWidth;
+	int frameHeight;
+	int offSetX;
+	int offSetY;
+	int exposureTime = 5000;
+	std::string pixelFormat;
 	Pylon::CGrabResultPtr  ptrGrabResult;
 	Pylon::CPylonImage pylonImg;
-	Pylon::CImageFormatConverter formatConverter;
-	intptr_t cIdx;// index of camera where the frame is grabbed from 
+	cv::Mat opencvImg;
+	
 };
+
 
 
 

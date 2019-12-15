@@ -18,7 +18,6 @@
 * Current Version: 2.0
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Modified on: Apr. 28, 2018
-
 * Replaced Version: 1.1
 * Author: Wenbin Yang <bysin7@gmail.com>
 * Created on: Jan. 1, 2018
@@ -26,14 +25,6 @@
 
 #ifndef _GUARD_TALK2SCREEN_H
 #define _GUARD_TALK2SCREEN_H
-
-/* Disable warning to function std::copy */
-#pragma warning(disable : 4996) 
-
-
-// Include 3rd-party libraries
-#include "../3rdPartyLibs/OpenGL/shader_s.h"
-#include "../3rdPartyLibs/OpenGL/stb_image.h"
 
 // Include OpenGL libraries
 #include <glad/glad.h>
@@ -43,129 +34,54 @@
 #include <vector>
 #include <iostream>
 
-// User-defined macros
-#define NUM_ARENA 3
-#define PATCHES_PER_ARENA 4
-#define NUM_SHADER 12
-#define VERTEXS_PER_SHADER 4
-#define TRIANGLES_PER_PATCH 2
 
-/* represent pattern changes for a single patch (shader) */
-class PatchData 
-{
-private:
-	; // nothing for now
-public:
-	// methods
-	PatchData(std::vector<float> patchRect, const int patchYdivide,
-			  const char vertexPath[] = "3rdPartyLibs/OpenGL/shader.vs",
-			  const char fragmentPath[] = "3rdPartyLibs/OpenGL/shader.fs")
-			: shader(vertexPath, fragmentPath)
-			, rect(patchRect)
-			, yDivide(patchYdivide)
-	{
-		/* Frequent updating variable */
-		pIdx = 0;	
-		shader.use();
-		shader.setInt("yDivide", yDivide);
-		shader.setInt("patternIdx", pIdx);
-	}
-	
-	bool initialize();
-	/* Initialize vertices and their buffers with providing pos(x,y) */
-	void initVertices();
-	/* Update pattern by giving the shader new pattern index */
-	void updatePattern();
-	
-	
 
-	// properties
-	const std::vector<float> rect; // upper-left corner (x, y, width, height)
-	const int yDivide;
-	int pIdx; // pattern index
-	
-	Shader shader;
-	unsigned int VAO, VBO, EBO;
-};
-/* represent pattern changes of an entire local area,
- which consists of many patches
-*/
-class AreaData 
-{
-private:
-	; // nothing for now
-public:
-	// methods
-	/* Enquire the number of patches in an arena */
-	AreaData(std::vector<float> areaRect, int n = 1)
-		: rect(areaRect)
-		, numPatches(n)
-	{
-		
-	}
-	bool initialize(std::vector<int> yDivideVec, std::string imgName);
-	bool loadTextureIntoBuffers(std::string imgName);
-	void reverseAllPatches();
-	void renderTexture(int areaIdx);
-	// properties
-	std::vector<PatchData> allPatches;
-	unsigned int texture0; // texture ID 
-	const int numPatches;
-	const std::vector<float> rect; // upper-left corner (x, y, width, height)
-};
-
-class ScreenData 
+/* Class to set up GLFW-OpenGL environment for rendering patterns */
+class Screen
 {
 private: // only used within class
-	GLFWmonitor * * monitors;
-	GLFWwindow* window;
+	//GLFWmonitor** monitors;
+	//GLFWwindow* window;
+	//const GLFWvidmode* mode;
+
 
 public:
-	// methods
-	ScreenData() // constructor
+	Screen()
 	{
-		
+
 	}
-	/* Initilize screen environment and coordinates */
-	bool initialize(std::vector<std::string> filenames, std::vector<int> patchesOfAreas = {4,4,4});
-	/* GLFW initialize and configure window */
-	bool init_glfw_window();
-	/* glad: load all OpenGL function pointers */
-	bool init_glad();
-	/* Update pattern for specific area */
-	void updatePattern(int cIdx);
-	/* Update patternIdx for all shaders in the screen */
-	void updatePattern();
-	/* Render designed pattern on the screen */
-	void renderTexture();
-	/* Update pattern in test experiment */
-	void updatePatternInTest(int sElapsed);
-	/* Update pattern in baseline experiment */
-	void updatePatternInBaseline(int sElapsed);
-	/* Update pattern in the blackout experiment */
-	void updatePatternInBlackout();
-
-
-	// properties
-	const GLFWvidmode* mode;
-
-	/* 3(#arenas) * 4(patchesPerArena)
-		Scheme for fish positions in arena
-		|		|		|
-		|	0	|	1	|
-		|		|		|
-		|---------------|
-		|		|		|
-		|	2	|	3	|
-		|		|		|
-	*/
-	std::vector<AreaData> allAreas;
 	
-	int numAreas;
-	int lastScreenPatternUpdate;
-	/* Interval for updating pattern in baseline session, which is a random number in range */
-	int baselineInterval;
+	void initialize();
+
+	/* Show all patterns on the screen */
+	void bindVBOandVAO();
+
+	void showLeftPatch();
+	void showRightPatch();
+	/* Render black pattern */
+	void showBlackPattern();
+
+	/* Reverse patterns on the top and on the bottom,
+		only for halfSplit rendering */
+	void reverse();
+	void processInput(GLFWwindow* window);
+
+	float leftPatch[9] = {
+		-0.5f, -0.5f, 0.0f, // left  
+		 0.5f, -0.5f, 0.0f, // right 
+		 0.0f,  0.5f, 0.0f  // top   
+	};
+	float rightPatch[9] = {
+		-0.5f, -0.5f, 0.0f, // left  
+		 0.5f, -0.5f, 0.0f, // right 
+		 0.0f,  0.5f, 0.0f  // top   
+	};
+private:
+	unsigned int VBOs[2], VAOs[2];
+	int shaderProgram;
+	GLFWwindow* window;
 };
 
-#endif // !_GUARD_TALK2SCREEN_H
+// global functions
 
+#endif // !_GUARD_TALK2SCREEN_H
