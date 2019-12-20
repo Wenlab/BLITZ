@@ -34,9 +34,9 @@ using namespace Pylon;
 
 bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int frameRate)
 {
-	const char* serialNums[MAX_CAMERAS] = { "21552672","22510229","22510230" };
-	const int offSetX[MAX_CAMERAS] = {463, 390, 944};//{ 794, 1112, 944 };
-	const int offSetY[MAX_CAMERAS] = {0, 0, 227};//{ 0, 35, 227 };
+	const char* serialNums[MAX_CAMERAS] = { "21552672","22510229", "22510230" };//
+	const int offSetX[MAX_CAMERAS] = {774, 390, 944};//{ 794, 1112, 944 };
+	const int offSetY[MAX_CAMERAS] = {321, 0, 227};//{ 0, 35, 227 };
 	
 	Pylon::EPixelType pixelFormat = Pylon::EPixelType::PixelType_Mono8;
 	Pylon::PylonInitialize();
@@ -54,12 +54,14 @@ bool CameraData::initialize(int numCameras, int frameWidth, int frameHeight, int
 	{
 		cameras[i].Attach(TlFactory.CreateDevice(di[i]));
 		cameras[i].Open();
+		cameras[i].ExposureTime.SetValue(4000);
 		cameras[i].Width = frameWidth;
 		cameras[i].Height = frameHeight;
 		cameras[i].OffsetX = offSetX[i];
 		cameras[i].OffsetY = offSetY[i];
 		cameras[i].AcquisitionFrameRateEnable.SetValue(true);
 		cameras[i].AcquisitionFrameRate.SetValue(frameRate);
+		//cameras[i].MaxNumBuffer = 1000;
 		// Print the model name of the camera.
 		std::cout << "Using camera " << cameras[i].GetDeviceInfo().GetSerialNumber() << std::endl;
 	}

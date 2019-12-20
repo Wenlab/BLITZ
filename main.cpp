@@ -91,7 +91,8 @@ int main()
 
 
 
-	string pathName = "F:/cym/PreyCaptureScreen/";
+	// string pathName = "F:/cym/PreyCaptureScreen/";
+	string pathName = "E:/Fish Data/"; 
 	vector<string> videoNames(2);
 	videoNames[0] = pathName + fileNames[0] + ".avi";
 	videoNames[1] = pathName + fileNames[1] + ".avi";
@@ -99,9 +100,9 @@ int main()
 	CameraData cams;
 
 	int expTime = expMins * 60; // seconds
-	int frameWidth = 1088;//800;
-	int frameHeight = 1088;//750;
-	int frameRate = 30;
+	int frameWidth = 600;//800;
+	int frameHeight = 600;//750;
+	int frameRate = 140; 
 	cams.initialize(numCameras, frameWidth, frameHeight, frameRate);
 
 	// initialize the output videos
@@ -191,9 +192,9 @@ int main()
 				temp.copyTo(DispImage(ROI));
 			}
 			// Create a new window, and show the Single Big Image
-			namedWindow("Display", 1);
-			imshow("Display", DispImage);
-			waitKey(1);
+			//namedWindow("Display", 1);
+			//imshow("Display", DispImage);
+			//waitKey(1);
 		}
 	}
 
