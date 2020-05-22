@@ -34,52 +34,74 @@
 #include <vector>
 #include <iostream>
 
+using namespace std;
 
-
-/* Class to set up GLFW-OpenGL environment for rendering patterns */
-class Screen
+class ScreenData
 {
-private: // only used within class
-	//GLFWmonitor** monitors;
-	//GLFWwindow* window;
-	//const GLFWvidmode* mode;
+private:
 
+	GLFWmonitor** monitors;
+	GLFWwindow* window;
 
 public:
-	Screen()
+	// methods
+	ScreenData(vector<float> startPoint, vector<float> endPoint, bool lefttrue)
+		: point_1(startPoint)
+		, point_2(endPoint)
+		, left_true(lefttrue)
 	{
 
+
+
 	}
-	
-	void initialize();
 
-	/* Show all patterns on the screen */
-	void bindVBOandVAO();
+	bool PatternInitialize();
 
-	void showLeftPatch();
-	void showRightPatch();
-	/* Render black pattern */
-	void showBlackPattern();
+	bool ScreenInitialize();
 
-	/* Reverse patterns on the top and on the bottom,
-		only for halfSplit rendering */
-	void reverse();
-	void processInput(GLFWwindow* window);
+	float cross_product(float x0, float y0, float x1, float y1, float x, float y);
 
-	float leftPatch[9] = {
-		-0.5f, -0.5f, 0.0f, // left  
-		 0.5f, -0.5f, 0.0f, // right 
-		 0.0f,  0.5f, 0.0f  // top   
+	void get_endpoint(float x1, float y1, float x2, float y2);
+
+	void reversePattern();
+
+	// Render designed pattern on the screen
+	void renderTexture();
+	// properties
+
+	vector<float> point_1;
+	vector<float> point_2;
+
+	float  border_pts[4][2] = {
+		1.0f,1.0f,1.0f,-1.0f,-1.0f,-1.0f,-1.0f,1.0f
 	};
-	float rightPatch[9] = {
-		-0.5f, -0.5f, 0.0f, // left  
-		 0.5f, -0.5f, 0.0f, // right 
-		 0.0f,  0.5f, 0.0f  // top   
+	float endpoint[2][2];
+
+	vector<float> bright_pts;
+	vector<float> dark_pts;
+
+	float bright[4] = { 1.0f, 0.5f, 0.2f, 1.0f };
+	float dark[4] = { 0.2f, 0.3f, 0.3f, 1.0f };
+	float* background_color;
+
+	int vertexShader, fragmentShader, shaderProgram, vertexColorLocation;
+	int num_triangles;
+
+	bool left_true;
+	unsigned int VAO, VBO, EBO;
+	//EBO
+	unsigned int indices1[3] = {
+		0, 1, 2,
 	};
-private:
-	unsigned int VBOs[2], VAOs[2];
-	int shaderProgram;
-	GLFWwindow* window;
+	unsigned int indices2[6] = {
+		0, 1, 3,  // first Triangle
+		1, 2, 3   // second Triangle
+	};
+	unsigned int indices3[3] = {
+		0, 1, 2,
+	};
+	const GLFWvidmode* mode;
+
 };
 
 // global functions

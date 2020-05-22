@@ -25,8 +25,8 @@ using namespace cv;
 
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+//const unsigned int SCR_WIDTH = 800;
+//const unsigned int SCR_HEIGHT = 600;
 
 
 
@@ -35,6 +35,25 @@ const unsigned int SCR_HEIGHT = 600;
 
 
 int main() {
+	//test talk2screen
+	vector<float> a = { -0.0F,-0.5F };
+
+	vector<float> b = { 0.5F,0.0F };
+	bool lefttrue = true;
+	ScreenData test(a, b, lefttrue);
+	test.ScreenInitialize();
+
+	test.PatternInitialize();
+
+	//test.reversePattern();
+
+	while (1) {
+		test.renderTexture();
+
+	}
+
+
+	/*
 	Mat cur_img;
 	VideoCapture cap("F://fishData//test5.avi");
 	int relay_com_num = 3;
@@ -80,6 +99,8 @@ int main() {
 		//TODO:shockon or not
 		fileWriterObj.writeOutFrame(timerObj, fixedfishObj);
 	}
+
+	*/
 
 	//cout << "finished" << endl;
 	//waitKey();
