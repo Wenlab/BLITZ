@@ -27,395 +27,256 @@
 
 // Include user-defined libraries
 #include "fileWriter.h"
-#include <ctime> // to get the current date and time
+
+// Include standard libraries
+
 #include <algorithm>  // include the algorithm reverse
 
 
 using namespace std;
-using namespace cv; // TODO: consider to remove this namespace
+using namespace cv;
 
-bool FileWriter::initialize(string pathName, int width, int height, int frameRate, int x_cut, int y_cut, vector<vector<int>> yDivs)
+void FileWriter::initialize(vector<string> baseNames, Size frameSize, int frameRate = 10)
 {
-	for (int i = 0; i < numFiles; i++)
+	numFiles = baseNames.size();
+	for (string& baseName : baseNames)
 	{
-		string videoName = pathName + baseNames[i] + ".avi";
-		string yamlName = pathName + baseNames[i] + ".yaml";
-		FileStorage fObj(yamlName, FileStorage::WRITE);
-		if (!fObj.isOpened())
-			return false;
-		yamlVec.push_back(fObj);
-		VideoWriter vObj(videoName, CV_FOURCC('D', 'I', 'V', 'X'), frameRate, Size(width, height), false);
-		if (!vObj.isOpened())
-			return false;
-		videoVec.push_back(vObj);
-
-	}
-	writeOutExpSettings(frameRate, width, height,
-		x_cut, y_cut, yDivs);
-
-
-	return true;
-
-}
-
-/* Ask the user about the experiment infos */
-int WriteOutData::enquireInfoFromUser()
-{
-	showWelcomeMsg();
-	get_current_date_time();
-	enquireNumCams();
-	enquireAllBasenames();
-	enquireStrainNames();
-	enquireFishAge();
-	enquireExpTask();
-	// Enquire fish IDs for all arenas
-	enquireFishIDs();
-	//get_strainNames();
-	getBasenames();
-
-	return numFiles;
-}
-
-/* Get current date and time string from chrono system clock */
-void WriteOutData::get_current_date_time()
-{
-	// Get system time
-	time_t rawtime;
-	struct tm timeinfo;
-	char buffer[80];
-
-	time(&rawtime);
-
-	int errCode = localtime_s(&timeinfo, &rawtime);
-	strftime(buffer, sizeof(buffer), "%Y%m%d_%H%M", &timeinfo);
-	timeStr = buffer;
-}
-
-/* Ask for the number of cameras to use in the experiment */
-void WriteOutData::enquireNumCams()
-{
-	cout << "Number of cameras to use? (3, 2, 1)" << endl;
-	cin >> numFiles;
-	cout << endl; // separated with an empty line
-}
-
-/* Ask for CS strs in the screen */
-void WriteOutData::enquireAllBasenames()
-{
-	showFishPosDiagram();
-	for (int i = 0; i < numFiles; i++)
-	{
-		CSstrs.push_back(enquireBasename(i));
+		initialize(baseName);
+		initialize(baseName, frameSize, frameRate);
 	}
 }
-
-/* get CS str in the area */
-string WriteOutData::enquireBasename(int areaIdx)
+void FileWriter::initialize(vector<string> baseNames, Size frameSize, int totalTrialTime, int totalTrials, int frameRate,int numFish)
 {
-	cout << "Enter the pattern used in the Arena " << areaIdx + 1 << endl;
-	string basename;
-	cin >> basename;
-    // separated with an empty line
-	cout << endl;
-	return basename;
+	numFiles = baseNames.size();
+	for (string& baseName : baseNames)
+	{
+		initialize(baseName, totalTrialTime, totalTrials, frameRate, numFish);
+		initialize(baseName, frameSize, frameRate);
+	}
 
 }
 
-/* Ask for what strain of Fish is using */
-void WriteOutData::enquireStrainNames()
+void FileWriter::initialize(string baseName)
 {
-	cout << "Enter the strain name for all fish. (A number, e.g. GCaMP6f)" << endl;
-	cout << "(Assume they are the same strain)" << endl;
+	string yamlName = path2save + baseName + ".yaml";
+	FileStorage fObj(yamlName, FileStorage::WRITE);
+	tryCatchFalse(fObj.isOpened(), "YAML file writer CANNOT be opened!");
 
-	string strainName;
-	cin >> strainName;
+	yamlVec.push_back(fObj);
+
+}
+
+void FileWriter::initialize(string baseName, int totalTrialTime, int totalTrials, int frameRate,int numFish)
+{
+	saveData saveDataObj;
+	saveDataObj.initialize(totalTrialTime,totalTrials,frameRate,numFish,baseName);
+
+	saveDataVec.push_back(saveDataObj);
+
+
+}
+void FileWriter::initialize(string baseName, Size frameSize, int frameRate = 10)
+{
+	string videoName = path2save + baseName + ".avi";
+	VideoWriter vObj(videoName, CV_FOURCC('D', 'I', 'V', 'X'), frameRate, frameSize, false);
+	//vObj.open(videoName, CV_FOURCC('D', 'I', 'V', 'X'), frameRate, frameSize, false);
+	tryCatchFalse(vObj.isOpened(), "Video file writer CANNOT be opened!");
+
+	videoVec.push_back(vObj);
+
+}
+
+void FileWriter::writeOutExpSettings(UserInterface& UIobj, MultiUSBCameras& camerasObj,
+	FishAnalysis& fishAnalysisObj)
+{
 
 	for (int i = 0; i < numFiles; i++)
 	{
-		strainNames.push_back(strainName);
-	}
-}
-
-/* Ask for the age for all fish */
-void WriteOutData::enquireFishAge()
-{
-	cout << "Enter age for all fish. (A number, e.g. 9)" << endl;
-	cout << "(Assume they are at the same age)" << endl;
-
-	while (!(cin >> fishAge)) // wrong input
-	{
-		cout << "Wrong input for fish age" << endl
-			<< "Please enter a number. (e.g. 9)" << endl;
-		cin.clear();
-		cin.ignore(256, '\n');
-	}
-	cout << endl; // separated with an empty line
-}
-
-
-
-/* Ask for what experiment task for poor fish */
-void WriteOutData::enquireExpTask()
-{
-	cout << "Enter task for all fish (e.g. OLcontrol, OLexp)" << endl;
-	cin >> expTask;
-
-	if (iequals(expTask, "OLcontrol"))
-	{
-		cout << "Make sure the OUTPUT button is" << endl
-			<< "OFF (on the power source)" << endl;
-	}
-	else if (iequals(expTask, "OLexp"))
-	{
-		cout << "Make sure the OUTPUT button is" << endl
-			<< "ON (on the power source)" << endl;
-	}
-	else {
-		cout << "Unrecognized expType" << endl;
-	}
-
-	cout << endl;
-
-	// process the extra '\n'
-	// Get preparation done for getline
-	// should only be done for once
-	char c;
-	while (cin.get(c) && c != '\n')
-		if (!isspace(c))
-		{
-			std::cerr << "ERROR unexpected character '" << c << "' found\n";
-			exit(EXIT_FAILURE);
-		}
-
-}
-
-/* Ask for fish IDs for all arenas */
-void WriteOutData::enquireFishIDs()
-{
-	for (int i = 0; i < numFiles; i++)
-		fishIDs.push_back(enquireFishIDs(i));
-}
-
-
-
-/* Ask for fish IDs in the arena */
-vector<string> WriteOutData::enquireFishIDs(int arenaIdx)
-{
-
-	showFishPosDiagram();
-	cout << "Enter fishIDs used in the Arena " << arenaIdx + 1 << endl;
-	cout << "Enter all fishIDs with ',' as separator. (e.g. G11,G14)" << endl;
-
-	string inputStr;
-	getline(cin, inputStr);
-	cout << endl; // separated with an empty line
-	vector<string> fishIDs;
-
-	istringstream ss;
-	ss.clear();
-	ss.str(inputStr);
-	while (ss.good())
-	{
-		string subStr;
-		getline(ss, subStr, ',');
-		fishIDs.push_back(subStr);
-	}
-
-	return fishIDs;
-}
-
-/* Get strain names of fish in all arenas */
-void WriteOutData::get_strainNames()
-{
-	for (int i = 0; i < numFiles; i++)
-	{
-		strainNames.push_back(get_strainName(fishIDs[i]));
-	}
-}
-/* Get strain name of fish in the arena */
-string WriteOutData::get_strainName(vector<string> fishIDs)
-{
-	char firstChar = fishIDs[0][0];
-	string strainName;
-	if (firstChar == 'G' || firstChar == 'g') // GCaMP fish
-		strainName += "GCaMP";
-	else if (firstChar == 'S' || firstChar == 's')
-		strainName += "WT";
-	return strainName;
-}
-
-
-
-/* Get basename for the output files */
-void WriteOutData::getBasenames()
-{
-	for (int i = 0; i < numFiles; i++)
-		baseNames.push_back(getBasename(i));
-}
-
-/* Get basename for the output files */
-string WriteOutData::getBasename(int arenaIdx)
-{
-
-	string baseName =
-		timeStr + "_" + "Arena" + to_string(arenaIdx + 1)
-		+ "_" + strainNames[arenaIdx] + "_"
-		+ to_string(fishAge)+ "dpf_"
-		+ expTask + "_" + CSstrs[arenaIdx];
-	return baseName;
-}
-
-/* Get CS strings for all arena */
-void WriteOutData::get_CS_strings(vector<const char*> CSpatterns)
-{
-	for (int i = 0; i < CSpatterns.size(); i++)
-	{
-		CSstrs.push_back(get_CS_string(CSpatterns[i]));
-	}
-}
-
-/* Get CS string to append to the filenames of yaml and video files */
-string WriteOutData::get_CS_string(const char* CSpattern)
-{
-
-	string patternStr = extractPatternName(CSpattern);
-	string CSstr;
-	if (patternStr.compare("redBlackCheckerboard") == 0)
-		CSstr = "RBC";
-	else if (patternStr.compare("whiteBlackCheckerboard") == 0)
-		CSstr = "WBC";
-	else if (patternStr.compare("pureBlack") == 0)
-		CSstr = "PB";
-	else
-	{
-		CSstr = patternStr;
-		cout << "CS pattern is: " << CSstr << endl;
-
-	}
-	return CSstr;
-
-}
-
-/* Write out experiment settings as the header for files
-	only write once */
-void WriteOutData::writeOutExpSettings(
-	int frameRate,
-	int width,
-	int height,
-	int x_cut,
-	int y_cut,
-	vector<vector<int>> yDivs
-	)
-{
-	for (int i = 0; i < numFiles; i++)
-	{
-		writeKeyValuePair("FishIDs", strVec2str(fishIDs[i]), i);
-		writeKeyValuePair("FishAge", fishAge, i);
-		writeKeyValuePair("FishStrain", strainNames[i], i);
+		writeKeyValuePair("FishIDs", intVec2str(UIobj.allFishIDs[i]), i);
+		writeKeyValuePair("FishAge", UIobj.fishAge, i);
+		writeKeyValuePair("FishStrain", UIobj.strainName, i);
 		writeKeyValuePair("Arena", i + 1, i); // record which arena is in use
-		writeKeyValuePair("Task", expTask, i);
-		writeKeyValuePair("CSpattern", CSstrs[i], i);
-		writeKeyValuePair("ExpStartTime", timeStr, i);
-		writeKeyValuePair("FrameRate", frameRate, i);
-		writeKeyValuePair("FrameSize", Size(width, height), i);
-		writeKeyValuePair("xCut", x_cut, i);
-		writeKeyValuePair("yCut", y_cut, i);
-		writeKeyValuePair("yDivide", yDivs[i], i);
-	}
-}
-
-/* Extract the pattern name from the filename
- by erasing all lower-case alphabetas
-*/
-string extractPatternName(const char* fileName)
-{
-	int startIdx, endIdx;
-	string s(fileName);
-	std::reverse(s.begin(), s.end());
-	int foundIdx = s.find('/');
-	if (foundIdx != string::npos)
-		startIdx = s.size() - foundIdx;
-	else
-		startIdx = 0;
-
-	foundIdx = s.find('.');
-	if (foundIdx != string::npos)
-		endIdx = s.size() - foundIdx;
-	else {
-		cout << "Wrong input pattern directory!" << endl;
-		cout << "Please check!" << endl;
-		exit(0);
+		writeKeyValuePair("Task", UIobj.expTask, i);
+		writeKeyValuePair("CSpattern", UIobj.visPattern, i);
+		writeKeyValuePair("ExpStartTime", UIobj.startTimeStr, i);
+		writeKeyValuePair("FrameRate", camerasObj.frameRate, i);// TODO: is this cross-file used macro a good practice?
+		writeKeyValuePair("FrameSize", Size(camerasObj.frameWidth, camerasObj.frameHeight), i);
+		// TODO: decide where to save x_, y_cut? FishAnalysis or Arena?
+		//writeKeyValuePair("ImgSeg", Size(fishAnalysisObj.x_cut,fishAnalysisObj.y_cut), i);
+		//writeKeyValuePair("yDivide", fishAnalysisObj.yDivs[i], i);
 	}
 
-	std::reverse(s.begin(), s.end()); // reverse back
-	string patternName = s.substr(startIdx , endIdx - startIdx - 1);
-	return patternName;
 }
 
-
-
-/* Show software description and welcome messages to user */
-void showWelcomeMsg()
+void FileWriter::writeOutExpSettings(UserInterface& UIobj, SingleCamera& cameraObj,
+	Arena& ArenaObj)
 {
-	/*
-	Welcome to BLITZ.
-	BLITZ (Behavioral Learning In The Zebrafish) enables programmatic
-	control in video capture, online image processing, visual stimuli
-	presentation and electric shock delivery, which allow researchers
-	design their custom learning paradigm in zebrafish.
-	Most updated code and other resources can be found at
-	https://github.com/Wenlab/BLITZ
-	Please send any feedback and suggestions to my email,
-	bysin7@gmail.com Wenbin Yang.
-	Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-	*/
-	cout << "Welcome to BLITZ (Behavioral Learning In The Zebrafish) ." << endl
-		<< "Most updated code and other resources can be found at " << endl
-		<< "https://github.com/Wenlab/BLITZ" << endl
-		<< "Please send any feedback and suggestions to my email: " << endl
-		<< "bysin7@gmail.com Wenbin Yang." << endl
-		<< "Copyright 2018 Wenbin Yang <bysin7@gmail.com>" << endl;
-	cout << endl; // separated with an empty line
+	for (int i = 0; i < numFiles; i++)
+	{
 
-	cout << "Please make sure all devices are connected." << endl;
-	cout << "Cameras, the relay, the projector." << endl;
+
+		writeKeyValuePair("FishIDs", intVec2str(UIobj.allFishIDs[i]), i);
+		writeKeyValuePair("FishAge", UIobj.fishAge, i);
+		writeKeyValuePair("FishStrain", UIobj.strainName, i);
+		writeKeyValuePair("Arena", i + 1, i); // record which arena is in use
+		writeKeyValuePair("Task", UIobj.expTask, i);
+		writeKeyValuePair("CSpattern", UIobj.visPattern, i);
+		writeKeyValuePair("ExpStartTime", UIobj.startTimeStr, i);
+		writeKeyValuePair("FrameRate", cameraObj.frameRate, i);// TODO: is this cross-file used macro a good practice?
+		writeKeyValuePair("FrameSize", Size(cameraObj.frameWidth, cameraObj.frameHeight), i);
+		// TODO: decide where to save x_, y_cut? FishAnalysis or Arena?
+		writeKeyValuePair("xCut", ArenaObj.xCut, i);
+		writeKeyValuePair("yCut", ArenaObj.yCut, i);
+		writeKeyValuePair("xDivide", ArenaObj.allFish[i].xDiv, i);
+
+	}
 
 }
-
-/*
-Diagram of fish positions in arena
-|		|		|
-|	0   |   1	|
-|		|		|
-|---------------|
-|		|		|
-|	2   |   3	|
-|		|		|
-*/
-void showFishPosDiagram()
+void FileWriter::writeOutExpSettings(UserInterface& UIobj, SingleCamera& cameraObj,
+	Arena& ArenaObj, std::vector<std::string> baseNames)
 {
-	const int numSpaces = 3;
-	const string spaces(numSpaces, ' ');
-	const string cutLineL(4 * numSpaces + 3, '-');
-	// show the fish indices diagram
-	cout << "Diagram of fish indices in the arena: " << endl;
-	cout << cutLineL << endl;
-	cout << spaces << "0" << spaces << "|" << spaces << "1" << spaces << endl;
-	cout << cutLineL << endl;
-	cout << spaces << "2" << spaces << "|" << spaces << "3" << spaces << endl;
-	cout << cutLineL << endl;
-	cout << endl; // separated with an empty line
+	for (int i = 0; i < numFiles; i++)
+	{
+		std::ofstream outfile;
+		string txtName = path2save + baseNames[i] + ".txt";
+		outfile.open(txtName);
+		outfile << "FishIDs" << ":" << intVec2str(UIobj.allFishIDs[i]) << "\n";
+		outfile << "FishAge" << ":" << UIobj.fishAge << "\n";
+		outfile << "FishStrain" << ":" << UIobj.strainName << "\n";
+		outfile << "Arena" << ":" << i + 1 << "\n";
+		outfile << "Task" << ":" << UIobj.expTask << "\n";
+		outfile << "CSpattern" << ":" << UIobj.visPattern << "\n";
+		outfile << "ExpStartTime" << ":" << UIobj.startTimeStr << "\n";
+		outfile << "FrameRate" << ":" << cameraObj.frameRate << "\n";
+		outfile << "FrameSize" << ":" << Size(cameraObj.frameWidth, cameraObj.frameHeight) << "\n";
+		outfile << "xCut" << ":" << ArenaObj.xCut << "\n";
+		outfile << "yCut" << ":" << ArenaObj.yCut << "\n";
+		outfile << "xDivide" << ":" << ArenaObj.allFish[i].xDiv << "\n";
+		outfile << "FishIDs" << ":" << intVec2str(UIobj.allFishIDs[i]) << "\n";
+
+		outfile.close();
+	}
+
+}
+void FileWriter::writeOutFrame(Arena& ArenaObj,
+	int idxFile) {
+	videoVec[idxFile] << ArenaObj.opencvImg;
 }
 
+void FileWriter::writeOutFrame(ExpTimer& timerObj, Arena& ArenaObj,
+	int idxFile,int trialCount)
+{
+	// TODO: align the abstraction level
 
+	//cv::Mat gray_Img;
+	//cv::cvtColor(ArenaObj.opencvImg, gray_Img, CV_BGR2GRAY);
+	//cv::imshow("test2", ArenaObj.opencvImg);
+	//cv::waitKey(100);
 
+	videoVec[idxFile] << ArenaObj.opencvImg; // write image to disk
 
+	// write the custom class to disk
+	yamlVec[idxFile] << "Frames" << "[";
+	// Python-like inline compact form
+	// general experimental info
+	writeKeyValueInline("FrameNum", timerObj.count / numFiles+ trialCount * 4000,idxFile);
+	writeKeyValueInline("ExpPhase", timerObj.expPhase, idxFile);
+	writeKeyValueInline("sElapsed", timerObj.sElapsed, idxFile);
+	writeKeyValueInline("msRemElapsed", timerObj.msRemElapsed, idxFile);
 
+	// specific fish analysis data
+	vector<Fish> allFish = ArenaObj.allFish;
+	for (int i = 0; i < allFish.size(); i++)
+	{
+		writeKeyValueInline("FishIdx", i, idxFile);
+		writeKeyValueInline("Head", allFish[i].head, idxFile);
+		writeKeyValueInline("Tail", allFish[i].tail, idxFile);
+		writeKeyValueInline("Center", allFish[i].center, idxFile);
+		writeKeyValueInline("HeadingAngle", allFish[i].headingAngle, idxFile);
+		writeKeyValueInline("ShockOn", allFish[i].shockOn, idxFile);
+		writeKeyValueInline("PatternIdx", allFish[i].idxCase, idxFile);
+		writeKeyValueInline("trialCount", trialCount, idxFile);
+	}
+	yamlVec[idxFile] << "]";
+}
+void FileWriter::writeOutData(std::vector<std::string> baseNames) {
+	for (int i = 0; i < numFiles; i++) {
+		saveDataVec[i].saveMat(baseNames[i]);
+	}
+}
+void FileWriter::saveFrame(ExpTimer& timerObj, Arena& ArenaObj,
+	int idxFile, int trialCount) {
+	int FrameNum = timerObj.count  + trialCount * saveDataVec[idxFile].trialSize;
+	vector<Fish> allFish = ArenaObj.allFish;
+	saveDataVec[idxFile].FrameNum[FrameNum] = FrameNum;
+	saveDataVec[idxFile].sElapsed[FrameNum] = timerObj.sElapsed;
+	saveDataVec[idxFile].msRemElapsed[FrameNum] = timerObj.msRemElapsed;
+	saveDataVec[idxFile].trialCount[FrameNum] = trialCount;
+	for (int i=0; i < saveDataVec[idxFile].numFish; i++) {
+		saveDataVec[idxFile].allFishData[i].HeadX[FrameNum] = allFish[i].head.x;
+		saveDataVec[idxFile].allFishData[i].HeadY[FrameNum] = allFish[i].head.y;
+		saveDataVec[idxFile].allFishData[i].TailX[FrameNum] = allFish[i].tail.x;
+		saveDataVec[idxFile].allFishData[i].TailY[FrameNum] = allFish[i].tail.y;
+		saveDataVec[idxFile].allFishData[i].CenterX[FrameNum] = allFish[i].center.x;
+		saveDataVec[idxFile].allFishData[i].CenterY[FrameNum] = allFish[i].center.y;
+		saveDataVec[idxFile].allFishData[i].HeadingAngle[FrameNum] = allFish[i].headingAngle;
+		saveDataVec[idxFile].allFishData[i].ShockOn[FrameNum] = allFish[i].shockOn;
+		saveDataVec[idxFile].allFishData[i].PatternIdx[FrameNum] = allFish[i].idxCase;
 
+	}
 
+}
 
+void saveData::initialize(int totalTrialTime, int totalTrials,int frameRate,int numfish, std::string baseName) {
+	//std::string  matname = path2save + baseName + ".mat";
 
-/* convert string vector to int-vector like formatted output */
+	numFish = numfish;
+	arraySize = totalTrialTime* totalTrials* frameRate;
+	trialSize = totalTrialTime * frameRate;
+
+	FrameNum = new int[arraySize];
+	sElapsed = new int[arraySize];
+	msRemElapsed = new int[arraySize];
+	trialCount = new int[arraySize];
+	for (int i = 0; i < numfish; i++) {
+		fishData fishdata(arraySize, i);
+		allFishData.push_back(fishdata);
+	}
+	totalData = new int[arraySize * (4 + numFish*9)];
+}
+
+void saveData::saveMat(std::string baseName) {
+	std::string  matname = path2save + baseName + ".mat";
+	const char* matName = matname.c_str();
+
+	MATFile* pmatFile = matOpen(matName, "w");
+
+	mxArray* pMxArray = mxCreateNumericMatrix(arraySize, (4 + numFish * 9), mxINT32_CLASS, mxREAL);
+
+	for (int i = 0; i < arraySize; i++) {
+		totalData[i] = FrameNum[i];
+	}
+	for (int i = 0; i < arraySize; i++) {
+		totalData[i+ arraySize] = sElapsed[i];
+	}
+	for (int i = 0; i < arraySize; i++) {
+		totalData[i+ arraySize*2] = msRemElapsed[i];
+	}
+	for (int i = 0; i < arraySize; i++) {
+		totalData[i + arraySize * 3] = trialCount[i];
+	}
+	for (int j = 0; j < numFish;j++) {
+		for (int m = 0; m < allFishData[j].totalFishData.size();m++) {
+			for (int i = 0; i < arraySize; i++) {
+				totalData[i + arraySize * (4+m) + j * arraySize * 9] = allFishData[j].totalFishData[m][i];
+			}
+		}
+	}
+
+	mxSetData(pMxArray, totalData);
+	matPutVariable(pmatFile, "output", pMxArray);
+	matClose(pmatFile);
+}
 string strVec2str(vector<string> strVec)
 {
 	if (strVec.empty()) // vector is empty, return empty string
@@ -423,21 +284,20 @@ string strVec2str(vector<string> strVec)
 
 	string str = strVec[0];
 	for (int j = 1; j < strVec.size(); j++)
-	{
 		str += "," + strVec[j];
-	}
-	//str += "]";
+
 	return str;
 }
 
-
-bool iequals(const string& a, const string& b)
+string intVec2str(vector<int> intVec)
 {
-	unsigned int sz = a.size();
-	if (b.size() != sz)
-		return false;
-	for (unsigned int i = 0; i < sz; ++i)
-		if (tolower(a[i]) != tolower(b[i]))
-			return false;
-	return true;
+	if (intVec.empty()) // vector is empty, return empty string
+		return "";
+
+	string str = "";
+	for (int& i : intVec)
+		str += to_string(i) + ",";
+
+	str.erase(str.end()-1,str.end()); // remove the last charactor
+	return str;
 }
