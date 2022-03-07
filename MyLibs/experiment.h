@@ -1,10 +1,7 @@
-  /*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
+/*
+* Copyright 2019 Wenbin Yang <bysin7@gmail.com> (This project started from Jan., 2018.)
+* This file is part of [BLITZ (Behavioral Learning In The Zebrafish)](https://github.com/Wenlab/BLITZ),
+* which is adapted from MindControl (Andrew Leifer et al., 2011) <leifer@fas.harvard.edu>
 *
 * BLITZ is a free software: you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -12,120 +9,76 @@
 * (at your option) any later version.
 *
 * Filename: experiment.h
-* Abstract: this file contains all classes and function declarations 
+* Abstract: this file contains all classes and function declarations
 *		used in constructing final behavioral learning experiment in zebrafish
-* Current Version: 2.0
+*
+* Current Version: 3.0
 * Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
+* Created on: Jan. 15, 2018
+* Modified on: Apr. 20, 2019
 */
 
 #ifndef _GUARD_EXPERIMENT_H
 #define _GUARD_EXPERIMENT_H
-// Include 3rd party libraries
-#include "../3rdPartyLibs/Utilities/Timer.h"
+
+
+
 // Include user-defined libraries
-#include "fishAnalysis.h"
-#include "talk2camera.h"
+#include "userInterface.h"
+#include "expTimer.h"
+#include "talk2screen_cv.h"
 #include "talk2relay.h"
-#include "talk2screen.h"
-#include "writeOutFish.h"
+#include "fileWriter.h"
+#include "fishAnalysis.h"
+#include "TCP-server.h"
+#include "talk2FCamera.h"
+
 
 // User-defined macros
-#define COM_NUM 4
-#define WIDTH 784 // frame width for all cameras and video files
-#define HEIGHT 784 // frame height for all cameras and video files
-#define FRAMERATE 10 // frame rate for all cameras to capture videos
-
-class ExperimentData
+#define COM_NUM 3
+#define blackPatch 2
+#define fullPatch 3
+class Experiment
 {
-private:
-	/* Stands for different experiment phases */
-	enum { baseline = 0, training = 1, blackout = 2, test = 3 };
-	;// nothing for now
 public:
 	// methods
-	ExperimentData(std::string pName) 
-		:pathName(pName)
+	Experiment()
 	{
-		numCameras = 0;
-		idxFrame = -1;
-		sElapsed = -1;
-		msRemElapsed = 0;
-		expPhase = -1;
-		ITI = 0;
-
-		// y division pos for all fish
-		yDivs =
-		{
-			{ 200, 200, 558, 558 },
-			{ 223, 223, 588, 588 },
-			{ 223, 223, 588, 588 }
-		};
+		// empty forever
 	}
 	/* Initialize the experiment */
-	bool initialize();
-	
-	/* Prepare background image for MOG subtractor */
-	void prepareBgImg(const int prepareTime);
-	
-	/* Run unpaired training in the operant learning procedure */
-	void runUnpairedOLexp();
-	
+	void initializeTest_2();
+	void initializeTest_3();
 	/* Run the entire operant learning procedure */
-	void runOLexp();
 
-	/* Run the experiment to do whether fish invisible to the blue pattern */
-	void runBlueTest();
-	
-	/* Give the fish a electric pulse */
-	void giveFishShock(int fishIdx);
-	
-	/* Experiment during the training period */
-	void trainFish(int cIdx);
-	
-	/* Write out info of a frame to disk */
-	void writeOutFrame();
-	
-	/* Decorate images with fish's heads, tails and visual pattern's info */
-	void annotateFishImgs();
-	
-	/* Present fish images with annotations. The code is adapted from code in stackfow*/
-	void displayFishImgs(std::string title);
-	
-	/* Get current time */
-	bool getTime();
+	void runOLexptest_2();
+	void runOLexptest_3();
 
-    /* Get CSpatterns from the basenames */
-	std::vector<std::string> get_CS_patterns(std::vector<std::string> CS_strs);
+
+
+	void runAntiOLexp();
+	/* Run unpaired training in the operant learning procedure */
+
+
+private:
 	// properties
+	int experimentStage;//0=baseline;1=train;2=test
+	  // Functional module objects
+	UserInterface UIobj; // object that receive user inputs via the command line
+	ExpTimer timerObj; // object that count time and index of frames
+	TCP_server TCPobj;
+	Fish fishObj;
+	Screen screenObj; // object that shows pattern via a projector
+	Screen screenObj2;
+	string window1 = "test";
+	string window2 = "test2";
 
-	// constant ones
-	std::vector<std::string> CSpatterns;
-	const std::string pathName;
-	int numCameras;
-
-	int idxFrame;
-	int sElapsed;
-	int msRemElapsed;
-	int expPhase;
-	/* Update time for the entire screen */
-	/* Inter-trial Interval */
-	int ITI;
-	std::vector<std::vector<int>> yDivs;
-	
-
-
-	Timer expTimer;
-	CameraData cams;
-	std::vector<ArenaData> allArenas;
-	ScreenData screen;
-	PortData thePort;
-	WriteOutData writeOut;
+	Relay relayObj; // object that controls a 16-channel relay
+	FileWriter fileWriterObj;// object that save and write out data
+	FCamera fCameraObj;
 };
 
 
+
 #endif _GUARD_EXPERIMENT_H
+

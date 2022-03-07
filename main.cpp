@@ -1,282 +1,162 @@
-/*
-* Copyright 2018 Wenbin Yang <bysin7@gmail.com>
-* This file is part of BLITZ (Behavioral Learning In The Zebrafish),
-* which is adapted from MindControl (Andrew Leifer et al <leifer@fas.harvard.edu>
-* Leifer, A.M., Fang-Yen, C., Gershow, M., Alkema, M., and Samuel A. D.T.,
-* 	"Optogenetic manipulation of neural activity with high spatial resolution in
-*	freely moving Caenorhabditis elegans," Nature Methods, Submitted (2010).
-*
-* BLITZ is a free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the license, or
-* (at your option) any later version.
-*
-* Filename: main.cpp
-* Abstract: this file contains all functions used in constructing final
-*			behavioral learning experiment in zebrafish
-*
-* Current Version: 2.0
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Modified on: Apr. 28, 2018
-* Replaced Version: 1.1
-* Author: Wenbin Yang <bysin7@gmail.com>
-* Created on: Jan. 1, 2018
-*/
-// Include 3rd party libraries
-#include "3rdPartyLibs/Utilities/Timer.h"
-
-// Include user-defined libraries
-#include "MyLibs/experiment.h"
-#include "MyLibs/talk2screen.h"
-#include "MyLibs/talk2camera.h"
-
-
-// Include standard libraries
+//#include "pch.h"
 #include <iostream>
-
-using namespace std;
-using namespace cv;
+#include <fstream>
+#include <sstream>
+//#include <WinSock2.h>
+//#include <Ws2tcpip.h>
+//#pragma comment(lib,"ws2_32.lib")
+#include <string>
+#include "talk2screen_cv.h"
+#include "TCP-server.h"
+#include "experiment.h"
+#include "talk2relay.h"
+#include "talk2FCamera.h"
+#include "expTimer.h"
+#include "fileWriter.h"
 
 int main()
 {
-	/*TODO:
-	1. degrade load_image_to_buffers to a method of AreaData
-	2. put all positions and patterns coordinates into ScreenData
-	3. do a similar update to the FishData class.
-	4. reduce unnecessary data-type conversions
-	5. remove unnecessary code
-	*/
-	//vector<const char*> CS_patterns =
-	//{
-	//	"Images/redBlackCheckerboard.jpg",
-	//	"Images/whiteBlackCheckerboard.jpg",
-	//	"Images/fullBlue.jpg"
-	//};
+/*
+	FCamera testgalvo;
+	TCP_server test_tcp;
+	saveData testsave;
+	ExpTimer testtimer;
+	test_tcp.initializeForICamera();*/
+	//getchar();
+	/*while (1) {
+		test_tcp.recvFromCamera1();
+		Sleep(50);
+	}*/
 	/*
-	Mat I = imread("Images/fullBlue.jpg");
+	testtimer.start();
+	testgalvo.initialize();
+	testgalvo.startTask();
+	std::string name = "test1";
+	testsave.test_ini(800, name);
+*/
+	//int i = 0;
+	//while (i<10000) {
+	//	testgalvo.spinGalvo();
+	//	Sleep(50);
+	//	cout << i << endl;
+	//	i++;
+	//}
 
-	namedWindow("Display", 1);
-	imshow("Display", I);
-	waitKey(0);
-	*/
+
+	 
+
+	//int i = 0;
+	//while (i < 10000) {
+	//	//	if ((i / 100) % 2 == 1) {
+	//	//		test_tcp.setExcitation(2);
+	//	//	}
+	//	//	else {
+	//	//		test_tcp.setExcitation(3);
+	//	//	}
+
+	//	test_tcp.talk2camera1(i);
+	//	Sleep(50);
+	//	i++;
+	//}
 
 
-	
-	string pathName = "F:/FishExpData/";
-	ExperimentData exp(pathName);
+	//ofstream outfile;
+	//outfile.open("F:/FishExpData/data1.csv", ios::out);
 
-	if (!exp.initialize())
-	{
-		cout << "Experiment Initialization Failed." << endl;
-		exit(0);
+
+	//int i;
+	//for (testtimer.resetCount(); testtimer.getCount() < 800; testtimer.addCount()) {
+	//	i = testtimer.getCount();
+
+	//	if ((i / 100) % 2 == 1) {
+	//		test_tcp.setExcitation(2);
+	//	}
+	//	else {
+	//		test_tcp.setExcitation(3);
+	//	}
+	//	test_tcp.talk2ICamera(i);
+	//	testgalvo.getFromFcamera();
+	//	testsave.test_frame(testtimer, testgalvo, i);
+	//	/*for (int j = 0; j < 99; j++) {
+	//		outfile << testgalvo.read_[j] << ',';
+	//	}
+	//	outfile << testgalvo.samps << '\n';
+	//	*/
+	//	while (1) {
+	//		testtimer.getTime();
+	//		if ((testtimer.sElapsed * 1000 + testtimer.msRemElapsed) > testtimer.getCount() * 50)
+	//			break;
+	//	}
+
+	//}
+
+	//test_tcp.closeExcitation();
+	//testsave.test_save(name);
+
+
+
+
+
+	Screen test_screen;
+	test_screen.test();
+	/*Relay testrelay;
+
+	testrelay.initialize(3);
+	vector<bool> channels2open = { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+	while (1) {
+		testrelay.givePulse(channels2open,0.3);
+		Sleep(5000);
 	}
-	else {
-		cout << "Experiment initialized." << endl;
-	}
-	exp.runOLexp();
-
-
-	
+	testrelay.givePulse(channels2open);*/
 
 
 
+	//while (1) {
+	//	test_tcp.getLocation();
+	//	std::cout <<"platformY:" <<test_tcp.platformY << endl;
+	//	std::cout << "platformX:" << test_tcp.platformX << endl;
+	//	//test_tcp.setExcitation(2);
+	//	Sleep(500);
+	//}
+	//for (int i=0; 1;i++) {
+	//	test_tcp.recvFromCamera1();
+	//	
+	//	std::cout << i << std::endl;
+
+
+	//	Sleep(1000);
+	//}
 
 
 
-	/* The block for the real experiment 
-	string pathName = "F:/FishExpData/";
-	vector<string> CS_Patterns;
-	CS_Patterns.push_back("redBlackCheckerboard");
-	CS_Patterns.push_back("whiteBlackCheckerboard");
-	CS_Patterns.push_back("fullBlue");
-	//string CS_Pattern = "redBlackCheckerboard";
-	ExperimentData exp(CS_Patterns,pathName);
+	//test_tcp.closeExcitation();
 
-	if (!exp.initialize())
-	{
-		cout << "Experiment Initialization Failed." << endl;
-		exit(0);
-	}
-	else {
-		cout << "Experiment initialized." << endl;
-	}
+	//test_tcp.getLocation_test();
 
-	exp.runOLexp();
-	*/
+	//Screen test1;
+	//test1.initialize(2);
+	//Fish fishObj;
+	//while (1) {
+	//	test_tcp.getLocation();
+	//	std::cout <<"platformY:" <<test_tcp.platformY << endl;
+	//	std::cout << "platformX:" << test_tcp.platformX << endl;
+	//	test1.refresh(1, "test2", test_tcp.screenX, test_tcp.screenY);
+	//	fishObj.getPosition(test_tcp.platformX, test_tcp.platformY);
+	//	
+	//	std::cout << "fishObj.head.x:" << fishObj.head.x << endl;
+	//	std::cout << "fishObj.head.y:" << fishObj.head.y << endl;
+	//	//cv::waitKey();
+	//	Sleep(500);
+	//}
+	/*Experiment test;
 
+	test.initializeTest_3();
+	test.runOLexptest_3();*/
 
-	/* 
-	string CS_Pattern = "RGB96";
-	ExperimentData exp(CS_Pattern);
-
-	if (!exp.initialize())
-	{
-	cout << "Experiment Initialization Failed." << endl;
-	exit(0);
-	}
-	else {
-	cout << "Experiment initialized." << endl;
-	}
-
-	exp.runOLexp();
-	The real main function */
-
-	/* Test serial port
-	string CS_Pattern = "redBlackCheckerboard";
-	ExperimentData exp(CS_Pattern);
-	if (!exp.thePort.initialize(COM_NUM)) {
-		cout << "Initialize failed" << endl;
-		return false;
-	}
-	int flag;
-	cout << endl; // separated with an empty line
-	for (int i = 0; i < 12; i++)
-	{
-		flag = exp.thePort.givePulse(i);
-		waitKey(100);
-		cout << "Give shock:" << i << endl;
-		if (flag = 0)
-		{
-			cout << "Failed" << endl;
-		}
-	}
-	*/
-
-
-	/* main function
-	string CS_Pattern = "redBlackCheckerboard";
-	ExperimentData exp(CS_Pattern);
-
-	if (!exp.initialize())
-	{
-		cout << "Experiment Initialization Failed." << endl;
-		exit(0);
-	}
-	else {
-		cout << "Experiment initialized." << endl;
-	}
-
-	exp.runOLexp();
-	*/
-
-
-
-
-	/* Test screen function
-	Timer expTimer;
-	ScreenData myScreen;
-	vector<const char*> CSpatterns =
-	{
-		"Images/redBlackCheckerboard.jpg",
-		"Images/whiteBlackCheckerboard.jpg",
-		"Images/fullBlue.jpg"
-	};
-
-	myScreen.initialize(CSpatterns);
-
-	expTimer.start();
-	while (1)
-	{
-		int timeInSec = expTimer.getElapsedTimeInSec();
-		cout << "Time (s) : " << timeInSec << endl;
-		int areaIdx = rand() % 3;
-		if (timeInSec % 10 == 0)
-			myScreen.allAreas[areaIdx].allPatches[0].pIdx = !myScreen.allAreas[areaIdx].allPatches[0].pIdx;
-		myScreen.allAreas[areaIdx].allPatches[0].updatePattern();
-		myScreen.renderTexture();
-	}
-
-	*/
-
-
-
-
-	/* Test OL Procedure
-	ExperimentData exp;
-
-	const char imgName[] = "Images/redCheckerBoard.jpg";
-	try {
-		exp.initialize(imgName);
-		exp.prepareBgImg();
-		exp.runOLexp();
-	}
-	catch (const GenericException &e)
-	{
-		// Error handling
-		cerr << "An exception occurred." << endl
-			<< e.GetDescription() << endl;
-	}
-	*/
-
-
-	/*
-
-	int testVar = 10;
-	vector<int> headVec(4, 0);
-	headVec[1] = 1;
-	headVec[2] = 2;
-	headVec[3] = 3;
-	fs << "Frame" << "[";
-	string vName; // variable name
-	for (int i = 0; i < headVec.size(); i++)
-	{
-		vName = "Head" + to_string(i);
-		fs << "{:" << vName << headVec[i] << "}";
-	}
-	fs << "]";
-	*/
-	//yaml << "Frames" << "[";
-	//writeOutVarInline<int>(fs, testVar, "testVar");
-
-	/* Timer.start can be used as reset
-	Timer expTimer;
-	expTimer.start();
-	while (1)
-	{
-		int timeInSec = expTimer.getElapsedTimeInSec();
-		cout << "Time (s): " << timeInSec << endl;
-		if (timeInSec > 10)
-			expTimer.start();
-	}
-	*/
-
-	/* Test camera function
-
-	Timer expTimer;
-	expTimer.start();
-	CameraData cams;
-	cams.initialize();
-	while (cams.grabPylonImg())
-	{
-		cout << "Time (s) : " << expTimer.getElapsedTimeInSec() << endl;
-#ifdef PYLON_WIN_BUILD
-		// Display the grabbed image.
-		Pylon::DisplayImage(1, cams.ptrGrabResult);
-#endif
-	}
-	*/
-
-
-
-
-
-
-
-	// Enquire how many cameras to use
-	// and enter filenames respectively
-
-	/*
-	try{ // Handle with missing frames of Pylon cameras
-		ExperimentData myExp;
-		myExp.initialize();
-		myExp.prepareBgImg();
-		myExp.runOLexp(); // run operant learning experiment
-	}
-	catch (const GenericException &e)
-	{
-		// Error handling
-		cerr << "An exception occurred." << endl
-			<< e.GetDescription() << endl;
-	}
-	*/
+	//test1.refresh(1, "test2", 20, 100);
+	//cv::waitKey();
+	//test1.refresh(1, "test", 100, 20);
+	//cv::waitKey();
+	//test1.refresh(1, "test", 200, 20);
+	//cv::waitKey();
 }
